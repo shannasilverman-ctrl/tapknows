@@ -526,6 +526,12 @@ function OnboardingPage() {
                     <p className="mt-1 text-lg font-semibold text-foreground">
                       {sampleResult.winner.legs[0]?.cardLabel}
                     </p>
+                    <div className="tap-onboarding-mini-wallet" aria-hidden>
+                      <span className="tap-onboarding-mini-card tap-onboarding-mini-back" />
+                      <span className="tap-onboarding-mini-card tap-onboarding-mini-mid" />
+                      <span className="tap-onboarding-mini-card tap-onboarding-mini-win" />
+                      <span className="tap-onboarding-mini-pocket" />
+                    </div>
                     <p className="mt-2 text-[13px] text-muted-foreground leading-snug">
                       {sampleResult.winner.headline}
                     </p>

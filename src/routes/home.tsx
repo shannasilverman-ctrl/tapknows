@@ -937,226 +937,230 @@ function HomePage() {
         )}
 
         {/* The product starts with the customer's question, not their data. */}
-        <div className="mt-6 tap-app-question">
-          <p className="cs-microlabel text-[10px] text-primary mb-2">Ask TAP</p>
-          <h1 className="cs-title-lg text-foreground">Where are you paying?</h1>
-          <p className="mt-2 text-[15px] text-muted-foreground">
-            Name the place. TAP will name the card.
-          </p>
-        </div>
+        <section className="tap-home-core">
+          <div className="mt-6 tap-app-question">
+            <p className="cs-microlabel text-[10px] text-primary mb-2">Ask TAP</p>
+            <h1 className="cs-title-lg text-foreground">Where are you paying?</h1>
+            <p className="mt-2 text-[15px] text-muted-foreground">
+              Name the place. TAP will name the card.
+            </p>
+          </div>
 
-        {/* Online-dominant lead — when decide history shows online as this
+          {/* Online-dominant lead — when decide history shows online as this
             user's power case, we lead with a one-tap answer above search. */}
-        {ready && wallet.length > 0 && onlineDominant && (
-          <button
-            onClick={() => goDecideCustom("Online shopping", "amazon")}
-            className="mt-4 w-full flex items-center justify-between rounded-2xl border border-primary/40 bg-white px-4 py-3 hover:border-primary/70 transition-colors text-left shadow-[0_2px_10px_-6px_rgba(15,23,42,0.15)] min-h-11"
-            aria-label="Online shopping — one-tap recommendation"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <span className="inline-flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary shrink-0">
-                <ShoppingBag className="size-4" />
-              </span>
-              <div className="min-w-0">
-                <p className="text-[15px] font-medium text-foreground">Online shopping</p>
-                <p className="text-[12px] text-muted-foreground">
-                  Your most common case. Tap for the card.
-                </p>
+          {ready && wallet.length > 0 && onlineDominant && (
+            <button
+              onClick={() => goDecideCustom("Online shopping", "amazon")}
+              className="mt-4 w-full flex items-center justify-between rounded-2xl border border-primary/40 bg-white px-4 py-3 hover:border-primary/70 transition-colors text-left shadow-[0_2px_10px_-6px_rgba(15,23,42,0.15)] min-h-11"
+              aria-label="Online shopping — one-tap recommendation"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="inline-flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary shrink-0">
+                  <ShoppingBag className="size-4" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[15px] font-medium text-foreground">Online shopping</p>
+                  <p className="text-[12px] text-muted-foreground">
+                    Your most common case. Tap for the card.
+                  </p>
+                </div>
               </div>
-            </div>
-            <ArrowRight className="size-4 text-muted-foreground shrink-0" />
-          </button>
-        )}
+              <ArrowRight className="size-4 text-muted-foreground shrink-0" />
+            </button>
+          )}
 
-        {/* Search sits above the stack */}
-        <div className="mt-4">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
-              <input
-                ref={searchRef}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Try Whole Foods, Delta, Amazon…"
-                autoComplete="off"
-                className="w-full h-12 rounded-2xl bg-white border border-border pl-11 pr-4 text-[15px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 shadow-[0_2px_10px_-6px_rgba(15,23,42,0.15)]"
-              />
+          {/* Search sits above the stack */}
+          <div className="mt-4">
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                <input
+                  ref={searchRef}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Try Whole Foods, Delta, Amazon…"
+                  autoComplete="off"
+                  className="w-full h-12 rounded-2xl bg-white border border-border pl-11 pr-4 text-[15px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 shadow-[0_2px_10px_-6px_rgba(15,23,42,0.15)]"
+                />
+              </div>
+              {!nearbyDenied && nearbyIds.length === 0 && (
+                <button
+                  type="button"
+                  onClick={requestNearMe}
+                  disabled={nearbyBusy}
+                  title="Use your location to surface nearby merchants"
+                  className="shrink-0 inline-flex items-center gap-1.5 h-12 px-3 rounded-2xl border border-border bg-white text-[13px] font-medium text-foreground hover:border-primary/40 transition-colors disabled:opacity-60"
+                  aria-label="Show merchants near me"
+                >
+                  <MapPin className="size-4 text-primary" />
+                  {nearbyBusy ? "…" : "Near me"}
+                </button>
+              )}
             </div>
-            {!nearbyDenied && nearbyIds.length === 0 && (
-              <button
-                type="button"
-                onClick={requestNearMe}
-                disabled={nearbyBusy}
-                title="Use your location to surface nearby merchants"
-                className="shrink-0 inline-flex items-center gap-1.5 h-12 px-3 rounded-2xl border border-border bg-white text-[13px] font-medium text-foreground hover:border-primary/40 transition-colors disabled:opacity-60"
-                aria-label="Show merchants near me"
-              >
-                <MapPin className="size-4 text-primary" />
-                {nearbyBusy ? "…" : "Near me"}
-              </button>
+
+            {results.length > 0 && (
+              <div className="mt-2 rounded-2xl border border-border bg-white overflow-hidden divide-y divide-border shadow-[0_6px_18px_-8px_rgba(15,23,42,0.15)]">
+                {results.map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => goDecide(m)}
+                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-secondary/60 transition-colors text-left min-h-11"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-[15px] font-medium text-foreground truncate">{m.name}</p>
+                      <p className="text-[11px] text-muted-foreground capitalize">
+                        {m.category.replace(/_/g, " ")}
+                      </p>
+                    </div>
+                    <ArrowRight className="size-4 text-muted-foreground shrink-0" />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {showFallback &&
+              (remembered ? (
+                <div className="mt-2 rounded-2xl border border-border bg-white overflow-hidden shadow-[0_6px_18px_-8px_rgba(15,23,42,0.15)]">
+                  <button
+                    onClick={() => goDecideCustom(trimmedQuery, remembered)}
+                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-secondary/60 transition-colors text-left min-h-11"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-[15px] font-medium text-foreground truncate">
+                        {trimmedQuery}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground capitalize">
+                        {remembered.replace(/_/g, " ")} · saved
+                      </p>
+                    </div>
+                    <ArrowRight className="size-4 text-muted-foreground shrink-0" />
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-2 rounded-2xl border border-border bg-white p-4 shadow-[0_6px_18px_-8px_rgba(15,23,42,0.15)]">
+                  <p className="text-[15px] font-medium text-foreground">New spot.</p>
+                  <p className="text-[13px] text-muted-foreground mt-0.5">What kind of purchase?</p>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    {FALLBACK_CATEGORIES.map((c) => (
+                      <button
+                        key={c.label}
+                        onClick={() => goDecideCustom(trimmedQuery, c.id)}
+                        className="min-h-11 rounded-xl border border-border bg-white hover:border-primary/40 hover:bg-secondary/40 transition-colors px-3 py-3 text-[14px] font-medium text-foreground text-left"
+                      >
+                        {c.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+            {!query.trim() && wallet.length > 0 && (
+              <div className="mt-3 -mx-1 flex gap-2 overflow-x-auto no-scrollbar px-1 pb-1">
+                {/* Online shopping — always first when there's no location
+                  context. One tap answers the question for the everyday
+                  online case; amount is editable on decide. */}
+                {nearbyIds.length === 0 && !onlineDominant && (
+                  <button
+                    onClick={() => goDecideCustom("Online shopping", "amazon")}
+                    className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-white hover:border-primary/70 transition-colors px-3.5 py-1.5 text-[13px] font-medium text-foreground min-h-11 whitespace-nowrap"
+                    aria-label="Online shopping"
+                  >
+                    <ShoppingBag className="size-3.5 text-primary" aria-hidden />
+                    Online shopping
+                  </button>
+                )}
+                {quickPicks.map((p) => (
+                  <button
+                    key={p.merchant.id}
+                    onClick={() => goDecide(p.merchant, p.opportunity)}
+                    className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border bg-white transition-colors px-3.5 py-1.5 text-[13px] font-medium text-foreground min-h-11 whitespace-nowrap ${
+                      p.opportunity
+                        ? "border-primary/40 hover:border-primary/70"
+                        : "border-border hover:border-primary/40"
+                    }`}
+                    aria-label={
+                      p.opportunity ? `${p.merchant.name} — opportunity` : p.merchant.name
+                    }
+                  >
+                    {p.nearby && <MapPin className="size-3 text-primary" aria-hidden />}
+                    {p.opportunity && !p.nearby && (
+                      <span className="inline-block size-1.5 rounded-full bg-primary" aria-hidden />
+                    )}
+                    {p.merchant.name}
+                  </button>
+                ))}
+              </div>
             )}
           </div>
 
-          {results.length > 0 && (
-            <div className="mt-2 rounded-2xl border border-border bg-white overflow-hidden divide-y divide-border shadow-[0_6px_18px_-8px_rgba(15,23,42,0.15)]">
-              {results.map((m) => (
-                <button
-                  key={m.id}
-                  onClick={() => goDecide(m)}
-                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-secondary/60 transition-colors text-left min-h-11"
-                >
-                  <div className="min-w-0">
-                    <p className="text-[15px] font-medium text-foreground truncate">{m.name}</p>
-                    <p className="text-[11px] text-muted-foreground capitalize">
-                      {m.category.replace(/_/g, " ")}
-                    </p>
-                  </div>
-                  <ArrowRight className="size-4 text-muted-foreground shrink-0" />
-                </button>
-              ))}
-            </div>
-          )}
-
-          {showFallback &&
-            (remembered ? (
-              <div className="mt-2 rounded-2xl border border-border bg-white overflow-hidden shadow-[0_6px_18px_-8px_rgba(15,23,42,0.15)]">
-                <button
-                  onClick={() => goDecideCustom(trimmedQuery, remembered)}
-                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-secondary/60 transition-colors text-left min-h-11"
-                >
-                  <div className="min-w-0">
-                    <p className="text-[15px] font-medium text-foreground truncate">
-                      {trimmedQuery}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground capitalize">
-                      {remembered.replace(/_/g, " ")} · saved
-                    </p>
-                  </div>
-                  <ArrowRight className="size-4 text-muted-foreground shrink-0" />
-                </button>
-              </div>
-            ) : (
-              <div className="mt-2 rounded-2xl border border-border bg-white p-4 shadow-[0_6px_18px_-8px_rgba(15,23,42,0.15)]">
-                <p className="text-[15px] font-medium text-foreground">New spot.</p>
-                <p className="text-[13px] text-muted-foreground mt-0.5">What kind of purchase?</p>
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  {FALLBACK_CATEGORIES.map((c) => (
-                    <button
-                      key={c.label}
-                      onClick={() => goDecideCustom(trimmedQuery, c.id)}
-                      className="min-h-11 rounded-xl border border-border bg-white hover:border-primary/40 hover:bg-secondary/40 transition-colors px-3 py-3 text-[14px] font-medium text-foreground text-left"
-                    >
-                      {c.label}
-                    </button>
-                  ))}
+          {/* The wallet supports the answer; it is no longer the opening task. */}
+          <div className={`mt-6 ${newlyAddedId ? "cs-card-drop-in" : ""}`}>
+            {!ready ? (
+              // Quiet loading skeleton at the true 1.586:1 aspect so first
+              // paint reserves the stack region — no empty-to-full pop.
+              <div
+                className="w-full rounded-[18px] bg-secondary/60 motion-safe:animate-pulse"
+                style={{ aspectRatio: "1.586 / 1" }}
+                aria-hidden
+              />
+            ) : wallet.length === 0 ? (
+              <div className="text-center tap-demo-wallet-state">
+                <div className="tap-recent-merchants text-left" aria-label="Recent merchants">
+                  <p>Recent</p>
+                  <Link to="/demo" className="tap-recent-row">
+                    <span className="tap-merchant-mark">◌</span>
+                    <span>Whole Foods</span>
+                    <span>›</span>
+                  </Link>
+                  <Link to="/demo" className="tap-recent-row">
+                    <span className="tap-merchant-mark">◎</span>
+                    <span>Target</span>
+                    <span>›</span>
+                  </Link>
+                  <Link to="/demo" className="tap-recent-row">
+                    <span className="tap-merchant-mark">▱</span>
+                    <span>Starbucks</span>
+                    <span>›</span>
+                  </Link>
                 </div>
-              </div>
-            ))}
-
-          {!query.trim() && wallet.length > 0 && (
-            <div className="mt-3 -mx-1 flex gap-2 overflow-x-auto no-scrollbar px-1 pb-1">
-              {/* Online shopping — always first when there's no location
-                  context. One tap answers the question for the everyday
-                  online case; amount is editable on decide. */}
-              {nearbyIds.length === 0 && !onlineDominant && (
                 <button
-                  onClick={() => goDecideCustom("Online shopping", "amazon")}
-                  className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-white hover:border-primary/70 transition-colors px-3.5 py-1.5 text-[13px] font-medium text-foreground min-h-11 whitespace-nowrap"
-                  aria-label="Online shopping"
+                  type="button"
+                  onClick={() => setAddOpen(true)}
+                  className="tap-empty-wallet tap-sample-wallet block w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                  aria-label="Add your first card"
                 >
-                  <ShoppingBag className="size-3.5 text-primary" aria-hidden />
-                  Online shopping
+                  <span className="tap-sample-card tap-sample-card-one" />
+                  <span className="tap-sample-card tap-sample-card-two" />
+                  <span className="tap-sample-card tap-sample-card-three" />
+                  <span className="tap-wallet-pocket" />
+                  <span className="tap-empty-title">Your wallet · add cards</span>
                 </button>
-              )}
-              {quickPicks.map((p) => (
-                <button
-                  key={p.merchant.id}
-                  onClick={() => goDecide(p.merchant, p.opportunity)}
-                  className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border bg-white transition-colors px-3.5 py-1.5 text-[13px] font-medium text-foreground min-h-11 whitespace-nowrap ${
-                    p.opportunity
-                      ? "border-primary/40 hover:border-primary/70"
-                      : "border-border hover:border-primary/40"
-                  }`}
-                  aria-label={p.opportunity ? `${p.merchant.name} — opportunity` : p.merchant.name}
-                >
-                  {p.nearby && <MapPin className="size-3 text-primary" aria-hidden />}
-                  {p.opportunity && !p.nearby && (
-                    <span className="inline-block size-1.5 rounded-full bg-primary" aria-hidden />
-                  )}
-                  {p.merchant.name}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* The wallet supports the answer; it is no longer the opening task. */}
-        <div className={`mt-6 ${newlyAddedId ? "cs-card-drop-in" : ""}`}>
-          {!ready ? (
-            // Quiet loading skeleton at the true 1.586:1 aspect so first
-            // paint reserves the stack region — no empty-to-full pop.
-            <div
-              className="w-full rounded-[18px] bg-secondary/60 motion-safe:animate-pulse"
-              style={{ aspectRatio: "1.586 / 1" }}
-              aria-hidden
-            />
-          ) : wallet.length === 0 ? (
-            <div className="text-center tap-demo-wallet-state">
-              <div className="tap-recent-merchants text-left" aria-label="Recent merchants">
-                <p>Recent</p>
-                <Link to="/demo" className="tap-recent-row">
-                  <span className="tap-merchant-mark">◌</span>
-                  <span>Whole Foods</span>
-                  <span>›</span>
+                <Link to="/demo" className="tap-demo-wallet-cta">
+                  Try Whole Foods with a demo wallet <ArrowRight className="size-4" />
                 </Link>
-                <Link to="/demo" className="tap-recent-row">
-                  <span className="tap-merchant-mark">◎</span>
-                  <span>Target</span>
-                  <span>›</span>
-                </Link>
-                <Link to="/demo" className="tap-recent-row">
-                  <span className="tap-merchant-mark">▱</span>
-                  <span>Starbucks</span>
-                  <span>›</span>
-                </Link>
-              </div>
-              <button
-                type="button"
-                onClick={() => setAddOpen(true)}
-                className="tap-empty-wallet tap-sample-wallet block w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-                aria-label="Add your first card"
-              >
-                <span className="tap-sample-card tap-sample-card-one" />
-                <span className="tap-sample-card tap-sample-card-two" />
-                <span className="tap-sample-card tap-sample-card-three" />
-                <span className="tap-wallet-pocket" />
-                <span className="tap-empty-title">Your wallet · add cards</span>
-              </button>
-              <Link to="/demo" className="tap-demo-wallet-cta">
-                Try Whole Foods with a demo wallet <ArrowRight className="size-4" />
-              </Link>
-              {/* Single connect entry in the empty state — the main-flow
+                {/* Single connect entry in the empty state — the main-flow
                   entry is suppressed when wallet is empty so this is the
                   only connect affordance the user sees. */}
-              <div className="mt-4 text-left">
-                <WalletConnectEntry
-                  isGuest={!user}
-                  forceCompactPair
-                  onManual={() => setAddOpen(true)}
-                  onPlaidNeedAuth={() => setSaveSheetOpen(true)}
-                  onPlaidComplete={() => loadWallet()}
-                />
+                <div className="mt-4 text-left">
+                  <WalletConnectEntry
+                    isGuest={!user}
+                    forceCompactPair
+                    onManual={() => setAddOpen(true)}
+                    onPlaidNeedAuth={() => setSaveSheetOpen(true)}
+                    onPlaidComplete={() => loadWallet()}
+                  />
+                </div>
               </div>
-            </div>
-          ) : (
-            <WalletStack
-              cards={stackCards}
-              onOpen={(id) => setOpenedId(id)}
-              pocket
-              pocketLabel={`Your wallet · ${wallet.length} ${wallet.length === 1 ? "card" : "cards"}`}
-            />
-          )}
-        </div>
+            ) : (
+              <WalletStack
+                cards={stackCards}
+                onOpen={(id) => setOpenedId(id)}
+                pocket
+                pocketLabel={`Your wallet · ${wallet.length} ${wallet.length === 1 ? "card" : "cards"}`}
+              />
+            )}
+          </div>
+        </section>
 
         {/* Your wallet at a glance — role rows. Only when the wallet is
             large enough for roles to mean anything. Editorial: no badges,

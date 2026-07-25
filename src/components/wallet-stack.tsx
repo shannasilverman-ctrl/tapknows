@@ -272,7 +272,11 @@ export function WalletStack({
           const gap = peek + Math.max(0, Math.min(1.2, expand)) * (spreadGap - peek);
 
           // Position: raised (k=0) sits at raisedY. Cards behind stack upward.
-          const y = raisedY - k * gap;
+          // In the recommendation moment the winning card physically rises
+          // above the rest of the wallet. This is the central TAP gesture:
+          // the answer should be visible before the explanation is read.
+          const winnerLift = signal && k === 0 ? Math.min(78, cardHeight * 0.32) : 0;
+          const y = raisedY - k * gap - winnerLift;
 
           // Scale interpolates toward 1 as we expand.
           const collapsedS = k === 0 ? 1 : Math.max(0.9, 1 - k * 0.025);
