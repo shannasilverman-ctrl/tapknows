@@ -1,0 +1,2313 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+/* TAP 2.0 — "The wallet that answers" */
+.tap-landing {
+  --tap-ink: #24152b;
+  --tap-ink-2: #39213f;
+  --tap-cream: #f7f3eb;
+  --tap-paper: #fffdf8;
+  --tap-coral: #f06b4f;
+  --tap-mint: #b9ddcf;
+  min-height: 100vh;
+  overflow: hidden;
+  background: var(--tap-cream);
+  color: var(--tap-ink);
+}
+.tap-nav {
+  position: relative;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  width: min(1180px, calc(100% - 48px));
+  height: 88px;
+  margin: auto;
+}
+.tap-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  width: max-content;
+  color: inherit;
+  font: 800 24px/1 var(--font-display);
+  letter-spacing: -0.07em;
+}
+.tap-logo i,
+.tap-mini-logo i {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--tap-coral);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--tap-coral) 18%, transparent);
+}
+.tap-nav-links {
+  display: flex;
+  gap: 34px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.tap-nav-links a:hover {
+  color: var(--tap-coral);
+}
+.tap-nav-signin {
+  justify-self: end;
+  border-bottom: 1px solid currentColor;
+  font-size: 13px;
+  font-weight: 700;
+}
+.tap-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(430px, 0.82fr);
+  gap: 70px;
+  align-items: center;
+  width: min(1180px, calc(100% - 48px));
+  min-height: 690px;
+  margin: auto;
+  padding: 54px 0 96px;
+}
+.tap-hero::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  left: -20vw;
+  top: -150px;
+  width: 62vw;
+  height: 620px;
+  background: radial-gradient(circle, rgba(185, 221, 207, 0.45), transparent 67%);
+  pointer-events: none;
+}
+.tap-hero-copy {
+  position: relative;
+  z-index: 2;
+  padding-bottom: 28px;
+}
+.tap-kicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  font: 700 11px/1 var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.tap-hero h1 {
+  max-width: 700px;
+  font: 800 clamp(62px, 7.2vw, 108px)/0.84 var(--font-display);
+  letter-spacing: -0.07em;
+}
+.tap-hero h1 em {
+  color: var(--tap-coral);
+  font-style: normal;
+}
+.tap-deck {
+  max-width: 590px;
+  margin-top: 34px;
+  color: #685c69;
+  font-size: clamp(17px, 1.7vw, 22px);
+  line-height: 1.5;
+}
+.tap-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  margin-top: 34px;
+}
+.tap-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  min-height: 58px;
+  padding: 0 25px;
+  border-radius: 999px;
+  background: var(--tap-ink);
+  color: white;
+  font-size: 14px;
+  font-weight: 750;
+  box-shadow: 0 12px 34px rgba(36, 21, 43, 0.2);
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+.tap-primary:hover {
+  transform: translateY(-2px);
+  background: var(--tap-coral);
+}
+.tap-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 3px;
+  color: #685c69;
+  font-size: 13px;
+  font-weight: 700;
+}
+.tap-no-login {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 20px;
+  color: #817582;
+  font-size: 12px;
+}
+.tap-phone-stage {
+  position: relative;
+  z-index: 2;
+  min-height: 610px;
+  display: grid;
+  place-items: center;
+}
+.tap-halo {
+  position: absolute;
+  width: 540px;
+  height: 540px;
+  border-radius: 50%;
+  background: var(--tap-mint);
+  box-shadow: inset 0 0 90px rgba(255, 255, 255, 0.45);
+}
+.tap-phone {
+  position: relative;
+  width: 318px;
+  min-height: 604px;
+  padding: 13px 18px 22px;
+  border: 8px solid var(--tap-ink);
+  border-radius: 44px;
+  background: #f9f7f1;
+  box-shadow: 0 42px 90px rgba(36, 21, 43, 0.3);
+  transform: rotate(2.5deg);
+}
+.tap-phone-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 800;
+}
+.tap-phone-bar > :last-child {
+  justify-self: end;
+  letter-spacing: 1px;
+}
+.tap-island {
+  width: 72px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--tap-ink);
+}
+.tap-phone-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 24px 2px 18px;
+}
+.tap-mini-logo {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font: 800 18px var(--font-display);
+  letter-spacing: -0.06em;
+}
+.tap-mini-logo i {
+  width: 6px;
+  height: 6px;
+  box-shadow: none;
+}
+.tap-avatar {
+  display: grid;
+  place-items: center;
+  width: 29px;
+  height: 29px;
+  border-radius: 50%;
+  background: var(--tap-ink);
+  color: white;
+  font: 700 8px var(--font-mono);
+}
+.tap-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 12px;
+  border: 1px solid #ddd4c8;
+  border-radius: 13px;
+  background: white;
+  font-size: 11px;
+}
+.tap-context span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #756a74;
+}
+.tap-answer-card {
+  margin-top: 13px;
+  padding: 17px;
+  border-radius: 22px;
+  background: white;
+  box-shadow: 0 12px 30px rgba(53, 36, 54, 0.1);
+}
+.tap-answer-card > p {
+  font: 700 9px var(--font-mono);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--tap-coral);
+}
+.tap-card-visual {
+  position: relative;
+  height: 126px;
+  margin-top: 11px;
+  overflow: hidden;
+  border-radius: 16px;
+  padding: 15px;
+  color: white;
+  box-shadow: 0 13px 25px rgba(74, 34, 37, 0.2);
+}
+.tap-card-visual::after {
+  content: "";
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  right: -100px;
+  top: -100px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 24px rgba(255, 255, 255, 0.05),
+    0 0 0 52px rgba(255, 255, 255, 0.04);
+}
+.tap-card-coral {
+  background: linear-gradient(135deg, #c84f40, #ef7f60);
+}
+.tap-card-visual span {
+  font: 600 6px var(--font-mono);
+  letter-spacing: 0.12em;
+}
+.tap-card-visual b {
+  display: block;
+  margin-top: 36px;
+  font: 700 18px var(--font-display);
+}
+.tap-card-visual i {
+  position: absolute;
+  right: 14px;
+  bottom: 13px;
+  font: 500 7px var(--font-mono);
+}
+.tap-answer-card h2 {
+  margin-top: 14px;
+  font: 750 21px var(--font-display);
+  letter-spacing: -0.035em;
+}
+.tap-win {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 7px;
+}
+.tap-win strong {
+  font: 800 28px var(--font-display);
+  color: var(--tap-coral);
+}
+.tap-win span {
+  font-size: 10px;
+  color: #776b76;
+}
+.tap-win b {
+  font-size: 10px;
+}
+.tap-confidence {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 13px;
+  padding-top: 11px;
+  border-top: 1px solid #eee8df;
+  font-size: 8px;
+}
+.tap-confidence span,
+.tap-confidence button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.tap-confidence span {
+  color: #36715d;
+  font-weight: 700;
+}
+.tap-runner {
+  padding: 12px 7px 0;
+  color: #736873;
+  font-size: 8px;
+}
+.tap-proof-float {
+  position: absolute;
+  right: -12px;
+  bottom: 94px;
+  display: grid;
+  padding: 12px 16px;
+  border: 1px solid rgba(36, 21, 43, 0.1);
+  border-radius: 14px;
+  background: var(--tap-paper);
+  box-shadow: 0 16px 35px rgba(36, 21, 43, 0.15);
+  transform: rotate(-3deg);
+  font-size: 10px;
+}
+.tap-proof-float b {
+  color: var(--tap-coral);
+}
+.tap-proof-float small {
+  margin-top: 2px;
+  color: #776b76;
+  font-size: 8px;
+}
+.tap-promise {
+  padding: 88px 24px 98px;
+  background: var(--tap-ink);
+  color: white;
+  text-align: center;
+}
+.tap-promise p {
+  color: #c9bdca;
+  font-size: clamp(18px, 2.2vw, 27px);
+}
+.tap-promise h2 {
+  margin-top: 3px;
+  font: 800 clamp(52px, 7vw, 96px)/1 var(--font-display);
+  letter-spacing: -0.065em;
+  color: var(--tap-coral);
+}
+.tap-how {
+  width: min(1180px, calc(100% - 48px));
+  margin: auto;
+  padding: 120px 0 130px;
+}
+.tap-section-heading > p {
+  font: 700 11px var(--font-mono);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--tap-coral);
+}
+.tap-section-heading h2 {
+  margin-top: 10px;
+  font: 800 clamp(42px, 5vw, 68px)/0.98 var(--font-display);
+  letter-spacing: -0.055em;
+}
+.tap-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 58px;
+}
+.tap-steps article {
+  position: relative;
+  min-height: 310px;
+  padding: 30px;
+  border: 1px solid #dcd3c8;
+  border-radius: 26px;
+  background: var(--tap-paper);
+}
+.tap-steps article:nth-child(2) {
+  transform: translateY(24px);
+}
+.tap-steps article.tap-step-answer {
+  background: var(--tap-mint);
+}
+.tap-step-number {
+  position: absolute;
+  right: 26px;
+  top: 25px;
+  font: 600 11px var(--font-mono);
+  color: #877a86;
+}
+.tap-step-icon {
+  display: grid;
+  place-items: center;
+  width: 51px;
+  height: 51px;
+  border-radius: 16px;
+  background: var(--tap-ink);
+  color: white;
+}
+.tap-steps h3 {
+  max-width: 260px;
+  margin-top: 60px;
+  font: 750 25px/1.1 var(--font-display);
+  letter-spacing: -0.03em;
+}
+.tap-steps p {
+  max-width: 280px;
+  margin-top: 14px;
+  color: #6f636e;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.tap-wallet-story {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 90px;
+  align-items: center;
+  padding: 120px max(24px, calc((100vw - 1180px) / 2));
+  background: #e9ded1;
+}
+.tap-wallet-story h2,
+.tap-trust h2,
+.tap-close h2 {
+  font: 800 clamp(48px, 5.6vw, 78px)/0.95 var(--font-display);
+  letter-spacing: -0.06em;
+}
+.tap-wallet-story > div > p:not(.tap-kicker) {
+  max-width: 470px;
+  margin: 25px 0;
+  color: #6f626d;
+  font-size: 17px;
+  line-height: 1.6;
+}
+.tap-text-link-dark {
+  color: var(--tap-ink);
+}
+.tap-wallet-board {
+  display: grid;
+  gap: 12px;
+}
+.tap-wallet-row {
+  display: grid;
+  grid-template-columns: 28px 92px 1fr auto;
+  align-items: center;
+  gap: 18px;
+  padding: 15px 22px;
+  border-radius: 20px;
+  background: var(--tap-paper);
+  box-shadow: 0 12px 30px rgba(50, 31, 48, 0.08);
+}
+.tap-wallet-row > span {
+  font: 600 10px var(--font-mono);
+  color: #8b7d87;
+}
+.tap-mini-card {
+  height: 56px;
+  border-radius: 10px;
+  background: #df745f;
+  transform: rotate(-3deg);
+}
+.tap-navy .tap-mini-card {
+  background: var(--tap-ink-2);
+  transform: rotate(2deg);
+}
+.tap-sage .tap-mini-card {
+  background: #638f81;
+  transform: rotate(-1deg);
+}
+.tap-wallet-row p {
+  display: grid;
+}
+.tap-wallet-row small {
+  color: #80737e;
+  font-size: 10px;
+}
+.tap-wallet-row b {
+  margin-top: 3px;
+  font-size: 15px;
+}
+.tap-wallet-row > strong {
+  font: 800 28px var(--font-display);
+  color: var(--tap-coral);
+}
+.tap-trust {
+  display: grid;
+  grid-template-columns: 120px 1fr 1fr;
+  gap: 50px;
+  width: min(1180px, calc(100% - 48px));
+  margin: auto;
+  padding: 130px 0;
+}
+.tap-trust-mark {
+  display: grid;
+  place-items: center;
+  width: 94px;
+  height: 94px;
+  border-radius: 50%;
+  background: var(--tap-mint);
+}
+.tap-trust-mark svg {
+  width: 35px;
+  height: 35px;
+}
+.tap-trust-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 26px;
+  align-self: center;
+}
+.tap-trust-grid p {
+  display: grid;
+  gap: 6px;
+  padding-top: 15px;
+  border-top: 1px solid #d9d0c6;
+}
+.tap-trust-grid b {
+  font-size: 13px;
+}
+.tap-trust-grid span {
+  color: #736673;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.tap-close {
+  display: grid;
+  justify-items: center;
+  padding: 110px 24px;
+  background: var(--tap-coral);
+  color: var(--tap-ink);
+  text-align: center;
+}
+.tap-close p {
+  margin-bottom: 16px;
+  font-size: 16px;
+}
+.tap-close h2 {
+  font-size: clamp(60px, 9vw, 126px);
+}
+.tap-primary-light {
+  margin-top: 35px;
+  background: var(--tap-paper);
+  color: var(--tap-ink);
+  box-shadow: 0 12px 34px rgba(74, 31, 34, 0.2);
+}
+.tap-primary-light:hover {
+  background: var(--tap-ink);
+  color: white;
+}
+.tap-footer {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 35px;
+  align-items: center;
+  padding: 58px max(24px, calc((100vw - 1180px) / 2));
+  background: var(--tap-ink);
+  color: white;
+}
+.tap-footer > p {
+  color: #bfb3bf;
+  font-size: 12px;
+}
+.tap-footer > div {
+  display: flex;
+  gap: 22px;
+  font-size: 11px;
+}
+.tap-footer > small {
+  grid-column: 1/-1;
+  color: #8f818f;
+  font-size: 9px;
+}
+.tap-app-shell {
+  background:
+    radial-gradient(circle at 110% -5%, rgba(185, 221, 207, 0.55), transparent 32%), #f7f3eb;
+}
+.tap-app-shell .cs-safe-top {
+  padding-top: max(18px, env(safe-area-inset-top));
+}
+.tap-app-shell .cs-title-lg {
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+.tap-app-question {
+  padding: 22px 0 10px;
+}
+.tap-app-shell input {
+  box-shadow: 0 10px 26px -18px rgba(36, 21, 43, 0.35);
+}
+.tap-empty-wallet {
+  display: grid !important;
+  place-content: center;
+  justify-items: center;
+  gap: 7px;
+  border: 1px solid #d8cec3 !important;
+  background: rgba(255, 253, 248, 0.72) !important;
+}
+.tap-empty-plus {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 7px;
+  border-radius: 16px;
+  background: #24152b;
+  color: white;
+}
+.tap-empty-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.035em;
+}
+.tap-empty-copy {
+  color: #786d77;
+  font-size: 12px;
+}
+.tap-app-shell nav {
+  border-color: #ded4c9;
+  background: rgba(255, 253, 248, 0.94);
+  backdrop-filter: blur(18px);
+}
+@media (max-width: 900px) {
+  .tap-nav {
+    grid-template-columns: 1fr auto;
+  }
+  .tap-nav-links {
+    display: none;
+  }
+  .tap-hero {
+    grid-template-columns: 1fr;
+    padding-top: 35px;
+  }
+  .tap-hero-copy {
+    text-align: center;
+  }
+  .tap-kicker,
+  .tap-hero-actions,
+  .tap-no-login {
+    justify-content: center;
+  }
+  .tap-deck {
+    margin-inline: auto;
+  }
+  .tap-phone-stage {
+    min-height: 660px;
+  }
+  .tap-steps {
+    grid-template-columns: 1fr;
+  }
+  .tap-steps article:nth-child(2) {
+    transform: none;
+  }
+  .tap-wallet-story {
+    grid-template-columns: 1fr;
+  }
+  .tap-trust {
+    grid-template-columns: 1fr;
+  }
+  .tap-trust-mark {
+    width: 72px;
+    height: 72px;
+  }
+}
+@media (max-width: 560px) {
+  .tap-nav,
+  .tap-hero,
+  .tap-how,
+  .tap-trust {
+    width: min(100% - 32px, 1180px);
+  }
+  .tap-nav {
+    height: 70px;
+  }
+  .tap-hero {
+    gap: 20px;
+    min-height: auto;
+    padding-bottom: 60px;
+  }
+  .tap-hero h1 {
+    font-size: clamp(55px, 16.5vw, 78px);
+  }
+  .tap-deck {
+    margin-top: 25px;
+    font-size: 17px;
+  }
+  .tap-hero-actions {
+    flex-direction: column;
+    gap: 18px;
+  }
+  .tap-halo {
+    width: 410px;
+    height: 410px;
+  }
+  .tap-phone {
+    width: 294px;
+    transform: none;
+  }
+  .tap-proof-float {
+    right: -4px;
+  }
+  .tap-promise {
+    padding-block: 70px;
+  }
+  .tap-how {
+    padding-block: 90px;
+  }
+  .tap-steps article {
+    min-height: 275px;
+  }
+  .tap-wallet-story {
+    padding-block: 90px;
+    gap: 50px;
+  }
+  .tap-wallet-row {
+    grid-template-columns: 20px 64px 1fr auto;
+    gap: 10px;
+    padding: 12px;
+  }
+  .tap-wallet-row > strong {
+    font-size: 22px;
+  }
+  .tap-mini-card {
+    height: 43px;
+  }
+  .tap-trust {
+    padding-block: 90px;
+  }
+  .tap-trust-grid {
+    grid-template-columns: 1fr;
+  }
+  .tap-footer {
+    grid-template-columns: 1fr;
+    text-align: left;
+  }
+  .tap-footer > small {
+    grid-column: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tap-primary {
+    transition: none;
+  }
+}
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-gold: var(--gold);
+  --color-gold-deep: var(--gold-deep);
+  --color-ink: var(--ink);
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Outfit", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* ============================================================
+   TAP — light consumer fintech
+   Airy blue gradient canvas, near-slate ink, one #3B82F6 accent
+   reserved for CTAs and the recommendation moment.
+   ============================================================ */
+:root {
+  --radius: 0.875rem;
+
+  /* Slate-900 ink on the light canvas */
+  --background: hsl(42 33% 96%);
+  --foreground: hsl(288 34% 13%);
+  --ink: hsl(288 34% 13%);
+
+  --surface: hsl(0 0% 100%);
+  --surface-elevated: hsl(0 0% 100%);
+
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(222 47% 11%);
+
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(222 47% 11%);
+
+  /* Accent — Tailwind blue-500 -> deep navy, the fintech blue */
+  --gold: hsl(10 84% 63%);
+  --gold-deep: hsl(288 34% 13%);
+
+  /* Primary CTA = blue solid, white ink */
+  --primary: hsl(10 84% 63%);
+  --primary-foreground: hsl(0 0% 100%);
+
+  --secondary: hsl(43 27% 92%);
+  --secondary-foreground: hsl(288 34% 13%);
+
+  --muted: hsl(43 27% 92%);
+  --muted-foreground: hsl(299 8% 44%);
+
+  --accent: hsl(10 84% 63%);
+  --accent-foreground: hsl(0 0% 100%);
+
+  --success: hsl(160 84% 39%); /* #10B981 */
+  --success-foreground: hsl(0 0% 100%);
+
+  --destructive: hsl(0 72% 51%);
+  --destructive-foreground: hsl(0 0% 100%);
+
+  --border: hsl(35 22% 84%);
+  --border-strong: hsl(32 18% 72%);
+  --input: hsl(35 22% 84%);
+  --ring: hsl(10 84% 63%);
+}
+
+@layer base {
+  html,
+  body {
+    font-family: var(--font-sans);
+    font-weight: 400;
+    line-height: 1.55;
+    color: var(--color-foreground);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    background-color: hsl(42 33% 96%);
+    color: var(--color-foreground);
+    /* Airy vertical gradient F8FAFC -> EFF6FF -> F0F9FF */
+    background-image: none;
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+  .font-display {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+  }
+  .cs-microlabel {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-weight: 500;
+    font-feature-settings: "tnum", "ss01";
+    color: hsl(215 16% 47%);
+  }
+  .cs-money {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum", "zero";
+    letter-spacing: -0.01em;
+  }
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  ::selection {
+    background: hsl(217 91% 60% / 0.22);
+    color: hsl(222 47% 11%);
+  }
+}
+
+@layer utilities {
+  /* Blue -> deep navy gradient text for headline flourish words */
+  .cs-gold-text,
+  .cs-accent-text,
+  .cs-grad-text {
+    background: linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+  .cs-gold-surface {
+    background: linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%);
+    color: #ffffff;
+  }
+
+  /* Soft warm background wash — allowed sparingly */
+  .cs-warm-wash {
+    background: rgba(249, 115, 22, 0.06);
+  }
+
+  /* Live status dot (green, gently pulsing) */
+  .cs-live-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #10b981;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+    animation: cs-live-pulse 2.4s cubic-bezier(0.2, 0.7, 0.2, 1) infinite;
+  }
+  @keyframes cs-live-pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+  }
+
+  /* ============ White floating panels ============ */
+  .cs-panel {
+    background: #ffffff;
+    border: 1px solid hsl(214 32% 91%);
+    border-radius: 1rem;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  }
+  .cs-panel-strong {
+    background: #ffffff;
+    border: 1px solid hsl(214 32% 91%);
+    border-radius: 1.25rem;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.9) inset,
+      0 10px 30px -8px rgba(15, 23, 42, 0.12),
+      0 4px 12px -4px rgba(15, 23, 42, 0.08);
+  }
+
+  /* Pill badge */
+  .cs-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: rgba(59, 130, 246, 0.08);
+    color: #1e3a8a;
+    letter-spacing: 0.01em;
+  }
+  .cs-badge--success {
+    background: rgba(16, 185, 129, 0.1);
+    color: #047857;
+  }
+  .cs-badge--warm {
+    background: rgba(249, 115, 22, 0.1);
+    color: #9a3412;
+  }
+
+  /* Primary blue button */
+  .cs-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: #3b82f6;
+    color: #ffffff;
+    border-radius: 12px;
+    padding: 14px 28px;
+    min-height: 52px;
+    font-weight: 600;
+    box-shadow: 0 6px 16px -6px rgba(59, 130, 246, 0.55);
+    transition:
+      transform 180ms ease,
+      box-shadow 180ms ease,
+      background 180ms ease;
+  }
+  .cs-btn-primary:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px -8px rgba(37, 99, 235, 0.55);
+  }
+  .cs-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: #ffffff;
+    color: hsl(222 47% 11%);
+    border: 1px solid hsl(214 32% 88%);
+    border-radius: 12px;
+    padding: 14px 24px;
+    min-height: 52px;
+    font-weight: 600;
+    transition:
+      border-color 180ms ease,
+      transform 180ms ease,
+      background 180ms ease;
+  }
+  .cs-btn-secondary:hover {
+    border-color: hsl(217 91% 60%);
+    background: hsl(210 40% 99%);
+  }
+
+  /* ============ CARDSTOCK — plastic credit-card look ============ */
+  .cs-cardstock {
+    position: relative;
+    border-radius: 1.25rem;
+    aspect-ratio: 1.586 / 1;
+    color: #ffffff;
+    background:
+      radial-gradient(120% 90% at 0% 0%, hsl(220 22% 32%) 0%, transparent 55%),
+      linear-gradient(135deg, hsl(220 22% 18%) 0%, hsl(220 30% 10%) 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 12px 28px -14px rgba(15, 23, 42, 0.35),
+      0 6px 14px -8px rgba(15, 23, 42, 0.25);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .cs-cardstock::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      115deg,
+      rgba(255, 255, 255, 0) 0px,
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 2px,
+      transparent 6px
+    );
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .cs-cardstock::after {
+    content: "";
+    position: absolute;
+    inset: -40% -20% auto auto;
+    width: 220%;
+    height: 140%;
+    background: radial-gradient(closest-side, rgba(255, 255, 255, 0.08), transparent 70%);
+    transform: rotate(-8deg);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .cs-cardstock > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .cs-cardstock--ivory {
+    color: hsl(222 47% 11%);
+    background:
+      radial-gradient(120% 90% at 0% 0%, #ffffff 0%, transparent 60%),
+      linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 12px 28px -14px rgba(15, 23, 42, 0.25);
+  }
+
+  /* Recommendation surface — blue gradient card face */
+  .cs-cardstock--gold {
+    color: #ffffff;
+    background:
+      radial-gradient(120% 90% at 10% 0%, #60a5fa 0%, transparent 55%),
+      linear-gradient(135deg, #3b82f6 0%, #1d4ed8 60%, #1e3a8a 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.25),
+      0 0 0 1px rgba(59, 130, 246, 0.35),
+      0 20px 40px -14px rgba(30, 58, 138, 0.45),
+      0 10px 24px -12px rgba(30, 58, 138, 0.35);
+  }
+
+  /* EMV chip — warm metallic gold with contact-pad grid.
+     Proportional to face width via container queries when placed on .cs-face. */
+  .cs-chip {
+    width: clamp(28px, 10cqi, 44px);
+    height: clamp(22px, 7.8cqi, 34px);
+    border-radius: clamp(3px, 1cqi, 5px);
+    background:
+      radial-gradient(
+        120% 90% at 15% 10%,
+        rgba(255, 244, 214, 0.85) 0%,
+        rgba(255, 244, 214, 0) 55%
+      ),
+      linear-gradient(135deg, #f6dc94 0%, #d9b45c 35%, #a97a2c 75%, #7a531b 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 248, 220, 0.85),
+      inset 0 -1px 0 rgba(60, 38, 10, 0.55),
+      inset 0 0 0 1px rgba(80, 52, 15, 0.35),
+      0 1px 1.5px rgba(0, 0, 0, 0.28);
+    position: relative;
+    overflow: hidden;
+  }
+  /* Contact-pad grid — two horizontal + two vertical dividers form the 3×3
+     pad layout, drawn as sub-pixel etched lines so the chip reads as metal. */
+  .cs-chip::before {
+    content: "";
+    position: absolute;
+    inset: 14% 12%;
+    border-radius: 2px;
+    background:
+      linear-gradient(
+        to bottom,
+        transparent calc(33% - 0.6px),
+        rgba(50, 30, 5, 0.55) calc(33% - 0.6px),
+        rgba(50, 30, 5, 0.55) calc(33% + 0.6px),
+        transparent calc(33% + 0.6px),
+        transparent calc(66% - 0.6px),
+        rgba(50, 30, 5, 0.55) calc(66% - 0.6px),
+        rgba(50, 30, 5, 0.55) calc(66% + 0.6px),
+        transparent calc(66% + 0.6px)
+      ),
+      linear-gradient(
+        to right,
+        transparent calc(33% - 0.6px),
+        rgba(50, 30, 5, 0.5) calc(33% - 0.6px),
+        rgba(50, 30, 5, 0.5) calc(33% + 0.6px),
+        transparent calc(33% + 0.6px),
+        transparent calc(66% - 0.6px),
+        rgba(50, 30, 5, 0.5) calc(66% - 0.6px),
+        rgba(50, 30, 5, 0.5) calc(66% + 0.6px),
+        transparent calc(66% + 0.6px)
+      );
+  }
+  /* Soft specular highlight sweep across the chip */
+  .cs-chip::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      120deg,
+      rgba(255, 255, 255, 0) 40%,
+      rgba(255, 255, 255, 0.28) 52%,
+      rgba(255, 255, 255, 0) 62%
+    );
+    pointer-events: none;
+  }
+
+  /* ============ MOTION ============ */
+  @keyframes cs-fade-up {
+    0% {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes cs-result-in {
+    0% {
+      opacity: 0;
+      transform: translateY(8px) scale(0.99);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  @keyframes cs-float {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-8px) rotate(-0.5deg);
+    }
+  }
+  @keyframes cs-float-b {
+    0%,
+    100% {
+      transform: translateY(0) rotate(-6deg);
+    }
+    50% {
+      transform: translateY(-12px) rotate(-5deg);
+    }
+  }
+  @keyframes cs-float-c {
+    0%,
+    100% {
+      transform: translateY(0) rotate(6deg);
+    }
+    50% {
+      transform: translateY(-6px) rotate(7deg);
+    }
+  }
+  @keyframes cs-glow-pulse {
+    0%,
+    100% {
+      opacity: 0.35;
+    }
+    50% {
+      opacity: 0.65;
+    }
+  }
+
+  .cs-fade-up {
+    animation: cs-fade-up 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  .cs-result-in {
+    animation: cs-result-in 320ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  .cs-float {
+    animation: cs-float 6s ease-in-out infinite;
+  }
+  .cs-float-b {
+    animation: cs-float-b 7s ease-in-out infinite;
+  }
+  .cs-float-c {
+    animation: cs-float-c 8s ease-in-out infinite;
+  }
+  .cs-glow-pulse {
+    animation: cs-glow-pulse 4s ease-in-out infinite;
+  }
+
+  .cs-lift {
+    transition:
+      transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1),
+      border-color 220ms ease,
+      box-shadow 220ms ease;
+  }
+  .cs-lift:hover {
+    transform: translateY(-2px);
+    border-color: hsl(217 91% 60% / 0.35);
+    box-shadow: 0 14px 30px -14px rgba(15, 23, 42, 0.18);
+  }
+
+  .cs-hero-glow {
+    background:
+      radial-gradient(50% 60% at 50% 0%, rgba(59, 130, 246, 0.14), transparent 70%),
+      radial-gradient(40% 40% at 80% 20%, rgba(30, 58, 138, 0.1), transparent 70%);
+  }
+
+  /* Underline flourish */
+  @keyframes cs-play-underline-draw {
+    from {
+      stroke-dashoffset: 240;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  .cs-play-underline path {
+    stroke-dasharray: 240;
+    stroke-dashoffset: 240;
+    stroke: #3b82f6;
+    animation: cs-play-underline-draw 900ms cubic-bezier(0.65, 0, 0.35, 1) 400ms forwards;
+  }
+
+  /* TAP wordmark contactless pulse */
+  @keyframes cs-tap-arc {
+    0% {
+      opacity: 0;
+      transform: scale(0.35);
+    }
+    20% {
+      opacity: 0.9;
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.55);
+    }
+  }
+  .cs-tap-arc {
+    animation: cs-tap-arc 900ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  /* Demo helpers */
+  @keyframes cs-dot-progress {
+    0% {
+      transform: scaleX(0);
+    }
+    100% {
+      transform: scaleX(1);
+    }
+  }
+  .cs-dot-progress {
+    transform-origin: left center;
+    animation: cs-dot-progress 9000ms linear both;
+  }
+  @keyframes cs-beat-in {
+    0% {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .cs-beat-in {
+    animation: cs-beat-in 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  @keyframes cs-card-tap {
+    0% {
+      transform: translateY(-60px) rotate(-3deg);
+      opacity: 0.6;
+    }
+    45% {
+      transform: translateY(6px) rotate(0deg);
+      opacity: 1;
+    }
+    70% {
+      transform: translateY(-2px) rotate(0deg);
+    }
+    100% {
+      transform: translateY(0) rotate(0deg);
+      opacity: 1;
+    }
+  }
+  .cs-card-tap {
+    animation: cs-card-tap 800ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+  @keyframes cs-fan-card {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, 40px) rotate(0deg) scale(0.9);
+    }
+    100% {
+      opacity: var(--fan-opacity, 1);
+      transform: var(--fan-transform);
+    }
+  }
+  .cs-fan-card {
+    animation: cs-fan-card 620ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  /* Range slider — light track, blue thumb */
+  .cs-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: hsl(214 32% 88%);
+    border-radius: 999px;
+    outline: none;
+  }
+  .cs-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: #3b82f6;
+    border: 3px solid #ffffff;
+    box-shadow:
+      0 0 0 1px rgba(59, 130, 246, 0.5),
+      0 6px 16px -4px rgba(59, 130, 246, 0.45);
+    cursor: pointer;
+  }
+  .cs-slider::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: #3b82f6;
+    border: 3px solid #ffffff;
+    cursor: pointer;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cs-fade-up,
+    .cs-result-in,
+    .cs-float,
+    .cs-float-b,
+    .cs-float-c,
+    .cs-glow-pulse,
+    .cs-tap-arc,
+    .cs-dot-progress,
+    .cs-beat-in,
+    .cs-card-tap,
+    .cs-fan-card,
+    .cs-play-underline path,
+    .cs-live-dot {
+      animation: none !important;
+    }
+    .cs-lift {
+      transition: none !important;
+    }
+    .cs-lift:hover {
+      transform: none !important;
+      box-shadow: none !important;
+    }
+  }
+
+  /* ============================================================
+     APP SURFACES — Apple-Wallet feel (system font, stack, sheets)
+     Marketing pages use font-display (Outfit). App screens opt in
+     to the system stack via .cs-app-body.
+     ============================================================ */
+  .cs-app-body,
+  .cs-app-body input,
+  .cs-app-body button,
+  .cs-app-body textarea {
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", ui-sans-serif,
+      system-ui, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .cs-title-lg {
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
+    font-weight: 700;
+    font-size: clamp(28px, 7vw, 34px);
+    letter-spacing: -0.022em;
+    line-height: 1.08;
+  }
+  .cs-title-md {
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: -0.018em;
+    line-height: 1.15;
+  }
+
+  /* Safe-area helpers */
+  .cs-safe-top {
+    padding-top: max(env(safe-area-inset-top), 12px);
+  }
+  .cs-safe-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 16px);
+  }
+
+  /* ============ WALLET STACK — the signature interaction ============
+     Cards are absolutely positioned. Each card gets --y (translateY)
+     and --z (z-index) via inline style. Transitions use a physical
+     spring curve, all under 450ms. Aspect ratio 1.586:1 (real cards).
+  */
+  .cs-stack {
+    position: relative;
+    width: 100%;
+    /* No overflow clip: peek cards behind the raised card are full-face
+       cards whose lower portion is naturally hidden by the card in front
+       via z-index. Clipping would produce cut-off rectangles. */
+    overflow: visible;
+    transition: padding-top 380ms cubic-bezier(0.22, 1, 0.36, 1);
+    touch-action: pan-x;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .cs-stack-card {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    aspect-ratio: 1.586 / 1;
+    border-radius: 18px;
+    background: transparent;
+    padding: 0;
+    border: 0;
+    will-change: transform, opacity;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transform-origin: 50% 100%; /* scale from bottom so raised card stays anchored */
+  }
+  .cs-stack-card:active {
+    transform-origin: 50% 100%;
+  }
+  .cs-stack-card:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 4px;
+  }
+  @media (hover: hover) {
+    .cs-stack-card:hover {
+      filter: brightness(1.02);
+    }
+  }
+
+  /* Card face — realistic embossed plastic feel, per-issuer tint.
+     Single source of truth for the physical ID-1 / CR80 aspect ratio
+     (85.60 × 53.98 mm ≈ 1.586:1). Every render — wallet stack, detail hero,
+     add-card confirmation, Plaid match sheet, onboarding, landing demo —
+     inherits its height from its rendered width via this rule. */
+  .cs-face {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1.586 / 1;
+    height: auto;
+    border-radius: 18px;
+    overflow: hidden;
+    isolation: isolate;
+    color: #ffffff;
+    /* Physical edge: top light lip + bottom shadow lip + hairline inner ring
+       so the face reads as a raised object with a real perimeter.
+       Ambient drops give it presence off the surface. */
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+      inset 0 0 0 1px rgba(0, 0, 0, 0.18),
+      0 12px 30px -14px rgba(15, 23, 42, 0.38),
+      0 4px 12px -6px rgba(15, 23, 42, 0.26);
+  }
+  /* ::before — diagonal sheen band. A single low-opacity light stripe sweeping
+     across the surface at ~115° so the card "catches light" in one place, the
+     way real polished plastic and metal do. Static, no animation. */
+  .cs-face::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      115deg,
+      rgba(255, 255, 255, 0) 30%,
+      rgba(255, 255, 255, 0.055) 46%,
+      rgba(255, 255, 255, 0.09) 52%,
+      rgba(255, 255, 255, 0.055) 58%,
+      rgba(255, 255, 255, 0) 74%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+  /* ::after — soft upper-left specular highlight so light appears to fall
+     from the top-left. Layers over the tint gradient beneath. */
+  .cs-face::after {
+    content: "";
+    position: absolute;
+    inset: -20% 40% 40% -20%;
+    background: radial-gradient(
+      closest-side,
+      rgba(255, 255, 255, 0.28) 0%,
+      rgba(255, 255, 255, 0.1) 40%,
+      transparent 72%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+  .cs-face > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Per-issuer color palettes — each family gets a distinct rich gradient
+     PLUS a subtle secondary radial highlight offset to the upper-left, so
+     light appears to fall on the card even before the ::before/::after
+     overlays layer their sheen and specular on top. */
+  .cs-face--chase {
+    background:
+      radial-gradient(120% 90% at 12% 4%, rgba(255, 255, 255, 0.16) 0%, transparent 50%),
+      linear-gradient(135deg, #0b3b8f 0%, #0a1f4d 100%);
+  }
+  .cs-face--chase-reserve {
+    background:
+      radial-gradient(120% 90% at 8% 0%, #2a3547 0%, transparent 45%),
+      linear-gradient(135deg, #0f172a 0%, #030712 100%);
+  }
+  .cs-face--amex-gold {
+    color: #1a1208;
+    background:
+      radial-gradient(130% 90% at 8% 0%, #fff2c8 0%, transparent 45%),
+      linear-gradient(135deg, #d4a24a 0%, #8a5a1b 100%);
+  }
+  .cs-face--amex-plat {
+    color: #0f172a;
+    background:
+      radial-gradient(130% 90% at 8% 0%, #ffffff 0%, transparent 45%),
+      linear-gradient(135deg, #d4d9df 0%, #7c848f 100%);
+  }
+  .cs-face--amex {
+    background:
+      radial-gradient(130% 90% at 8% 0%, #e6ece8 0%, transparent 45%),
+      linear-gradient(135deg, #0e6b4f 0%, #063a2a 100%);
+  }
+  .cs-face--citi {
+    background:
+      radial-gradient(120% 90% at 12% 4%, rgba(255, 255, 255, 0.16) 0%, transparent 50%),
+      linear-gradient(135deg, #0d69b3 0%, #0a2a55 100%);
+  }
+  .cs-face--capitalone {
+    background:
+      radial-gradient(120% 90% at 12% 4%, rgba(255, 255, 255, 0.14) 0%, transparent 50%),
+      linear-gradient(135deg, #7a1a1a 0%, #2a0808 100%);
+  }
+  .cs-face--bofa {
+    background:
+      radial-gradient(120% 90% at 12% 4%, rgba(255, 255, 255, 0.14) 0%, transparent 50%),
+      linear-gradient(135deg, #9d1f2d 0%, #2a0a10 100%);
+  }
+  .cs-face--discover {
+    color: #fff;
+    background:
+      radial-gradient(120% 90% at 12% 4%, rgba(255, 255, 255, 0.18) 0%, transparent 50%),
+      linear-gradient(135deg, #f08a2a 0%, #7a2a08 100%);
+  }
+  .cs-face--wells {
+    background:
+      radial-gradient(120% 90% at 12% 4%, rgba(255, 255, 255, 0.14) 0%, transparent 50%),
+      linear-gradient(135deg, #b1181f 0%, #6a0a0a 100%);
+  }
+  .cs-face--usbank {
+    background:
+      radial-gradient(120% 90% at 12% 4%, rgba(255, 255, 255, 0.14) 0%, transparent 50%),
+      linear-gradient(135deg, #0e3b7c 0%, #08122a 100%);
+  }
+  .cs-face--bilt {
+    background:
+      radial-gradient(120% 90% at 12% 4%, rgba(255, 255, 255, 0.12) 0%, transparent 50%),
+      linear-gradient(135deg, #1f2937 0%, #050810 100%);
+  }
+  .cs-face--default {
+    background:
+      radial-gradient(120% 90% at 12% 4%, rgba(255, 255, 255, 0.14) 0%, transparent 50%),
+      linear-gradient(135deg, #334155 0%, #0f172a 100%);
+  }
+
+  /* ============ FINISH TIERS ============
+     Metal finish: deeper saturation via a subtle dark inner vignette, a
+     stronger cool-white sheen band, and a barely-there brushed-metal texture
+     from ultra-thin repeating verticals. Applied to Sapphire Reserve, Amex
+     Platinum/Gold, and Venture X-class cards via the tint→finish mapping in
+     cardFace.ts. */
+  .cs-face--metal {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.32),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.38),
+      inset 0 0 0 1px rgba(0, 0, 0, 0.22),
+      inset 0 0 40px rgba(0, 0, 0, 0.18),
+      0 18px 38px -14px rgba(15, 23, 42, 0.5),
+      0 6px 14px -6px rgba(15, 23, 42, 0.32);
+  }
+  .cs-face--metal::before {
+    background:
+      /* brushed-metal micro-texture: 0.5px cool verticals at very low opacity */
+      repeating-linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.028) 0px,
+        rgba(255, 255, 255, 0.028) 0.5px,
+        rgba(0, 0, 0, 0.02) 0.5px,
+        rgba(0, 0, 0, 0.02) 1.25px
+      ),
+      /* stronger, cooler specular sheen band */
+        linear-gradient(
+          115deg,
+          rgba(220, 235, 255, 0) 28%,
+          rgba(220, 235, 255, 0.1) 46%,
+          rgba(240, 248, 255, 0.16) 52%,
+          rgba(220, 235, 255, 0.1) 58%,
+          rgba(220, 235, 255, 0) 76%
+        );
+  }
+  .cs-face--metal::after {
+    background: radial-gradient(
+      closest-side,
+      rgba(240, 248, 255, 0.34) 0%,
+      rgba(240, 248, 255, 0.14) 40%,
+      transparent 72%
+    );
+  }
+
+  /* Standard finish is the default (no modifier class needed). */
+
+  /* Winner face — blue gradient, elevated shadow. The winner also gets
+     .cs-face--metal from CardFace so the raised card reads as the richest
+     surface in the stack. */
+  .cs-face--winner {
+    background:
+      radial-gradient(120% 90% at 10% 0%, #60a5fa 0%, transparent 55%),
+      linear-gradient(135deg, #3b82f6 0%, #1d4ed8 60%, #1e3a8a 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.32),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.32),
+      inset 0 0 0 1px rgba(59, 130, 246, 0.5),
+      0 24px 48px -14px rgba(30, 58, 138, 0.6),
+      0 12px 26px -12px rgba(30, 58, 138, 0.5);
+  }
+
+  /* ============ CARD FACE ANATOMY ============ */
+  .cs-face-wordmark {
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+    font-size: clamp(11px, 3.4cqi, 15px);
+    letter-spacing: 0.02em;
+    font-weight: 600;
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.28);
+    max-width: 60%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cs-face-wave {
+    width: clamp(14px, 4.4cqi, 20px);
+    height: clamp(14px, 4.4cqi, 20px);
+    color: rgba(255, 255, 255, 0.85);
+    transform: rotate(90deg);
+    flex-shrink: 0;
+  }
+  .cs-face-number {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum", "zero";
+    letter-spacing: 0.12em;
+    font-size: clamp(11px, 3.6cqi, 16px);
+    color: rgba(255, 255, 255, 0.92);
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+    line-height: 1;
+  }
+  .cs-face-last4 {
+    font-weight: 600;
+    letter-spacing: 0.14em;
+  }
+  .cs-face-holder {
+    font-size: clamp(8px, 2.4cqi, 10px);
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.82);
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.28);
+    line-height: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 55%;
+  }
+  .cs-face-product {
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+    font-size: clamp(10px, 3.2cqi, 14px);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+    line-height: 1.1;
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 55%;
+  }
+  .cs-face-trailing {
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(10px, 3cqi, 12px);
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+  }
+  /* Enable container queries so face type scales with card width. */
+  .cs-face {
+    container-type: inline-size;
+  }
+
+  /* Embossed text on card face (kept for older call sites) */
+  .cs-emboss {
+    text-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.25),
+      0 0 1px rgba(255, 255, 255, 0.08);
+    letter-spacing: -0.01em;
+  }
+  .cs-emboss-mono {
+    font-feature-settings: "tnum", "zero";
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.06em;
+  }
+
+  /* Light-face overrides — Amex Gold/Platinum have dark text for contrast. */
+  .cs-face--amex-gold .cs-face-wordmark,
+  .cs-face--amex-plat .cs-face-wordmark,
+  .cs-face--amex-gold .cs-face-number,
+  .cs-face--amex-plat .cs-face-number,
+  .cs-face--amex-gold .cs-face-holder,
+  .cs-face--amex-plat .cs-face-holder,
+  .cs-face--amex-gold .cs-face-product,
+  .cs-face--amex-plat .cs-face-product,
+  .cs-face--amex-gold .cs-face-trailing,
+  .cs-face--amex-plat .cs-face-trailing {
+    color: rgba(15, 23, 42, 0.88);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+  .cs-face--amex-gold .cs-face-wave,
+  .cs-face--amex-plat .cs-face-wave {
+    color: rgba(15, 23, 42, 0.72);
+  }
+
+  /* ============ BOTTOM SHEET ============ */
+  .cs-sheet-scrim {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.42);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    animation: cs-scrim-in 180ms ease forwards;
+    z-index: 60;
+  }
+  .cs-sheet-panel {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 61;
+    background: #ffffff;
+    border-radius: 22px 22px 0 0;
+    box-shadow: 0 -20px 40px -12px rgba(15, 23, 42, 0.22);
+    transform: translateY(100%);
+    animation: cs-sheet-in 340ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    padding-bottom: max(env(safe-area-inset-bottom), 20px);
+    max-height: 88vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .cs-sheet-drag-handle {
+    display: block;
+    width: 100%;
+    padding: 6px 0 4px;
+    touch-action: none;
+    cursor: grab;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .cs-sheet-drag-handle:active {
+    cursor: grabbing;
+  }
+  .cs-sheet-grabber {
+    display: block;
+    width: 40px;
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.18);
+    margin: 4px auto 2px;
+  }
+  @keyframes cs-scrim-in {
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes cs-sheet-in {
+    to {
+      transform: translateY(0);
+    }
+  }
+  @keyframes cs-sheet-out {
+    to {
+      transform: translateY(100%);
+    }
+  }
+  @keyframes cs-scrim-out {
+    to {
+      opacity: 0;
+    }
+  }
+  .cs-sheet-panel[data-state="closing"] {
+    animation: cs-sheet-out 240ms cubic-bezier(0.4, 0, 1, 1) forwards;
+  }
+  .cs-sheet-scrim[data-state="closing"] {
+    animation: cs-scrim-out 200ms ease forwards;
+  }
+
+  /* Number count-up target: purely presentational, springs into place */
+  .cs-count {
+    transition: color 220ms ease;
+  }
+
+  /* ============ ALERT PASS — Wallet ticket rectangle ============ */
+  .cs-pass {
+    position: relative;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid hsl(214 32% 91%);
+    box-shadow: 0 6px 18px -10px rgba(15, 23, 42, 0.18);
+    padding: 14px 16px 14px 16px;
+    /* Perforation cutouts on the horizontal divider (masked notches) */
+    --notch-y: 44px;
+  }
+  .cs-pass::before,
+  .cs-pass::after {
+    content: "";
+    position: absolute;
+    top: var(--notch-y);
+    width: 14px;
+    height: 14px;
+    background: hsl(210 40% 98%);
+    border: 1px solid hsl(214 32% 91%);
+    border-radius: 999px;
+    transform: translateY(-50%);
+  }
+  .cs-pass::before {
+    left: -8px;
+  }
+  .cs-pass::after {
+    right: -8px;
+  }
+  .cs-pass-divider {
+    position: relative;
+    margin: 10px -16px;
+    height: 1px;
+    background: repeating-linear-gradient(
+      90deg,
+      hsl(214 32% 88%) 0,
+      hsl(214 32% 88%) 4px,
+      transparent 4px,
+      transparent 8px
+    );
+  }
+
+  /* ============ GHOST CARD — empty wallet outline ============ */
+  .cs-ghost-card {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1.586 / 1;
+    border-radius: 18px;
+    border: 2px dashed hsl(214 32% 82%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.3));
+  }
+
+  /* Add-card circular plus with a one-time pulse on empty state */
+  @keyframes cs-plus-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.55);
+    }
+    50% {
+      box-shadow: 0 0 0 14px rgba(59, 130, 246, 0);
+    }
+  }
+  .cs-plus-pulse {
+    animation: cs-plus-pulse 2.2s ease-out 1.2s 2;
+  }
+
+  /* Checkmark draw-in for the add-card completion beat */
+  @keyframes cs-check-scale {
+    0% {
+      transform: scale(0.6);
+      opacity: 0;
+    }
+    60% {
+      transform: scale(1.06);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  @keyframes cs-check-draw {
+    from {
+      stroke-dashoffset: 32;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  .cs-check-badge {
+    animation: cs-check-scale 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .cs-check-badge path {
+    stroke-dasharray: 32;
+    stroke-dashoffset: 32;
+    animation: cs-check-draw 420ms cubic-bezier(0.65, 0, 0.35, 1) 220ms forwards;
+  }
+
+  /* Slide-in beat for a newly added card entering the pile */
+  @keyframes cs-card-drop-in {
+    0% {
+      opacity: 0;
+      transform: translateY(-24px) scale(0.97);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  .cs-card-drop-in {
+    animation: cs-card-drop-in 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* Pinned card view: card sticks to top, detail scrolls under */
+  .cs-pinned-card {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    padding-top: max(env(safe-area-inset-top), 12px);
+    padding-bottom: 12px;
+    background: linear-gradient(
+      180deg,
+      rgba(248, 250, 252, 0.98) 0%,
+      rgba(248, 250, 252, 0.9) 80%,
+      rgba(248, 250, 252, 0) 100%
+    );
+    backdrop-filter: saturate(160%) blur(6px);
+  }
+
+  /* Rubber-band scroll physics container (subtle) */
+  .cs-stack-scroll {
+    overscroll-behavior-y: contain;
+    scroll-snap-type: y proximity;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cs-stack {
+      transition: none !important;
+    }
+    .cs-stack-card {
+      transition: none !important;
+      animation: none !important;
+    }
+    .cs-sheet-panel,
+    .cs-sheet-scrim {
+      transition: none !important;
+      animation: none !important;
+      transform: none !important;
+      opacity: 1 !important;
+    }
+    .cs-plus-pulse,
+    .cs-check-badge,
+    .cs-check-badge path,
+    .cs-card-drop-in {
+      animation: none !important;
+    }
+    .cs-check-badge {
+      transform: none !important;
+      opacity: 1 !important;
+    }
+    .cs-check-badge path {
+      stroke-dashoffset: 0 !important;
+    }
+  }
+
+  /* ============ DEMO HELPERS ============ */
+  .cs-cta-tap {
+    animation: cs-cta-pulse 1400ms ease-in-out 400ms 1 both;
+    transform-origin: center;
+  }
+  @keyframes cs-cta-pulse {
+    0% {
+      transform: scale(1);
+    }
+    40% {
+      transform: scale(0.96);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  .cs-tap-ring {
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: 2px solid rgba(59, 130, 246, 0.55);
+    animation: cs-tap-ring 1200ms ease-out 400ms 1 both;
+    opacity: 0;
+  }
+  @keyframes cs-tap-ring {
+    0% {
+      transform: scale(0.4);
+      opacity: 0.8;
+    }
+    100% {
+      transform: scale(1.6);
+      opacity: 0;
+    }
+  }
+  .cs-spinner {
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    border: 2px solid rgba(59, 130, 246, 0.25);
+    border-top-color: #3b82f6;
+    animation: cs-spin 700ms linear infinite;
+  }
+  @keyframes cs-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cs-cta-tap,
+    .cs-tap-ring,
+    .cs-spinner,
+    .cs-wallet-drop {
+      animation: none !important;
+      transition: none !important;
+    }
+    .cs-wallet-drop {
+      opacity: 1 !important;
+      transform: translateY(0) !important;
+    }
+  }
+}
+
+/* ---------- Landing demo loop ---------- */
+.cs-demo-card {
+  transition:
+    transform 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    top 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 260ms ease-out;
+  will-change: transform, top, opacity;
+}
+.cs-demo-alert {
+  animation: cs-demo-alert-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes cs-demo-alert-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.cs-demo-receipt {
+  animation: cs-demo-receipt-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes cs-demo-receipt-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.cs-demo-caption {
+  animation: cs-demo-cap-in 260ms ease-out both;
+}
+@keyframes cs-demo-cap-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.cs-demo-bump {
+  animation: cs-demo-bump 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes cs-demo-bump {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cs-demo-card,
+  .cs-demo-alert,
+  .cs-demo-receipt,
+  .cs-demo-caption,
+  .cs-demo-bump {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ============================================================
+   Priority sliders — detented range with active-thumb feedback
+   ============================================================ */
+.cs-priority-slider input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  height: 24px;
+  min-height: 44px; /* 44pt touch target */
+  padding: 10px 0;
+}
+.cs-priority-slider input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--border);
+}
+.cs-priority-slider input[type="range"]::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--border);
+}
+.cs-priority-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--foreground);
+  border: 2px solid var(--background);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.25);
+  margin-top: -9px;
+  cursor: grab;
+  transition: transform 180ms cubic-bezier(0.2, 0, 0, 1);
+}
+.cs-priority-slider input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--foreground);
+  border: 2px solid var(--background);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.25);
+  cursor: grab;
+  transition: transform 180ms cubic-bezier(0.2, 0, 0, 1);
+}
+.cs-priority-slider input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(1.12);
+  cursor: grabbing;
+}
+.cs-priority-slider input[type="range"]:active::-moz-range-thumb {
+  transform: scale(1.12);
+  cursor: grabbing;
+}
+.cs-priority-slider input[type="range"]:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.cs-priority-slider input[type="range"]:focus-visible::-moz-range-thumb {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cs-priority-slider input[type="range"]::-webkit-slider-thumb,
+  .cs-priority-slider input[type="range"]::-moz-range-thumb {
+    transition: none;
+  }
+}
+
+/* Wallet quick-add chip — used on onboarding step 1 to add common cards in one tap. */
+.cs-quick-add-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 36px;
+  padding: 0 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    transform 120ms ease;
+  min-height: 36px;
+}
+.cs-quick-add-chip:hover {
+  border-color: var(--border-strong, var(--border));
+}
+.cs-quick-add-chip:active {
+  transform: scale(0.96);
+}
+.cs-quick-add-chip[data-selected="true"] {
+  background: var(--foreground);
+  color: var(--background);
+  border-color: var(--foreground);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cs-quick-add-chip {
+    transition: none;
+  }
+  .cs-quick-add-chip:active {
+    transform: none;
+  }
+}
