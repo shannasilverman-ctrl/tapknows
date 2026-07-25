@@ -31,8 +31,7 @@ export function CardFace({
   holder,
   className,
 }: Props) {
-  const tint =
-    variant === "winner" ? "cs-face--winner cs-face--metal" : issuerFaceClass(issuer, name);
+  const tint = `${issuerFaceClass(issuer, name)}${variant === "winner" ? " cs-face--winner cs-face--metal" : ""}`;
   const digits = last4 ?? deriveLast4(`${issuer}:${name}`);
   const holderLine = (holder ?? "TAP MEMBER").toUpperCase();
   return (

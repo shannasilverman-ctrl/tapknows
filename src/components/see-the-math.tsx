@@ -61,10 +61,11 @@ export function SeeTheMath({ winner, runnerUp, amountCents }: Props) {
         style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
       >
         <div className="overflow-hidden">
-          <div className="px-4 pb-4 pt-1 border-t border-border/70 space-y-3">
+          <div className="tap-proof-content px-4 pb-4 pt-1 border-t border-border/70 space-y-3">
+            <h2 className="tap-proof-title">Why {playLabel(winner)}?</h2>
             <p className="cs-microlabel text-[10px]">On {dollars(amountCents)}</p>
 
-            <div className="flex items-baseline justify-between gap-3">
+            <div className="tap-proof-card flex items-baseline justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                   Winner
@@ -81,7 +82,7 @@ export function SeeTheMath({ winner, runnerUp, amountCents }: Props) {
 
             {hasRunnerUp && runnerUp ? (
               <>
-                <div className="flex items-baseline justify-between gap-3 opacity-80">
+                <div className="tap-proof-card flex items-baseline justify-between gap-3 opacity-80">
                   <div className="min-w-0">
                     <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                       Runner-up
@@ -96,9 +97,9 @@ export function SeeTheMath({ winner, runnerUp, amountCents }: Props) {
                   </p>
                 </div>
                 {delta > 0 && (
-                  <div className="pt-2 border-t border-border/70 flex items-baseline justify-between gap-3">
-                    <p className="text-[12px] text-muted-foreground">Winner beats runner-up by</p>
-                    <p className="cs-money text-[14px] text-foreground tabular-nums whitespace-nowrap">
+                  <div className="tap-proof-delta pt-2 border-t border-border/70 flex items-baseline justify-between gap-3">
+                    <p className="text-[12px] text-muted-foreground">Estimated difference</p>
+                    <p className="cs-money text-[16px] text-foreground tabular-nums whitespace-nowrap">
                       {dollars(delta)}
                     </p>
                   </div>

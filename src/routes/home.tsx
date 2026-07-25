@@ -939,7 +939,7 @@ function HomePage() {
         {/* The product starts with the customer's question, not their data. */}
         <div className="mt-6 tap-app-question">
           <p className="cs-microlabel text-[10px] text-primary mb-2">Ask TAP</p>
-          <h1 className="cs-title-lg text-foreground">What are you buying?</h1>
+          <h1 className="cs-title-lg text-foreground">Where are you paying?</h1>
           <p className="mt-2 text-[15px] text-muted-foreground">
             Name the place. TAP will name the card.
           </p>
@@ -1101,25 +1101,40 @@ function HomePage() {
               aria-hidden
             />
           ) : wallet.length === 0 ? (
-            <div className="text-center">
+            <div className="text-center tap-demo-wallet-state">
+              <div className="tap-recent-merchants text-left" aria-label="Recent merchants">
+                <p>Recent</p>
+                <Link to="/demo" className="tap-recent-row">
+                  <span className="tap-merchant-mark">◌</span>
+                  <span>Whole Foods</span>
+                  <span>›</span>
+                </Link>
+                <Link to="/demo" className="tap-recent-row">
+                  <span className="tap-merchant-mark">◎</span>
+                  <span>Target</span>
+                  <span>›</span>
+                </Link>
+                <Link to="/demo" className="tap-recent-row">
+                  <span className="tap-merchant-mark">▱</span>
+                  <span>Starbucks</span>
+                  <span>›</span>
+                </Link>
+              </div>
               <button
                 type="button"
                 onClick={() => setAddOpen(true)}
-                className="tap-empty-wallet block w-full cs-ghost-card focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 rounded-[18px]"
+                className="tap-empty-wallet tap-sample-wallet block w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                 aria-label="Add your first card"
               >
-                <span className="tap-empty-plus">
-                  <Plus className="size-5" />
-                </span>
-                <span className="tap-empty-title">Add your first card</span>
-                <span className="tap-empty-copy">Search or scan your wallet</span>
+                <span className="tap-sample-card tap-sample-card-one" />
+                <span className="tap-sample-card tap-sample-card-two" />
+                <span className="tap-sample-card tap-sample-card-three" />
+                <span className="tap-wallet-pocket" />
+                <span className="tap-empty-title">Your wallet · add cards</span>
               </button>
-              <p className="mt-6 text-[17px] font-semibold text-foreground">
-                Give TAP a wallet to work with.
-              </p>
-              <p className="mt-1 text-[13px] text-muted-foreground">
-                Add card names only. Never numbers.
-              </p>
+              <Link to="/demo" className="tap-demo-wallet-cta">
+                Try Whole Foods with a demo wallet <ArrowRight className="size-4" />
+              </Link>
               {/* Single connect entry in the empty state — the main-flow
                   entry is suppressed when wallet is empty so this is the
                   only connect affordance the user sees. */}

@@ -643,16 +643,6 @@
   font-size: clamp(42px, 12vw, 58px);
   line-height: 0.98;
 }
-.tap-app-shell .tap-app-question .cs-title-lg::before {
-  content: "Where are you paying?";
-  font-size: inherit;
-}
-.tap-app-shell .tap-app-question .cs-title-lg {
-  font-size: 0;
-}
-.tap-app-shell .tap-app-question .cs-title-lg::before {
-  font-size: clamp(42px, 12vw, 58px);
-}
 .tap-app-shell .tap-app-question > p:last-child {
   display: none;
 }
@@ -701,9 +691,19 @@
     inset 0 0 0 2px #ff5b1f;
 }
 .tap-app-shell nav {
-  border-color: rgba(255, 255, 255, 0.12);
-  background: rgba(17, 11, 23, 0.9);
-  color: white;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  background: rgba(17, 11, 23, 0.92) !important;
+  color: white !important;
+  box-shadow: 0 -14px 38px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(20px);
+}
+.tap-app-shell nav .text-muted-foreground {
+  color: rgba(255, 255, 255, 0.46) !important;
+}
+.tap-app-shell header [role="status"] {
+  border-color: rgba(255, 255, 255, 0.13);
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.58);
 }
 
 /* The recommendation is the product: dark, decisive, and physical. */
@@ -766,6 +766,244 @@
 .tap-decision-screen .tap-proof-panel .border-border\/70 {
   border-color: rgba(255, 255, 255, 0.12);
 }
+.tap-proof-title {
+  display: none;
+}
+.tap-decision-screen .tap-proof-panel:has(button[aria-expanded="true"]) {
+  margin: 22px -6px 0;
+  border-color: #ded9d5;
+  border-radius: 26px;
+  background: #f8f7f5;
+  color-scheme: light;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+}
+.tap-decision-screen .tap-proof-panel:has(button[aria-expanded="true"]) > button {
+  border-bottom: 1px solid #e2dfdc;
+  background: #f8f7f5;
+  color: #24152b;
+}
+.tap-decision-screen .tap-proof-panel:has(button[aria-expanded="true"]) .tap-proof-content {
+  padding: 21px 14px 16px;
+  border-color: transparent;
+}
+.tap-decision-screen .tap-proof-panel:has(button[aria-expanded="true"]) .tap-proof-title {
+  display: block;
+  margin: 0 2px 18px;
+  color: #24152b;
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+.tap-decision-screen .tap-proof-panel:has(button[aria-expanded="true"]) .tap-proof-card {
+  min-height: 88px;
+  padding: 14px;
+  border: 1px solid #dfdcd8;
+  border-radius: 16px;
+  background: white;
+}
+.tap-decision-screen
+  .tap-proof-panel:has(button[aria-expanded="true"])
+  .tap-proof-card
+  .text-foreground,
+.tap-decision-screen
+  .tap-proof-panel:has(button[aria-expanded="true"])
+  .tap-proof-delta
+  .text-foreground {
+  color: #24152b;
+}
+.tap-decision-screen .tap-proof-panel:has(button[aria-expanded="true"]) .text-muted-foreground {
+  color: #716971;
+}
+.tap-decision-screen .tap-proof-panel:has(button[aria-expanded="true"]) .tap-proof-delta {
+  padding: 14px;
+  border: 1px solid #b7d9ce;
+  border-radius: 14px;
+  background: #e9f5f1;
+}
+.tap-decision-screen .tap-proof-panel:has(button[aria-expanded="true"]) .tap-proof-delta .cs-money {
+  color: #08745f;
+  font-weight: 750;
+}
+.tap-demo-screen {
+  min-height: 100vh;
+  color-scheme: dark;
+  background:
+    radial-gradient(circle at 82% 25%, rgba(255, 91, 31, 0.14), transparent 22%),
+    linear-gradient(155deg, #160f1d, #0c0911 75%, #181020);
+}
+.tap-demo-screen .text-foreground {
+  color: white;
+}
+.tap-demo-screen .text-muted-foreground {
+  color: rgba(255, 255, 255, 0.58);
+}
+.tap-demo-screen .bg-background {
+  background: transparent;
+}
+.tap-demo-screen .bg-surface,
+.tap-demo-screen .bg-white {
+  background: rgba(255, 255, 255, 0.075);
+}
+.tap-demo-screen .border-border,
+.tap-demo-screen .border-border-strong {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+.tap-demo-screen .bg-secondary {
+  background: rgba(255, 255, 255, 0.12);
+}
+.tap-demo-recommendation {
+  border: 0;
+  background: transparent !important;
+}
+.tap-demo-pick {
+  margin: 17px 0 20px;
+  color: white;
+  font-family: var(--font-display);
+  font-size: 42px;
+  font-weight: 820;
+  line-height: 0.98;
+  letter-spacing: -0.05em;
+}
+.tap-demo-value {
+  color: white;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+.tap-demo-used {
+  display: grid;
+  width: 100%;
+  min-height: 54px;
+  margin-top: 14px;
+  place-items: center;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ff5b1f, #ff753b);
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+}
+.tap-demo-why {
+  display: grid;
+  min-height: 48px;
+  margin-top: 9px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 15px;
+  color: white;
+  font-size: 14px;
+  font-weight: 650;
+}
+.tap-demo-proof {
+  position: fixed;
+  z-index: 50;
+  inset: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+  max-width: 410px;
+  margin: auto;
+  overflow: auto;
+  padding: 30px 18px 24px;
+  border-radius: 32px;
+  background: #f8f7f5;
+  color: #24152b;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.58);
+  animation: tap-proof-enter 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.tap-demo-proof h3 {
+  margin: 12px 0 22px;
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 820;
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+.tap-demo-proof-close {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 50%;
+  background: #ebe8e5;
+  color: #24152b;
+  font-size: 24px;
+}
+.tap-demo-proof-card {
+  display: grid;
+  grid-template-columns: 72px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 92px;
+  margin-top: 10px;
+  padding: 13px;
+  border: 1px solid #dedad6;
+  border-radius: 16px;
+  background: white;
+}
+.tap-demo-proof-card > span:nth-child(2) {
+  display: grid;
+  gap: 3px;
+}
+.tap-demo-proof-card small {
+  color: #756d73;
+  font-size: 12px;
+}
+.tap-demo-proof-card > strong:last-child {
+  color: #08745f;
+  font-size: 17px;
+}
+.tap-proof-swatch {
+  height: 54px;
+  border-radius: 10px;
+}
+.tap-proof-swatch-gold {
+  background: linear-gradient(135deg, #e0c995, #aa8142);
+}
+.tap-proof-swatch-blue {
+  background: linear-gradient(135deg, #263e70, #0b1427);
+}
+.tap-demo-proof-delta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 15px;
+  border: 1px solid #b7d9ce;
+  border-radius: 14px;
+  background: #e9f5f1;
+  color: #08745f;
+  font-size: 14px;
+}
+.tap-demo-proof ul {
+  display: grid;
+  gap: 13px;
+  margin-top: 16px;
+  padding: 18px;
+  border: 1px solid #dedad6;
+  border-radius: 16px;
+  background: white;
+  color: #4f484e;
+  font-size: 13px;
+}
+.tap-demo-proof > p {
+  margin: 22px auto 0;
+  max-width: 240px;
+  color: #655d63;
+  font-size: 12px;
+  text-align: center;
+}
+@keyframes tap-proof-enter {
+  from {
+    transform: translateY(28px) scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
 .tap-empty-wallet {
   display: grid !important;
   place-content: center;
@@ -773,6 +1011,103 @@
   gap: 7px;
   border: 1px solid #d8cec3 !important;
   background: rgba(255, 253, 248, 0.72) !important;
+}
+.tap-recent-merchants {
+  margin: 18px 0 18px;
+}
+.tap-recent-merchants > p {
+  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 12px;
+}
+.tap-recent-row {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-bottom-width: 0;
+  background: rgba(255, 255, 255, 0.055);
+  color: white;
+  font-size: 15px;
+}
+.tap-recent-row:first-of-type {
+  border-radius: 15px 15px 0 0;
+}
+.tap-recent-row:last-child {
+  border-bottom-width: 1px;
+  border-radius: 0 0 15px 15px;
+}
+.tap-merchant-mark {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 21px;
+}
+.tap-sample-wallet {
+  position: relative;
+  display: block !important;
+  height: 250px;
+  overflow: hidden;
+  border: 0 !important;
+  background: transparent !important;
+}
+.tap-sample-card {
+  position: absolute;
+  left: 8%;
+  width: 84%;
+  height: 150px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 17px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24);
+}
+.tap-sample-card-one {
+  top: 18px;
+  background: linear-gradient(135deg, #d7c39d, #9f7f50);
+}
+.tap-sample-card-two {
+  top: 43px;
+  background: linear-gradient(135deg, #d78f8a, #8c4b58);
+}
+.tap-sample-card-three {
+  top: 68px;
+  background: linear-gradient(135deg, #a7aaad, #555760);
+}
+.tap-wallet-pocket {
+  position: absolute;
+  z-index: 5;
+  inset: 110px 2% 3px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 28px 28px 18px 18px;
+  background:
+    repeating-linear-gradient(115deg, transparent 0 3px, rgba(255, 255, 255, 0.025) 3px 5px),
+    linear-gradient(145deg, #2a202d, #150f19);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 -12px 25px rgba(0, 0, 0, 0.3);
+}
+.tap-sample-wallet .tap-empty-title {
+  position: absolute;
+  z-index: 7;
+  right: 0;
+  bottom: 22px;
+  left: 0;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 13px;
+  font-weight: 500;
+}
+.tap-demo-wallet-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  margin-top: 8px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ff5b1f, #ff753b);
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 14px 34px rgba(255, 91, 31, 0.22);
 }
 .tap-empty-plus {
   display: grid;
@@ -1849,19 +2184,16 @@
 
   /* Standard finish is the default (no modifier class needed). */
 
-  /* Winner face — blue gradient, elevated shadow. The winner also gets
-     .cs-face--metal from CardFace so the raised card reads as the richest
-     surface in the stack. */
+  /* Winner is a state, not a fake card brand. Preserve the product's real
+     face and add elevation plus TAP's orange decision glow. */
   .cs-face--winner {
-    background:
-      radial-gradient(120% 90% at 10% 0%, #60a5fa 0%, transparent 55%),
-      linear-gradient(135deg, #3b82f6 0%, #1d4ed8 60%, #1e3a8a 100%);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.32),
       inset 0 -1px 0 rgba(0, 0, 0, 0.32),
-      inset 0 0 0 1px rgba(59, 130, 246, 0.5),
-      0 24px 48px -14px rgba(30, 58, 138, 0.6),
-      0 12px 26px -12px rgba(30, 58, 138, 0.5);
+      inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+      0 0 0 1px rgba(255, 91, 31, 0.42),
+      0 0 38px rgba(255, 91, 31, 0.24),
+      0 24px 48px -14px rgba(0, 0, 0, 0.62);
   }
 
   /* ============ CARD FACE ANATOMY ============ */

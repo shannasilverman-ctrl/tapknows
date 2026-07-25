@@ -53,7 +53,7 @@ const BEAT_MS: Record<Beat, number> = {
   2: 5200,
   3: 4200,
   4: 3800,
-  5: 3600,
+  5: 12000,
   6: 6000,
 };
 
@@ -72,9 +72,9 @@ const BEAT_META: Record<Beat, { label: string; caption: string }> = {
 // Per-tap earnings for the checkout demo (Q3 2026 accurate: Freedom Flex 5%
 // this quarter is gas / transit / live entertainment / United Way — groceries
 // are not a category, so the winner at a grocery store is Amex Gold at 4x.)
-const TAP_SPEND_CENTS = 6000; // $60 grocery basket
-const TAP_EARN_CENTS = 240; // Amex Gold 4x on $60 = $2.40
-const DEFAULT_EARN_CENTS = 60; // 1% default card
+const TAP_SPEND_CENTS = 8400; // $84 grocery basket
+const TAP_EARN_CENTS = 336; // Amex Gold 4x on $84 = $3.36
+const DEFAULT_EARN_CENTS = 84; // 1% default card
 
 function DemoPage() {
   const navigate = useNavigate();
@@ -97,7 +97,7 @@ function DemoPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
+    <div className="tap-demo-screen min-h-screen flex flex-col bg-background text-foreground">
       <header className="px-5 pt-6 pb-3 flex items-center justify-between max-w-md w-full mx-auto">
         <button
           onClick={() => navigate({ to: "/home" })}
@@ -389,6 +389,7 @@ function BeatOptimize() {
   const winner = DEMO_CARDS[0]; // Amex Gold
   const others = DEMO_CARDS.slice(1);
   const [risen, setRisen] = useState(false);
+  const [whyOpen, setWhyOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [cardHeight, setCardHeight] = useState(0);
 
@@ -412,7 +413,9 @@ function BeatOptimize() {
 
   return (
     <div className="cs-fade-up">
-      <div className="rounded-3xl bg-surface border border-border p-4">
+      <div className="tap-demo-recommendation rounded-3xl bg-surface border border-border p-4">
+        <p className="tap-merchant-pill">Whole Foods · groceries</p>
+        <h2 className="tap-demo-pick">Use Amex Gold.</h2>
         <div
           ref={containerRef}
           className="relative w-full overflow-hidden"
@@ -465,19 +468,60 @@ function BeatOptimize() {
         </div>
 
         <div className="mt-4 rounded-2xl bg-primary/6 border border-primary/12 px-4 py-3">
-          <p className="text-[11px] uppercase tracking-[0.14em] text-primary/80 font-medium">
-            Reason
-          </p>
-          <p className="mt-1 text-[13px] text-foreground">
-            Amex Gold earns 4× on U.S. supermarkets. Beats your Freedom Flex here.
-          </p>
+          <p className="tap-demo-value">About $3.36 in reward value</p>
+          <p className="mt-1 text-[13px] text-muted-foreground">Next best: about $0.84</p>
           <div className="mt-3 flex items-baseline justify-between">
-            <p className="text-[12px] text-muted-foreground">Value of this choice</p>
+            <p className="text-[12px] text-muted-foreground">Estimated difference</p>
             <p className="cs-money text-[18px] font-semibold text-primary">
               +{dollars(TAP_EARN_CENTS - DEFAULT_EARN_CENTS)}
             </p>
           </div>
         </div>
+        <button className="tap-demo-used" type="button" tabIndex={-1}>
+          Used it
+        </button>
+        <button className="tap-demo-why" type="button" onClick={() => setWhyOpen(true)}>
+          Why this card?
+        </button>
+        {whyOpen && (
+          <div className="tap-demo-proof" role="dialog" aria-label="Why Amex Gold?">
+            <button
+              type="button"
+              className="tap-demo-proof-close"
+              onClick={() => setWhyOpen(false)}
+              aria-label="Close explanation"
+            >
+              ×
+            </button>
+            <h3>Why Amex Gold?</h3>
+            <div className="tap-demo-proof-card">
+              <span className="tap-proof-swatch tap-proof-swatch-gold" />
+              <span>
+                <strong>Amex Gold</strong>
+                <small>4× groceries</small>
+              </span>
+              <strong>~$3.36</strong>
+            </div>
+            <div className="tap-demo-proof-card">
+              <span className="tap-proof-swatch tap-proof-swatch-blue" />
+              <span>
+                <strong>Sapphire</strong>
+                <small>1×</small>
+              </span>
+              <strong>~$0.84</strong>
+            </div>
+            <div className="tap-demo-proof-delta">
+              <span>Estimated difference</span>
+              <strong>+$2.52</strong>
+            </div>
+            <ul>
+              <li>Terms checked Jul 18, 2026</li>
+              <li>Assumption: 1 point = 1¢</li>
+              <li>Bonus cap status: not provided</li>
+            </ul>
+            <p>TAP never recommends a card because it pays us.</p>
+          </div>
+        )}
       </div>
     </div>
   );
