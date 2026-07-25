@@ -66,6 +66,22 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   return brandedErrorResponse();
 }
 
+function protectHtmlShellFromVersionSkew(response: Response): Response {
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!contentType.includes("text/html")) return response;
+
+  const headers = new Headers(response.headers);
+  // Hashed assets can live forever; the HTML shell must always point at the
+  // current hash set. Caching it risks a blank app during a rolling deploy.
+  headers.set("cache-control", "no-store, max-age=0");
+  headers.set("cdn-cache-control", "no-store");
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
@@ -76,7 +92,7 @@ export default {
       }
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      return protectHtmlShellFromVersionSkew(await normalizeCatastrophicSsrResponse(response));
     } catch (error) {
       console.error(error);
       return brandedErrorResponse();
