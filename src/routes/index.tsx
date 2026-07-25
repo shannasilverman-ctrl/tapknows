@@ -1,15 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import {
-  ArrowRight,
-  Check,
-  ChevronDown,
-  LockKeyhole,
-  MapPin,
-  ScanLine,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, Check, LockKeyhole, MapPin, ScanLine, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { getGuestWallet } from "@/lib/guestWallet";
 
@@ -65,19 +56,17 @@ function Landing() {
         </Link>
       </nav>
 
-      <section className="tap-hero">
-        <div className="tap-hero-copy">
+      <section className="tap-showcase-hero">
+        <div className="tap-showcase-copy">
           <p className="tap-kicker">
             <Sparkles size={14} /> Your wallet, finally decisive
           </p>
           <h1>
-            Ask once.
-            <br />
-            <em>Tap the right card.</em>
+            Know before
+            <br /> you tap.
           </h1>
           <p className="tap-deck">
-            Tell TAP what you’re buying. Get one clear answer, the real value, and the reason—before
-            you pay.
+            One clear card recommendation, the real value, and the reason—before you pay.
           </p>
           <div className="tap-hero-actions">
             <Link to={startTo} className="tap-primary">
@@ -92,58 +81,128 @@ function Landing() {
           </p>
         </div>
 
-        <div className="tap-phone-stage" aria-label="TAP recommendation preview">
-          <div className="tap-halo" aria-hidden />
-          <div className="tap-phone">
-            <div className="tap-phone-bar">
-              <span>9:41</span>
-              <span className="tap-island" />
-              <span>•••</span>
-            </div>
-            <div className="tap-phone-head">
-              <span className="tap-mini-logo">
-                TAP
+        <div className="tap-device-stage" aria-label="TAP product experience">
+          <div className="tap-device tap-device-home">
+            <div className="tap-device-screen">
+              <div className="tap-device-status">
+                <b>9:41</b>
+                <span>▮▮▮ ◒ ▰</span>
+              </div>
+              <div className="tap-device-brand">
+                <b>TAP</b>
                 <i />
-              </span>
-              <span className="tap-avatar">SS</span>
-            </div>
-            <div className="tap-context">
-              <span>
-                <MapPin size={13} /> Whole Foods
-              </span>
-              <strong>$86.40</strong>
-            </div>
-            <div className="tap-answer-card">
-              <p>Tap this</p>
-              <div className="tap-card-visual tap-card-coral">
-                <span>AMERICAN EXPRESS</span>
-                <b>GOLD</b>
-                <i>•••• 2401</i>
               </div>
-              <h2>Amex Gold</h2>
-              <div className="tap-win">
-                <strong>4×</strong>
-                <span>on groceries</span>
-                <b>≈ $6.91 back</b>
+              <h2>
+                Where are
+                <br />
+                you paying?
+              </h2>
+              <div className="tap-device-search">⌕&nbsp;&nbsp; Store or category</div>
+              <p className="tap-device-label">Recent</p>
+              <div className="tap-device-recents">
+                <span>♧</span>
+                <b>Whole Foods</b>
+                <i>›</i>
+                <span>◎</span>
+                <b>Target</b>
+                <i>›</i>
+                <span>▱</span>
+                <b>Starbucks</b>
+                <i>›</i>
               </div>
-              <div className="tap-confidence">
-                <span>
-                  <ShieldCheck size={14} /> High confidence
-                </span>
-                <button type="button">
-                  Why this card <ChevronDown size={14} />
-                </button>
+              <div className="tap-leather-wallet tap-leather-wallet-home">
+                <span className="tap-wallet-card tap-wallet-card-silver" />
+                <span className="tap-wallet-card tap-wallet-card-rose" />
+                <span className="tap-wallet-card tap-wallet-card-gold" />
+                <span className="tap-wallet-mouth" />
+              </div>
+              <div className="tap-device-dock">
+                <b>Your wallet · 4 cards</b>
+                <span>⌖&nbsp;&nbsp; Use location once</span>
               </div>
             </div>
-            <p className="tap-runner">
-              Next best: <b>Blue Cash Preferred</b> · ≈ $5.18
-            </p>
           </div>
-          <div className="tap-proof-float">
-            <span>
-              Worth <b>$1.73 more</b>
-            </span>
-            <small>than your next-best card</small>
+
+          <div className="tap-device tap-device-winner">
+            <div className="tap-device-screen">
+              <div className="tap-device-status">
+                <b>9:41</b>
+                <span>▮▮▮ ◒ ▰</span>
+              </div>
+              <div className="tap-device-pill">Whole Foods&nbsp; · &nbsp;Groceries</div>
+              <h2>Use Amex Gold.</h2>
+              <div className="tap-choice-wallet">
+                <span className="tap-choice-card tap-choice-card-back" />
+                <span className="tap-choice-card tap-choice-card-middle" />
+                <span className="tap-choice-card tap-choice-card-gold">
+                  <i className="tap-card-line" />
+                </span>
+                <div className="tap-signal-rings">
+                  <i />
+                  <i />
+                  <i />
+                </div>
+                <span className="tap-wallet-mouth" />
+              </div>
+              <div className="tap-choice-value">
+                <h3>About $3.36 in reward value</h3>
+                <p>Next best: about $0.84</p>
+                <div>
+                  <span>Estimated difference:</span>
+                  <b>+$2.52</b>
+                </div>
+                <small>Amount won’t change this pick.</small>
+              </div>
+              <div className="tap-choice-actions">
+                <Link to="/demo">Used it</Link>
+                <Link to="/demo">Why this card?</Link>
+                <Link to="/demo">Wrong merchant or card?</Link>
+              </div>
+            </div>
+          </div>
+
+          <div className="tap-device tap-device-proof">
+            <div className="tap-device-screen">
+              <div className="tap-device-status tap-device-status-dark">
+                <b>9:41</b>
+                <span>▮▮▮ ◒ ▰</span>
+              </div>
+              <h2>Why Amex Gold?</h2>
+              <div className="tap-proof-choice">
+                <span className="tap-proof-mini-card tap-proof-mini-gold" />
+                <p>
+                  <b>Amex Gold</b>
+                  <small>4× groceries</small>
+                </p>
+                <strong>~$3.36</strong>
+              </div>
+              <div className="tap-proof-choice">
+                <span className="tap-proof-mini-card tap-proof-mini-blue" />
+                <p>
+                  <b>Sapphire</b>
+                  <small>1×</small>
+                </p>
+                <strong className="tap-proof-muted">~$0.84</strong>
+              </div>
+              <div className="tap-proof-gap">
+                <span>Estimated difference</span>
+                <b>+$2.52</b>
+              </div>
+              <div className="tap-proof-facts">
+                <p>▣&nbsp;&nbsp; Terms checked Jul 18, 2026</p>
+                <p>⚖&nbsp;&nbsp; Assumption: 1 point = 1¢</p>
+                <p>ⓘ&nbsp;&nbsp; Bonus cap status: not provided</p>
+                <div>
+                  <button>Edit assumptions</button>
+                  <button>Report an issue</button>
+                </div>
+              </div>
+              <p className="tap-proof-trust">
+                TAP never recommends a card
+                <br />
+                because it pays us.
+              </p>
+            </div>
           </div>
         </div>
       </section>

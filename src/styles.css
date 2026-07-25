@@ -12,12 +12,9 @@
   --tap-mint: #b9ddcf;
   min-height: 100vh;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 79% 18%, rgba(255, 91, 31, 0.14), transparent 24%),
-    radial-gradient(circle at 18% 42%, rgba(92, 53, 108, 0.18), transparent 30%),
-    linear-gradient(150deg, #160f1d 0%, #0c0911 58%, #181020 100%);
-  color: #fff;
-  color-scheme: dark;
+  background: #fff;
+  color: var(--tap-ink);
+  color-scheme: light;
 }
 .tap-nav {
   position: relative;
@@ -373,6 +370,496 @@
   margin-top: 2px;
   color: #776b76;
   font-size: 8px;
+}
+
+/* The product itself is the hero: three moments, one decisive story. */
+.tap-showcase-hero {
+  padding: 48px 24px 104px;
+  background: #fff;
+}
+.tap-showcase-copy {
+  width: min(850px, 100%);
+  margin: 22px auto 64px;
+  text-align: center;
+}
+.tap-showcase-copy .tap-kicker {
+  justify-content: center;
+  color: #765f79;
+}
+.tap-showcase-copy h1 {
+  font: 800 clamp(64px, 8vw, 116px) / 0.86 var(--font-display);
+  letter-spacing: -0.075em;
+}
+.tap-showcase-copy .tap-deck {
+  margin: 32px auto 0;
+  color: #756b76;
+}
+.tap-showcase-copy .tap-hero-actions {
+  justify-content: center;
+}
+.tap-showcase-copy .tap-text-link {
+  color: var(--tap-ink);
+}
+.tap-showcase-copy .tap-no-login {
+  justify-content: center;
+  color: #8d838d;
+}
+.tap-device-stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: 0.92fr 1.08fr 0.92fr;
+  align-items: end;
+  gap: clamp(14px, 2.4vw, 36px);
+  width: min(1320px, 100%);
+  margin: auto;
+  padding: 84px clamp(20px, 4vw, 60px) 54px;
+  overflow: hidden;
+  border: 1px solid #e8e5e1;
+  border-radius: 46px;
+  background:
+    linear-gradient(90deg, transparent 49.85%, rgba(42, 34, 45, 0.045) 50%, transparent 50.15%),
+    radial-gradient(circle at 50% 70%, rgba(255, 255, 255, 0.95), transparent 30%),
+    linear-gradient(145deg, #eceae7, #f8f7f5 53%, #e4e2df);
+  box-shadow: inset 0 1px 0 white;
+}
+.tap-device-stage::before,
+.tap-device-stage::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(transparent, rgba(36, 21, 43, 0.11), transparent);
+}
+.tap-device-stage::before {
+  left: 27%;
+}
+.tap-device-stage::after {
+  right: 27%;
+}
+.tap-device {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 384px;
+  margin-inline: auto;
+  padding: 7px;
+  border: 2px solid #45434a;
+  border-radius: 52px;
+  background: linear-gradient(145deg, #5e5c62, #08080a 14%, #1d1c20 85%, #77747a);
+  box-shadow:
+    0 34px 60px rgba(37, 32, 38, 0.25),
+    inset 0 0 0 2px #09090a;
+}
+.tap-device::before {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  top: 13px;
+  left: 50%;
+  width: 92px;
+  height: 25px;
+  border-radius: 999px;
+  background: #050506;
+  box-shadow: inset 0 -1px 0 #252329;
+  transform: translateX(-50%);
+}
+.tap-device-home,
+.tap-device-proof {
+  max-width: 346px;
+  transform: translateY(14px);
+}
+.tap-device-screen {
+  position: relative;
+  min-height: 704px;
+  overflow: hidden;
+  border-radius: 43px;
+  padding: 19px 23px 23px;
+}
+.tap-device-home .tap-device-screen,
+.tap-device-winner .tap-device-screen {
+  background:
+    radial-gradient(circle at 86% 38%, rgba(255, 92, 27, 0.07), transparent 23%),
+    radial-gradient(circle at 10% 84%, rgba(103, 70, 117, 0.18), transparent 31%),
+    linear-gradient(152deg, #18101f, #0c0911 67%, #17101d);
+  color: white;
+}
+.tap-device-proof .tap-device-screen {
+  background: linear-gradient(145deg, #fff, #f8f7f5);
+  color: var(--tap-ink);
+}
+.tap-device-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 22px;
+  padding: 0 4px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+.tap-device-status-dark {
+  color: #141217;
+}
+.tap-device-brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 25px;
+}
+.tap-device-brand b {
+  font: 800 39px/1 var(--font-display);
+  letter-spacing: -0.075em;
+}
+.tap-device-brand i {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #ff641f;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 4px #17101d,
+    inset 0 0 0 5.5px #ff641f;
+}
+.tap-device h2 {
+  font-family: var(--font-display);
+  font-weight: 780;
+  letter-spacing: -0.055em;
+}
+.tap-device-home h2 {
+  margin-top: 23px;
+  font-size: 35px;
+  line-height: 1.03;
+}
+.tap-device-search {
+  margin-top: 21px;
+  padding: 13px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.13);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 11px;
+}
+.tap-device-label {
+  margin: 17px 0 7px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 9px;
+}
+.tap-device-recents {
+  display: grid;
+  grid-template-columns: 27px 1fr 12px;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
+}
+.tap-device-recents > * {
+  display: flex;
+  align-items: center;
+  min-height: 37px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 10px;
+  font-style: normal;
+}
+.tap-device-recents > :nth-last-child(-n + 3) {
+  border-bottom: 0;
+}
+.tap-device-recents span {
+  justify-content: center;
+  font-size: 15px;
+}
+.tap-device-recents i {
+  color: rgba(255, 255, 255, 0.8);
+}
+.tap-leather-wallet,
+.tap-choice-wallet {
+  position: relative;
+}
+.tap-leather-wallet-home {
+  height: 178px;
+  margin: 16px -10px 0;
+}
+.tap-wallet-card,
+.tap-choice-card {
+  position: absolute;
+  left: 9%;
+  width: 82%;
+  border: 1px solid rgba(255, 255, 255, 0.48);
+  border-radius: 12px 12px 7px 7px;
+  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.22);
+}
+.tap-wallet-card {
+  height: 100px;
+}
+.tap-wallet-card-silver {
+  top: 0;
+  background: linear-gradient(135deg, #686968, #222325);
+}
+.tap-wallet-card-rose {
+  top: 17px;
+  background: linear-gradient(135deg, #dca29a, #8e4f50);
+}
+.tap-wallet-card-gold {
+  top: 35px;
+  background:
+    linear-gradient(128deg, transparent 55%, rgba(255, 255, 255, 0.5) 55.5%, transparent 56%),
+    linear-gradient(135deg, #ddbf83, #aa7646);
+}
+.tap-wallet-mouth {
+  position: absolute;
+  z-index: 4;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 108px;
+  border: 1px solid #4a364c;
+  border-radius: 30px 30px 17px 17px;
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.07) 0 2px, transparent 2px 8px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.055) 0 2px, transparent 2px 8px),
+    linear-gradient(165deg, #36243a, #160f1d 75%);
+  box-shadow:
+    inset 0 2px 1px rgba(255, 255, 255, 0.16),
+    inset 0 12px 22px rgba(8, 4, 11, 0.68),
+    0 -5px 15px rgba(0, 0, 0, 0.3);
+}
+.tap-wallet-mouth::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  right: 14px;
+  left: 14px;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, #9a718e 0 3px, transparent 3px 8px);
+  opacity: 0.5;
+}
+.tap-device-dock {
+  position: absolute;
+  right: 15px;
+  bottom: 16px;
+  left: 15px;
+  z-index: 6;
+  display: grid;
+  gap: 14px;
+  padding: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  background: rgba(58, 45, 64, 0.78);
+  text-align: center;
+  backdrop-filter: blur(18px);
+}
+.tap-device-dock b,
+.tap-device-dock span {
+  font-size: 9px;
+}
+.tap-device-dock span {
+  color: rgba(255, 255, 255, 0.78);
+}
+.tap-device-pill {
+  width: max-content;
+  margin: 18px auto 0;
+  padding: 8px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(110, 78, 119, 0.34);
+  color: #d5cbd7;
+  font-size: 10px;
+}
+.tap-device-winner h2 {
+  margin: 25px 6px 0;
+  font-size: 43px;
+  line-height: 1;
+}
+.tap-choice-wallet {
+  height: 267px;
+  margin: 16px -7px 0;
+}
+.tap-choice-card {
+  left: 14%;
+  width: 72%;
+  height: 168px;
+}
+.tap-choice-card-back {
+  top: 28px;
+  transform: translateX(-16%);
+  background: linear-gradient(135deg, #777778, #303034);
+}
+.tap-choice-card-middle {
+  top: 53px;
+  transform: translateX(-8%);
+  background: linear-gradient(135deg, #cf8583, #8f4d50);
+}
+.tap-choice-card-gold {
+  z-index: 2;
+  top: 1px;
+  background:
+    linear-gradient(128deg, transparent 55%, rgba(255, 255, 255, 0.48) 55.5%, transparent 56%),
+    linear-gradient(145deg, #e1c58d, #b68654);
+}
+.tap-card-line {
+  position: absolute;
+  inset: 28px 35px;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 50%;
+  transform: rotate(-28deg);
+}
+.tap-choice-wallet .tap-wallet-mouth {
+  height: 122px;
+}
+.tap-signal-rings {
+  position: absolute;
+  z-index: 5;
+  top: -20px;
+  right: 4%;
+  width: 114px;
+  height: 114px;
+}
+.tap-signal-rings i {
+  position: absolute;
+  inset: 0;
+  border: 1px solid #ff641f;
+  border-radius: 50%;
+  box-shadow: 0 0 13px rgba(255, 100, 31, 0.7);
+}
+.tap-signal-rings i:nth-child(2) {
+  inset: 17px;
+}
+.tap-signal-rings i:nth-child(3) {
+  inset: 36px;
+  background: rgba(255, 100, 31, 0.08);
+  box-shadow:
+    0 0 15px #ff641f,
+    inset 0 0 12px #ff641f;
+}
+.tap-choice-value {
+  margin: -5px 7px 0;
+}
+.tap-choice-value h3 {
+  font: 750 21px/1.2 var(--font-display);
+  letter-spacing: -0.04em;
+}
+.tap-choice-value p {
+  margin-top: 5px;
+  color: #a99eac;
+  font-size: 13px;
+}
+.tap-choice-value div,
+.tap-proof-gap {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 10px 11px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #c3e3d8, #edf6f2);
+  color: #146b5f;
+  font-size: 12px;
+}
+.tap-choice-value small {
+  display: block;
+  margin-top: 9px;
+  color: #a99eac;
+  font-size: 10px;
+}
+.tap-choice-actions {
+  display: grid;
+  gap: 7px;
+  margin: 14px 7px 0;
+}
+.tap-choice-actions a {
+  display: grid;
+  place-items: center;
+  min-height: 39px;
+  border: 1px solid #9b8ca0;
+  border-radius: 11px;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+}
+.tap-choice-actions a:first-child {
+  border-color: #ff641f;
+  background: linear-gradient(135deg, #ff762e, #ff541f);
+  font-size: 14px;
+}
+.tap-device-proof h2 {
+  margin: 42px 2px 20px;
+  font-size: 31px;
+}
+.tap-proof-choice {
+  display: grid;
+  grid-template-columns: 86px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  margin-top: 9px;
+  padding: 12px;
+  border: 1px solid #dedbd8;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.65);
+}
+.tap-proof-mini-card {
+  height: 51px;
+  border-radius: 7px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+.tap-proof-mini-gold {
+  background:
+    linear-gradient(130deg, transparent 58%, rgba(255, 255, 255, 0.55) 58.5%, transparent 59%),
+    linear-gradient(135deg, #dab97d, #a97948);
+}
+.tap-proof-mini-blue {
+  background:
+    linear-gradient(45deg, transparent 49%, rgba(255, 255, 255, 0.08) 50%, transparent 51%),
+    linear-gradient(135deg, #18315a, #081323);
+}
+.tap-proof-choice p {
+  display: grid;
+  gap: 3px;
+  font-size: 11px;
+}
+.tap-proof-choice p small {
+  color: #776f78;
+}
+.tap-proof-choice strong {
+  color: #15766a;
+  font-size: 14px;
+}
+.tap-proof-choice .tap-proof-muted {
+  color: #6e6870;
+}
+.tap-proof-gap {
+  margin-top: 0;
+  border: 1px solid #b7d8cc;
+}
+.tap-proof-facts {
+  margin-top: 16px;
+  padding: 15px 13px;
+  border: 1px solid #dedbd8;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.66);
+}
+.tap-proof-facts p {
+  margin: 11px 0;
+  font-size: 9px;
+}
+.tap-proof-facts div {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-top: 19px;
+  padding-top: 13px;
+  border-top: 1px solid #e3e0dc;
+}
+.tap-proof-facts button {
+  min-height: 34px;
+  border: 1px solid #c1bcb8;
+  border-radius: 10px;
+  font-size: 8px;
+}
+.tap-proof-trust {
+  margin-top: 20px;
+  color: #6c656c;
+  text-align: center;
+  font-size: 9px;
+  line-height: 1.4;
 }
 .tap-promise {
   padding: 88px 24px 98px;
@@ -1159,6 +1646,26 @@
   .tap-phone-stage {
     min-height: 660px;
   }
+  .tap-device-stage {
+    display: flex;
+    align-items: flex-end;
+    gap: 22px;
+    padding: 58px 34px 46px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .tap-device-stage::-webkit-scrollbar {
+    display: none;
+  }
+  .tap-device {
+    flex: 0 0 344px;
+    scroll-snap-align: center;
+  }
+  .tap-device-home,
+  .tap-device-proof {
+    transform: none;
+  }
   .tap-steps {
     grid-template-columns: 1fr;
   }
@@ -1201,6 +1708,43 @@
   .tap-hero-actions {
     flex-direction: column;
     gap: 18px;
+  }
+  .tap-showcase-hero {
+    padding: 26px 0 72px;
+  }
+  .tap-showcase-copy {
+    width: calc(100% - 32px);
+    margin-bottom: 44px;
+  }
+  .tap-showcase-copy h1 {
+    font-size: clamp(58px, 19vw, 82px);
+  }
+  .tap-showcase-copy .tap-deck {
+    font-size: 16px;
+  }
+  .tap-device-stage {
+    padding: 36px 20px 38px;
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0;
+  }
+  .tap-device {
+    flex-basis: 310px;
+    border-radius: 45px;
+  }
+  .tap-device-screen {
+    min-height: 650px;
+    border-radius: 37px;
+    padding-inline: 19px;
+  }
+  .tap-device-winner h2 {
+    font-size: 39px;
+  }
+  .tap-device-home h2 {
+    font-size: 33px;
+  }
+  .tap-choice-wallet {
+    height: 245px;
   }
   .tap-halo {
     width: 410px;
