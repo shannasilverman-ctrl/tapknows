@@ -7,12 +7,12 @@
   "main": "src/server.ts",
   "routes": [
     {
-      "pattern": "tapknows.com/*",
-      "zone_name": "tapknows.com",
+      "pattern": "tapknows.com",
+      "custom_domain": true,
     },
     {
-      "pattern": "www.tapknows.com/*",
-      "zone_name": "tapknows.com",
+      "pattern": "www.tapknows.com",
+      "custom_domain": true,
     },
   ],
   "assets": {
