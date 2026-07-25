@@ -8,14 +8,4 @@
   "assets": {
     "run_worker_first": true,
   },
-  "routes": [
-    {
-      "pattern": "tapknows.com/*",
-      "zone_name": "tapknows.com",
-    },
-    {
-      "pattern": "www.tapknows.com/*",
-      "zone_name": "tapknows.com",
-    },
-  ],
 }
