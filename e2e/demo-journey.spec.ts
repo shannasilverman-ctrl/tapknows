@@ -5,7 +5,7 @@ import { test, expect } from "@playwright/test";
  *  Beat 3: wallet cards drop in (4 card faces rendered).
  *  Beat 4: alert pass with the "You're at Whole Foods." nudge.
  *  Beat 5: raised winner ("Amex Gold") with its reasoning line.
- *  Beat 6: receipt text ("This tap earned" / "$5.44") and the
+ *  Beat 6: receipt text ("This tap earned" / "$3.36") and the
  *          running balance ("Recovered this month") ticks UP.
  *
  * The demo auto-advances between beats via internal timers. We wait
@@ -51,6 +51,8 @@ test.describe("Demo six-beat journey", () => {
     ).toBeVisible({ timeout: 4_000 });
     // Winner-tinted card face is present.
     await expect(page.locator(".cs-face--winner").first()).toBeVisible();
+    await expect(page.locator(".tap-leather-pocket")).toBeVisible();
+    await expect(page.locator('.tap-contactless-signal[data-visible="true"]')).toBeVisible();
     await expect(page.getByText(/Value of this choice/i)).toBeVisible();
 
     // ---------- Beat 6 · Paid (receipt + balance ticks up) ----------
@@ -59,20 +61,20 @@ test.describe("Demo six-beat journey", () => {
     // Receipt copy.
     await expect(page.getByText(/Receipt · Whole Foods/i)).toBeVisible();
     await expect(page.getByText(/This tap earned/i)).toBeVisible();
-    await expect(page.getByText(/\$2\.40/).first()).toBeVisible();
+    await expect(page.getByText(/\$3\.36/).first()).toBeVisible();
     await expect(page.getByText(/Default card would earn/i)).toBeVisible();
 
     // Running balance sits directly after the "Recovered this month" label.
-    // Starts at $12.84 (month baseline) and ticks up by the +$1.80 delta
-    // (TAP $2.40 earn − default $0.60) to $14.64 after ~350ms.
+    // Starts at $12.84 (month baseline) and ticks up by the +$2.52 delta
+    // (TAP $3.36 earn − default $0.84) to $15.36 after ~350ms.
     const balanceValue = page
       .getByText(/Recovered this month/i)
       .locator("xpath=following-sibling::*[1]");
-    await expect(balanceValue).toHaveText(/\$14\.64/, { timeout: 3_000 });
+    await expect(balanceValue).toHaveText(/\$15\.36/, { timeout: 3_000 });
     const finalCents = Math.round(
       parseFloat(((await balanceValue.textContent()) ?? "").replace(/[^0-9.]/g, "")) * 100,
     );
-    expect(finalCents).toBe(1464);
+    expect(finalCents).toBe(1536);
     expect(finalCents).toBeGreaterThan(1284); // strictly ticked up from baseline
 
     // Annualized counter and terminal CTA render.

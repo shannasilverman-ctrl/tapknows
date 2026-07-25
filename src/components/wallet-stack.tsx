@@ -18,6 +18,12 @@ type Props = {
   onOpen?: (id: string) => void;
   raisedId?: string | null;
   enterFromStack?: boolean;
+  /** Wrap the stack in TAP's woven leather pocket. */
+  pocket?: boolean;
+  /** Show the orange contactless signal around the raised card. */
+  signal?: boolean;
+  /** Quiet label embossed into the pocket. */
+  pocketLabel?: string;
 };
 
 const prefersReducedMotion = () =>
@@ -44,6 +50,9 @@ export function WalletStack({
   onOpen,
   raisedId,
   enterFromStack = false,
+  pocket = false,
+  signal = false,
+  pocketLabel,
 }: Props) {
   const initial = useMemo(
     () => raisedId ?? cards.find((c) => c.winner)?.id ?? cards[0]?.id ?? null,
@@ -241,7 +250,7 @@ export function WalletStack({
   const raisedY = collapsedH - cardHeight; // raised card top offset (bottom-anchor).
 
   return (
-    <div>
+    <div className={pocket ? "tap-physical-wallet" : undefined}>
       <div
         ref={containerRef}
         className="cs-stack"
@@ -323,6 +332,24 @@ export function WalletStack({
           );
         })}
       </div>
+
+      {pocket && (
+        <>
+          <div
+            className="tap-contactless-signal"
+            data-visible={signal ? "true" : "false"}
+            aria-hidden
+          >
+            <i />
+            <i />
+            <i />
+          </div>
+          <div className="tap-leather-pocket" aria-hidden>
+            <span className="tap-leather-stitch" />
+            {pocketLabel ? <span className="tap-pocket-label">{pocketLabel}</span> : null}
+          </div>
+        </>
+      )}
 
       {raisedCard?.detail ? <div className="mt-5 cs-result-in">{raisedCard.detail}</div> : null}
     </div>

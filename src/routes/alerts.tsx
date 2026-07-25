@@ -71,7 +71,7 @@ function AlertsPage() {
   if (loading || !user) return <div className="min-h-screen bg-background" />;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="cs-app-body tap-consumer-screen min-h-screen bg-background flex flex-col">
       <header className="px-6 pt-12 pb-4">
         <div className="flex items-center gap-2">
           <h1 className="text-base font-semibold text-foreground">Alerts</h1>

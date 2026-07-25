@@ -3330,3 +3330,512 @@
     transform: none;
   }
 }
+
+/* ============================================================
+   TAP PRODUCT SYSTEM — one source of truth for the real app.
+   White is the canvas. Plum is reserved for decisive moments.
+   These rules intentionally live last so route-era overrides
+   cannot silently split the product into competing themes.
+   ============================================================ */
+:root {
+  --tap-canvas: #ffffff;
+  --tap-canvas-soft: #f8f7f5;
+  --tap-plum: #170f1d;
+  --tap-plum-2: #28182f;
+  --tap-orange: #ff641f;
+  --tap-mint-soft: #e6f3ee;
+  --tap-mint-ink: #08745f;
+  --tap-line: #e2ded9;
+  --tap-muted: #756d75;
+  --tap-shadow: 0 24px 70px rgba(31, 23, 32, 0.14);
+}
+
+html,
+body {
+  background: var(--tap-canvas);
+}
+
+.tap-app-shell,
+.tap-decision-screen,
+.tap-onboarding,
+.tap-demo-screen {
+  background: var(--tap-canvas);
+  color: var(--tap-ink);
+  color-scheme: light;
+}
+
+.tap-app-shell .text-foreground,
+.tap-decision-screen .text-foreground,
+.tap-demo-screen .text-foreground {
+  color: var(--tap-ink);
+}
+
+.tap-app-shell .text-muted-foreground,
+.tap-decision-screen .text-muted-foreground,
+.tap-demo-screen .text-muted-foreground {
+  color: var(--tap-muted);
+}
+
+.tap-app-shell .bg-white,
+.tap-decision-screen .bg-white,
+.tap-demo-screen .bg-white {
+  background: #fff;
+}
+
+.tap-app-shell .border-border,
+.tap-decision-screen .border-border,
+.tap-demo-screen .border-border {
+  border-color: var(--tap-line);
+}
+
+.tap-app-shell header,
+.tap-decision-screen header,
+.tap-onboarding header {
+  width: min(100%, 560px);
+  margin-inline: auto;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--tap-ink);
+  backdrop-filter: blur(20px);
+}
+
+.tap-app-shell .tap-mini-logo {
+  color: var(--tap-ink);
+}
+
+.tap-app-shell main,
+.tap-decision-screen main {
+  color: var(--tap-ink);
+}
+
+.tap-app-shell input {
+  border-color: var(--tap-line) !important;
+  background: #fff !important;
+  color: var(--tap-ink) !important;
+  box-shadow: 0 12px 34px rgba(36, 21, 43, 0.08);
+}
+
+.tap-app-shell input::placeholder {
+  color: #948b94 !important;
+}
+
+.tap-app-shell .cs-title-lg,
+.tap-onboarding h1 {
+  color: var(--tap-ink);
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.055em;
+}
+
+.tap-app-shell .tap-app-question .cs-title-lg {
+  max-width: 390px;
+  color: var(--tap-ink);
+  font-size: clamp(44px, 12vw, 60px);
+}
+
+.tap-app-shell nav,
+.tap-decision-screen nav {
+  border-color: var(--tap-line) !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  color: var(--tap-ink) !important;
+  box-shadow: 0 -14px 38px rgba(36, 21, 43, 0.08);
+}
+
+.tap-app-shell nav .text-muted-foreground {
+  color: #8b828a !important;
+}
+
+/* The tactile object that persists from home through the recommendation. */
+.tap-physical-wallet {
+  position: relative;
+  isolation: isolate;
+  margin: 10px -4px 18px;
+  padding: 18px 8px 9px;
+}
+
+.tap-physical-wallet .cs-stack {
+  z-index: 2;
+}
+
+.tap-leather-pocket {
+  position: absolute;
+  z-index: 20;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 45%;
+  min-height: 118px;
+  overflow: hidden;
+  border: 1px solid #4b354d;
+  border-radius: 32px 32px 20px 20px;
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.065) 0 2px, transparent 2px 8px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 8px),
+    radial-gradient(circle at 45% -20%, #5a405d, transparent 48%),
+    linear-gradient(165deg, #38263c, #140d19 78%);
+  box-shadow:
+    inset 0 2px 1px rgba(255, 255, 255, 0.14),
+    inset 0 16px 24px rgba(8, 4, 11, 0.62),
+    0 -8px 24px rgba(20, 12, 23, 0.3),
+    0 24px 42px rgba(36, 21, 43, 0.2);
+}
+
+.tap-leather-pocket::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.42;
+  background-image:
+    linear-gradient(135deg, transparent 45%, rgba(255, 255, 255, 0.12) 48% 52%, transparent 55%),
+    linear-gradient(45deg, transparent 45%, rgba(0, 0, 0, 0.32) 48% 52%, transparent 55%);
+  background-size: 11px 11px;
+}
+
+.tap-leather-stitch {
+  position: absolute;
+  z-index: 2;
+  top: 10px;
+  right: 18px;
+  left: 18px;
+  height: 2px;
+  opacity: 0.56;
+  background: repeating-linear-gradient(90deg, #b28aa6 0 4px, transparent 4px 10px);
+}
+
+.tap-pocket-label {
+  position: absolute;
+  z-index: 3;
+  right: 18px;
+  bottom: 17px;
+  left: 18px;
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 11px;
+  text-align: center;
+}
+
+.tap-contactless-signal {
+  position: absolute;
+  z-index: 25;
+  top: 1%;
+  right: -2%;
+  width: 126px;
+  height: 126px;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.8);
+  transition: 300ms ease;
+}
+
+.tap-contactless-signal[data-visible="true"] {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.tap-contactless-signal i {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--tap-orange);
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgba(255, 100, 31, 0.48);
+}
+
+.tap-contactless-signal i:nth-child(2) {
+  inset: 20px;
+}
+
+.tap-contactless-signal i:nth-child(3) {
+  inset: 42px;
+  background: rgba(255, 100, 31, 0.14);
+  box-shadow:
+    0 0 20px var(--tap-orange),
+    inset 0 0 14px var(--tap-orange);
+}
+
+/* Recommendation: a contained premium moment on the white browser canvas. */
+.tap-decision-screen {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tap-decision-screen header button {
+  border-color: var(--tap-line);
+  background: #fff;
+  color: var(--tap-ink);
+}
+
+.tap-decision-core {
+  margin: 8px -8px 22px;
+  padding: 24px 16px 20px;
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at 84% 34%, rgba(255, 100, 31, 0.12), transparent 23%),
+    radial-gradient(circle at 5% 90%, rgba(103, 70, 117, 0.18), transparent 32%),
+    linear-gradient(152deg, #191020, #0c0911 70%, #18101f);
+  color: white;
+  box-shadow: var(--tap-shadow);
+}
+
+.tap-decision-core .text-foreground,
+.tap-decision-core .tap-decision-title {
+  color: white;
+}
+
+.tap-decision-core .text-muted-foreground {
+  color: rgba(255, 255, 255, 0.64);
+}
+
+.tap-decision-core .tap-merchant-pill {
+  background: rgba(113, 82, 121, 0.36);
+  color: rgba(255, 255, 255, 0.76) !important;
+}
+
+.tap-decision-core .tap-decision-title {
+  max-width: 360px;
+  font-family: var(--font-display);
+  font-size: clamp(42px, 12vw, 58px);
+  font-weight: 800;
+  letter-spacing: -0.06em;
+}
+
+.tap-decision-core .cs-btn-primary {
+  min-height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ff762f, #ff541f);
+  color: #fff;
+  box-shadow: 0 14px 34px rgba(255, 91, 31, 0.26);
+}
+
+.tap-decision-core .tap-proof-panel {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(18px);
+}
+
+.tap-decision-core .tap-proof-panel > button {
+  color: white;
+}
+
+.tap-decision-core .tap-proof-panel:has(button[aria-expanded="true"]) {
+  margin: 18px -4px 0;
+  border-color: #ded9d5;
+  border-radius: 24px;
+  background: var(--tap-canvas-soft);
+  color: var(--tap-ink);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.38);
+}
+
+.tap-decision-core .tap-proof-panel:has(button[aria-expanded="true"]) > button {
+  border-bottom: 1px solid var(--tap-line);
+  background: var(--tap-canvas-soft);
+  color: var(--tap-ink);
+}
+
+.tap-decision-core .tap-proof-panel:has(button[aria-expanded="true"]) .tap-proof-content {
+  padding: 20px 14px 16px;
+}
+
+.tap-proof-card {
+  min-height: 88px;
+  padding: 11px;
+  border: 1px solid var(--tap-line);
+  border-radius: 15px;
+  background: #fff;
+}
+
+.tap-proof-card-face {
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.tap-proof-card-face .cs-face {
+  border-radius: 8px;
+}
+
+.tap-proof-card-face .cs-face > div {
+  display: none;
+}
+
+.tap-proof-delta {
+  padding: 13px;
+  border: 1px solid #b7d9ce;
+  border-radius: 13px;
+  background: var(--tap-mint-soft);
+}
+
+.tap-proof-delta .cs-money {
+  color: var(--tap-mint-ink) !important;
+  font-weight: 750;
+}
+
+.tap-proof-assumptions {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--tap-line);
+  border-radius: 15px;
+  background: #fff;
+}
+
+.tap-proof-assumptions p {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  color: #514a51;
+  font-size: 11px;
+}
+
+.tap-proof-assumptions svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+}
+
+.tap-proof-independence {
+  padding-top: 4px;
+  color: #6f676e;
+  font-size: 11px;
+  text-align: center;
+}
+
+/* Onboarding is now an editorial product walkthrough, not a form wizard. */
+.tap-onboarding {
+  background: radial-gradient(circle at 12% 12%, rgba(255, 100, 31, 0.055), transparent 22%), #fff;
+}
+
+.tap-onboarding main {
+  padding-top: 34px;
+}
+
+.tap-onboarding h1 {
+  font-size: clamp(38px, 10vw, 50px);
+  line-height: 0.98;
+}
+
+.tap-onboarding main button:not(.cs-quick-add-chip),
+.tap-onboarding main input,
+.tap-onboarding main [role="radio"] {
+  border-radius: 18px;
+}
+
+.tap-onboarding footer {
+  border-color: var(--tap-line);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 -18px 44px rgba(36, 21, 43, 0.07);
+}
+
+.tap-onboarding footer button {
+  border-radius: 16px;
+  background: var(--tap-plum);
+  color: white;
+  box-shadow: 0 13px 30px rgba(36, 21, 43, 0.18);
+}
+
+.tap-onboarding-result {
+  border-color: #3e2a43 !important;
+  background:
+    radial-gradient(circle at 85% 22%, rgba(255, 100, 31, 0.16), transparent 26%),
+    linear-gradient(145deg, #211327, #0f0a14) !important;
+  color: white;
+  box-shadow: 0 20px 50px rgba(36, 21, 43, 0.22) !important;
+}
+
+.tap-onboarding-result .text-foreground {
+  color: white;
+}
+
+.tap-onboarding-result .text-muted-foreground {
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.tap-demo-recommendation {
+  padding: 22px 16px 18px !important;
+  border: 0 !important;
+  border-radius: 28px !important;
+  background:
+    radial-gradient(circle at 84% 31%, rgba(255, 100, 31, 0.16), transparent 22%),
+    linear-gradient(152deg, #191020, #0c0911 72%, #18101f) !important;
+  box-shadow: var(--tap-shadow);
+}
+
+.tap-demo-recommendation .tap-demo-pick,
+.tap-demo-recommendation .tap-demo-value {
+  color: white;
+}
+
+.tap-demo-recommendation .text-muted-foreground {
+  color: rgba(255, 255, 255, 0.64);
+}
+
+/* Every secondary consumer page inherits the same calm white system. */
+.cs-app-body {
+  background: #fff;
+}
+
+.cs-app-body main > section,
+.cs-app-body main > article {
+  scroll-margin-top: 24px;
+}
+
+.cs-app-body .rounded-2xl.bg-white,
+.cs-app-body .cs-pass {
+  border-color: var(--tap-line);
+  box-shadow: 0 12px 34px rgba(36, 21, 43, 0.06);
+}
+
+.tap-consumer-screen {
+  background: radial-gradient(circle at 90% 4%, rgba(255, 100, 31, 0.045), transparent 18%), #fff;
+  color: var(--tap-ink);
+}
+
+.tap-consumer-screen > header {
+  width: min(100%, 560px);
+  margin-inline: auto;
+  padding-top: max(28px, env(safe-area-inset-top));
+  background: transparent;
+}
+
+.tap-consumer-screen > header h1 {
+  font-family: var(--font-display);
+  font-size: 27px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+
+.tap-consumer-screen > main {
+  width: min(100%, 560px);
+}
+
+@media (min-width: 760px) {
+  .tap-app-shell > main,
+  .tap-decision-screen > main,
+  .tap-onboarding > main {
+    width: min(100%, 560px);
+  }
+
+  .tap-decision-core {
+    margin-inline: -20px;
+    padding: 32px 28px 26px;
+  }
+}
+
+@media (max-width: 420px) {
+  .tap-decision-core {
+    margin-inline: -10px;
+    border-radius: 0;
+  }
+
+  .tap-physical-wallet {
+    margin-inline: -2px;
+  }
+
+  .tap-contactless-signal {
+    width: 106px;
+    height: 106px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tap-contactless-signal,
+  .tap-physical-wallet .cs-stack-card {
+    transition: none !important;
+  }
+}

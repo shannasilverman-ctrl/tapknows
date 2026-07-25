@@ -320,150 +320,154 @@ function DecidePage() {
       </header>
 
       <main className="flex-1 px-5 pb-10 max-w-md w-full mx-auto">
-        {/* Merchant header */}
-        <div className="mt-2">
-          <p className="cs-microlabel tap-merchant-pill text-[10px]">
-            {merchantName} · {category.replace(/_/g, " ")}
-          </p>
-          <h1 className="tap-decision-title mt-5 text-foreground">
-            Use {plays[0] ? playFace(plays[0]).name : "your best card"}.
-          </h1>
-          <button
-            type="button"
-            onClick={() => setSheet("amount")}
-            className="mt-1 text-[13px] text-muted-foreground capitalize hover:text-foreground transition-colors text-left"
-          >
-            {category.replace(/_/g, " ")} ·{" "}
-            <span className="text-foreground font-medium underline underline-offset-2 decoration-border-strong">
-              {dollars(Math.round(amount * 100))}
-            </span>
-          </button>
-          {isCategoryFallback && (
-            <p className="mt-2 text-[11px] text-muted-foreground">
-              Based on category. TAP learns exact merchants over time.
+        <section className="tap-decision-core">
+          {/* Merchant header */}
+          <div className="mt-2">
+            <p className="cs-microlabel tap-merchant-pill text-[10px]">
+              {merchantName} · {category.replace(/_/g, " ")}
             </p>
-          )}
-          {search.opp && (
-            <div className="mt-3 flex items-start gap-2 rounded-xl bg-primary/8 border border-primary/20 px-3 py-2">
-              <Sparkles className="size-3.5 text-primary shrink-0 mt-0.5" />
-              <p className="text-[12px] text-foreground leading-snug">{search.opp}</p>
-            </div>
-          )}
-        </div>
+            <h1 className="tap-decision-title mt-5 text-foreground">
+              Use {plays[0] ? playFace(plays[0]).name : "your best card"}.
+            </h1>
+            <button
+              type="button"
+              onClick={() => setSheet("amount")}
+              className="mt-1 text-[13px] text-muted-foreground capitalize hover:text-foreground transition-colors text-left"
+            >
+              {category.replace(/_/g, " ")} ·{" "}
+              <span className="text-foreground font-medium underline underline-offset-2 decoration-border-strong">
+                {dollars(Math.round(amount * 100))}
+              </span>
+            </button>
+            {isCategoryFallback && (
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                Based on category. TAP learns exact merchants over time.
+              </p>
+            )}
+            {search.opp && (
+              <div className="mt-3 flex items-start gap-2 rounded-xl bg-primary/8 border border-primary/20 px-3 py-2">
+                <Sparkles className="size-3.5 text-primary shrink-0 mt-0.5" />
+                <p className="text-[12px] text-foreground leading-snug">{search.opp}</p>
+              </div>
+            )}
+          </div>
 
-        {/* The physical recommendation — raised card + receded stack.
+          {/* The physical recommendation — raised card + receded stack.
             enterFromStack replays the "pile → winner rises" beat so decide
             reads as a continuation of the home stack, not a page swap. */}
-        <div className="mt-6">
-          {plays.length > 0 ? (
-            <WalletStack
-              cards={stackCards}
-              raisedId={raisedPlayId}
-              onRaise={(id) => setRaisedPlayId(id)}
-              enterFromStack={!!search.fromStack}
-            />
-          ) : (
-            <div className="text-center">
-              <p className="text-[14px] text-muted-foreground">
-                No card in your wallet earns extra here.
+          <div className="mt-6">
+            {plays.length > 0 ? (
+              <WalletStack
+                cards={stackCards}
+                raisedId={raisedPlayId}
+                onRaise={(id) => setRaisedPlayId(id)}
+                enterFromStack={!!search.fromStack}
+                pocket
+                signal
+              />
+            ) : (
+              <div className="text-center">
+                <p className="text-[14px] text-muted-foreground">
+                  No card in your wallet earns extra here.
+                </p>
+                <Link
+                  to="/onboarding"
+                  className="mt-4 inline-flex items-center justify-center cs-btn-secondary h-11 px-5 text-[14px]"
+                >
+                  Add a broader card
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Reasoning under the raised card */}
+          {raisedPlay ? (
+            <div className="mt-5">
+              <p className="cs-microlabel text-[10px]">
+                {raisedIsWinner ? "Tap this card" : "If you use this card"}
               </p>
-              <Link
-                to="/onboarding"
-                className="mt-4 inline-flex items-center justify-center cs-btn-secondary h-11 px-5 text-[14px]"
-              >
-                Add a broader card
-              </Link>
+              <p className="mt-1.5 text-[15px] leading-snug text-foreground">{reasoningLine}</p>
+              {!raisedIsWinner && plays[0] && (
+                <button
+                  onClick={() => setRaisedPlayId(plays[0].id)}
+                  className="mt-3 text-[13px] text-primary font-medium hover:opacity-80 transition-opacity"
+                >
+                  Raise the recommended card →
+                </button>
+              )}
+            </div>
+          ) : null}
+
+          {/* See the math — proof panel using engine-computed values only. */}
+          {raisedPlay ? (
+            <SeeTheMath
+              winner={raisedPlay}
+              runnerUp={plays.find((p) => p.id !== raisedPlay.id) ?? null}
+              amountCents={Math.round(amount * 100)}
+            />
+          ) : null}
+
+          {/* Priority + protection + utilization notes */}
+          {(priorityReason || raisedHasProtections || utilizationCaution) && (
+            <div className="mt-4 space-y-2">
+              {priorityReason && (
+                <div className="flex items-start gap-2.5 rounded-xl bg-primary/8 border border-primary/20 px-3.5 py-2.5">
+                  <ShieldCheck className="size-4 text-primary shrink-0 mt-0.5" />
+                  <p className="text-[13px] text-foreground leading-snug">{priorityReason}</p>
+                </div>
+              )}
+              {!priorityReason && raisedHasProtections && (
+                <div className="flex items-start gap-2.5 rounded-xl bg-white border border-border px-3.5 py-2.5">
+                  <ShieldCheck className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+                  <p className="text-[13px] text-muted-foreground leading-snug">
+                    Includes strong purchase and travel protections.
+                  </p>
+                </div>
+              )}
+              {utilizationCaution && (
+                <div className="flex items-start gap-2.5 rounded-xl bg-destructive/8 border border-destructive/30 px-3.5 py-2.5">
+                  <AlertTriangle className="size-4 text-destructive shrink-0 mt-0.5" />
+                  <p className="text-[13px] text-foreground leading-snug">{utilizationCaution}</p>
+                </div>
+              )}
             </div>
           )}
-        </div>
 
-        {/* Reasoning under the raised card */}
-        {raisedPlay ? (
-          <div className="mt-5">
-            <p className="cs-microlabel text-[10px]">
-              {raisedIsWinner ? "Tap this card" : "If you use this card"}
-            </p>
-            <p className="mt-1.5 text-[15px] leading-snug text-foreground">{reasoningLine}</p>
-            {!raisedIsWinner && plays[0] && (
-              <button
-                onClick={() => setRaisedPlayId(plays[0].id)}
-                className="mt-3 text-[13px] text-primary font-medium hover:opacity-80 transition-opacity"
-              >
-                Raise the recommended card →
-              </button>
-            )}
-          </div>
-        ) : null}
-
-        {/* See the math — proof panel using engine-computed values only. */}
-        {raisedPlay ? (
-          <SeeTheMath
-            winner={raisedPlay}
-            runnerUp={plays.find((p) => p.id !== raisedPlay.id) ?? null}
-            amountCents={Math.round(amount * 100)}
-          />
-        ) : null}
-
-        {/* Priority + protection + utilization notes */}
-        {(priorityReason || raisedHasProtections || utilizationCaution) && (
-          <div className="mt-4 space-y-2">
-            {priorityReason && (
-              <div className="flex items-start gap-2.5 rounded-xl bg-primary/8 border border-primary/20 px-3.5 py-2.5">
-                <ShieldCheck className="size-4 text-primary shrink-0 mt-0.5" />
-                <p className="text-[13px] text-foreground leading-snug">{priorityReason}</p>
-              </div>
-            )}
-            {!priorityReason && raisedHasProtections && (
-              <div className="flex items-start gap-2.5 rounded-xl bg-white border border-border px-3.5 py-2.5">
-                <ShieldCheck className="size-4 text-muted-foreground shrink-0 mt-0.5" />
-                <p className="text-[13px] text-muted-foreground leading-snug">
-                  Includes strong purchase and travel protections.
-                </p>
-              </div>
-            )}
-            {utilizationCaution && (
-              <div className="flex items-start gap-2.5 rounded-xl bg-destructive/8 border border-destructive/30 px-3.5 py-2.5">
-                <AlertTriangle className="size-4 text-destructive shrink-0 mt-0.5" />
-                <p className="text-[13px] text-foreground leading-snug">{utilizationCaution}</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* CTA — platform-aware label. Records exactly once per plan. */}
-        <button
-          onClick={() => {
-            if (!recorded) {
-              if (raisedPlay) {
-                const baseline = Math.round(amount * 100 * 0.01);
-                const delta = Math.max(0, raisedPlay.totalValueCents - baseline);
-                if (delta > 0) recordRecovered(delta);
+          {/* CTA — platform-aware label. Records exactly once per plan. */}
+          <button
+            onClick={() => {
+              if (!recorded) {
+                if (raisedPlay) {
+                  const baseline = Math.round(amount * 100 * 0.01);
+                  const delta = Math.max(0, raisedPlay.totalValueCents - baseline);
+                  if (delta > 0) recordRecovered(delta);
+                }
+                if (merchant) recordDecide(merchant.id, category);
+                bumpDecideCount();
+                setRecorded(true);
               }
-              if (merchant) recordDecide(merchant.id, category);
-              bumpDecideCount();
-              setRecorded(true);
-            }
-            setTapped(true);
-            // Smooth-scroll the receipt into view on the next frame.
-            requestAnimationFrame(() => {
-              receiptRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-            });
-          }}
-          disabled={recorded}
-          className="mt-6 w-full cs-btn-primary h-14 text-[15px] disabled:opacity-100"
-        >
-          {recorded ? (
-            <>
-              <Check className="size-5" />
-              Card chosen
-            </>
-          ) : (
-            <>
-              <Wallet className="size-5" />
-              {walletLabel}
-            </>
-          )}
-        </button>
+              setTapped(true);
+              // Smooth-scroll the receipt into view on the next frame.
+              requestAnimationFrame(() => {
+                receiptRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+              });
+            }}
+            disabled={recorded}
+            className="mt-6 w-full cs-btn-primary h-14 text-[15px] disabled:opacity-100"
+          >
+            {recorded ? (
+              <>
+                <Check className="size-5" />
+                Card chosen
+              </>
+            ) : (
+              <>
+                <Wallet className="size-5" />
+                {walletLabel}
+              </>
+            )}
+          </button>
+        </section>
 
         {/* Earnings receipt after acting */}
         {tapped && raisedPlay && (

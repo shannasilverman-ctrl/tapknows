@@ -1,7 +1,9 @@
 import { useId, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { CalendarDays, ChevronDown, Info, Scale } from "lucide-react";
 import type { Play } from "@/lib/planner";
 import { dollars } from "@/lib/format";
+import { CardFace } from "@/components/card-face";
+import { RATES_VERIFIED_ON } from "@/lib/cardCatalog";
 
 type Props = {
   /** The play the user is looking at (raised card). Engine-computed. */
@@ -49,7 +51,16 @@ export function SeeTheMath({ winner, runnerUp, amountCents }: Props) {
         aria-controls={id}
         className="w-full flex items-center justify-between gap-3 px-4 py-3 min-h-[44px] text-left hover:bg-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 transition-colors"
       >
-        <span className="text-[14px] font-medium text-foreground">See the math</span>
+        <span>
+          <span className="block text-[14px] font-semibold text-foreground">
+            Why {playLabel(winner)}?
+          </span>
+          <span className="mt-0.5 block text-[11px] text-muted-foreground">
+            {hasRunnerUp && delta > 0
+              ? `${dollars(delta)} more value than your next-best card`
+              : "See the reward math and assumptions"}
+          </span>
+        </span>
         <ChevronDown
           className={`size-4 text-muted-foreground transition-transform duration-200 ${open ? "rotate-180" : ""}`}
           aria-hidden
@@ -63,13 +74,13 @@ export function SeeTheMath({ winner, runnerUp, amountCents }: Props) {
         <div className="overflow-hidden">
           <div className="tap-proof-content px-4 pb-4 pt-1 border-t border-border/70 space-y-3">
             <h2 className="tap-proof-title">Why {playLabel(winner)}?</h2>
-            <p className="cs-microlabel text-[10px]">On {dollars(amountCents)}</p>
+            <p className="cs-microlabel text-[10px]">On a {dollars(amountCents)} purchase</p>
 
-            <div className="tap-proof-card flex items-baseline justify-between gap-3">
+            <div className="tap-proof-card grid grid-cols-[76px_1fr_auto] items-center gap-3">
+              <div className="tap-proof-card-face">
+                <CardFace issuer={winner.legs[0].card.issuer} name={playLabel(winner)} />
+              </div>
               <div className="min-w-0">
-                <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                  Winner
-                </p>
                 <p className="mt-0.5 text-[14px] text-foreground font-medium truncate">
                   {playLabel(winner)}
                 </p>
@@ -82,11 +93,11 @@ export function SeeTheMath({ winner, runnerUp, amountCents }: Props) {
 
             {hasRunnerUp && runnerUp ? (
               <>
-                <div className="tap-proof-card flex items-baseline justify-between gap-3 opacity-80">
+                <div className="tap-proof-card grid grid-cols-[76px_1fr_auto] items-center gap-3 opacity-80">
+                  <div className="tap-proof-card-face">
+                    <CardFace issuer={runnerUp.legs[0].card.issuer} name={playLabel(runnerUp)} />
+                  </div>
                   <div className="min-w-0">
-                    <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                      Runner-up
-                    </p>
                     <p className="mt-0.5 text-[14px] text-foreground truncate">
                       {playLabel(runnerUp)}
                     </p>
@@ -110,6 +121,24 @@ export function SeeTheMath({ winner, runnerUp, amountCents }: Props) {
                 No other card in your wallet earns on this purchase.
               </p>
             )}
+
+            <div className="tap-proof-assumptions">
+              <p>
+                <CalendarDays aria-hidden />
+                Rates verified {RATES_VERIFIED_ON}
+              </p>
+              <p>
+                <Scale aria-hidden />
+                Point values use your saved assumptions
+              </p>
+              <p>
+                <Info aria-hidden />
+                Caps and credits are included when TAP has their status
+              </p>
+            </div>
+            <p className="tap-proof-independence">
+              TAP never recommends a card because it pays us.
+            </p>
           </div>
         </div>
       </div>

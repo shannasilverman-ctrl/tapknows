@@ -495,7 +495,7 @@ function PlanPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="cs-app-body tap-consumer-screen min-h-screen bg-background flex flex-col">
       <header className="px-6 pt-12 pb-4 flex items-center justify-between max-w-md mx-auto w-full">
         <h1 className="text-base font-semibold text-foreground">Plan</h1>
         {!user && (

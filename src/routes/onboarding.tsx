@@ -238,7 +238,7 @@ function OnboardingPage() {
   const progressPct = step === 1 ? 33 : step === 2 ? 66 : 100;
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
+    <div className="tap-onboarding min-h-screen flex flex-col bg-background text-foreground">
       <header className="px-5 pt-6 pb-4 flex items-center justify-between">
         <button
           onClick={() => {
@@ -519,7 +519,7 @@ function OnboardingPage() {
             {sampleResult && (
               <div className="mt-6 cs-fade-up">
                 {sampleResult.winner ? (
-                  <div className="rounded-2xl border border-foreground bg-white p-5 shadow-[0_4px_14px_-8px_rgba(15,23,42,0.15)]">
+                  <div className="tap-onboarding-result rounded-2xl border border-foreground bg-white p-5 shadow-[0_4px_14px_-8px_rgba(15,23,42,0.15)]">
                     <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
                       Tap this card
                     </p>

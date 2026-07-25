@@ -28,7 +28,7 @@ export const Route = createFileRoute("/privacy")({
 
 function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="cs-app-body tap-consumer-screen min-h-screen bg-background text-foreground">
       <TopBar />
       <main className="max-w-2xl mx-auto px-6 py-12">
         <h1 className="text-3xl font-semibold tracking-tight">Privacy Policy</h1>

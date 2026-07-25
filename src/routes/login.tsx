@@ -21,7 +21,7 @@ function LoginPage() {
   }, [user, loading, navigate]);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="cs-app-body tap-consumer-screen min-h-screen bg-background flex flex-col">
       <header className="px-6 pt-6">
         <Link
           to="/"

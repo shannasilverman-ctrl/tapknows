@@ -1149,7 +1149,12 @@ function HomePage() {
               </div>
             </div>
           ) : (
-            <WalletStack cards={stackCards} onOpen={(id) => setOpenedId(id)} />
+            <WalletStack
+              cards={stackCards}
+              onOpen={(id) => setOpenedId(id)}
+              pocket
+              pocketLabel={`Your wallet · ${wallet.length} ${wallet.length === 1 ? "card" : "cards"}`}
+            />
           )}
         </div>
 

@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Wordmark } from "@/components/wordmark";
 import { CardFace } from "@/components/card-face";
+import { WalletStack, type StackCard } from "@/components/wallet-stack";
 import { dollars } from "@/lib/format";
 import {
   ArrowLeft,
@@ -388,86 +389,30 @@ function BeatCheckout() {
 function BeatOptimize() {
   const winner = DEMO_CARDS[0]; // Amex Gold
   const others = DEMO_CARDS.slice(1);
-  const [risen, setRisen] = useState(false);
   const [whyOpen, setWhyOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const [cardHeight, setCardHeight] = useState(0);
-
-  useEffect(() => {
-    const t = window.setTimeout(() => setRisen(true), 260);
-    return () => window.clearTimeout(t);
-  }, []);
-
-  useLayoutEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const measure = () => setCardHeight(el.clientWidth / 1.586);
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
-  const peek = 40;
-  const totalHeight = cardHeight + others.length * peek;
+  const cards: StackCard[] = [winner, ...others].map((card, index) => ({
+    id: card.id,
+    issuer: card.issuer,
+    name: card.name,
+    winner: index === 0,
+  }));
 
   return (
     <div className="cs-fade-up">
       <div className="tap-demo-recommendation rounded-3xl bg-surface border border-border p-4">
         <p className="tap-merchant-pill">Whole Foods · groceries</p>
         <h2 className="tap-demo-pick">Use Amex Gold.</h2>
-        <div
-          ref={containerRef}
-          className="relative w-full overflow-hidden"
-          style={{
-            height: cardHeight
-              ? `${totalHeight}px`
-              : `calc(100vw / 1.586 + ${others.length * peek}px)`,
-          }}
-        >
-          {/* Winner card at top */}
-          <div
-            className="absolute inset-x-0 top-0"
-            style={{
-              height: cardHeight ? `${cardHeight}px` : undefined,
-              aspectRatio: cardHeight ? undefined : "1.586 / 1",
-              transform: risen
-                ? "translateY(-10px) scale(1.02)"
-                : `translateY(${others.length * peek + 10}px) scale(0.97)`,
-              zIndex: 10,
-              transition: "transform 420ms cubic-bezier(0.22, 1, 0.36, 1)",
-            }}
-          >
-            <CardFace
-              issuer={winner.issuer}
-              name={winner.name}
-              last4={winner.last4}
-              variant="winner"
-            />
-          </div>
-          {/* Others peek from below the winner */}
-          {others.map((c, i) => (
-            <div
-              key={c.id}
-              className="absolute inset-x-0"
-              style={{
-                top: 0,
-                height: cardHeight ? `${cardHeight}px` : undefined,
-                aspectRatio: cardHeight ? undefined : "1.586 / 1",
-                transform: `translateY(${cardHeight + i * peek}px) scale(${1 - (i + 1) * 0.014})`,
-                opacity: risen ? 0.94 - i * 0.06 : 0.6,
-                zIndex: 5 - i,
-                transition:
-                  "transform 380ms cubic-bezier(0.22, 1, 0.36, 1), opacity 260ms ease-out",
-              }}
-              aria-hidden
-            >
-              <CardFace issuer={c.issuer} name={c.name} last4={c.last4} />
-            </div>
-          ))}
-        </div>
+        <WalletStack
+          cards={cards}
+          raisedId={winner.id}
+          enterFromStack
+          pocket
+          signal
+          pocketLabel="Your wallet · 4 cards"
+        />
 
         <div className="mt-4 rounded-2xl bg-primary/6 border border-primary/12 px-4 py-3">
+          <p className="cs-microlabel text-[10px] text-primary">Value of this choice</p>
           <p className="tap-demo-value">About $3.36 in reward value</p>
           <p className="mt-1 text-[13px] text-muted-foreground">Next best: about $0.84</p>
           <div className="mt-3 flex items-baseline justify-between">
@@ -476,6 +421,9 @@ function BeatOptimize() {
               +{dollars(TAP_EARN_CENTS - DEFAULT_EARN_CENTS)}
             </p>
           </div>
+          <p className="mt-3 text-[12px] text-muted-foreground">
+            Amex Gold earns 4× on U.S. supermarkets. Beats your Freedom Flex here.
+          </p>
         </div>
         <button className="tap-demo-used" type="button" tabIndex={-1}>
           Used it
