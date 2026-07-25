@@ -12,8 +12,12 @@
   --tap-mint: #b9ddcf;
   min-height: 100vh;
   overflow: hidden;
-  background: var(--tap-cream);
-  color: var(--tap-ink);
+  background:
+    radial-gradient(circle at 79% 18%, rgba(255, 91, 31, 0.14), transparent 24%),
+    radial-gradient(circle at 18% 42%, rgba(92, 53, 108, 0.18), transparent 30%),
+    linear-gradient(150deg, #160f1d 0%, #0c0911 58%, #181020 100%);
+  color: #fff;
+  color-scheme: dark;
 }
 .tap-nav {
   position: relative;
@@ -105,7 +109,7 @@
 .tap-deck {
   max-width: 590px;
   margin-top: 34px;
-  color: #685c69;
+  color: rgba(255, 255, 255, 0.66);
   font-size: clamp(17px, 1.7vw, 22px);
   line-height: 1.5;
 }
@@ -142,7 +146,7 @@
   gap: 7px;
   border-bottom: 1px solid currentColor;
   padding-bottom: 3px;
-  color: #685c69;
+  color: rgba(255, 255, 255, 0.68);
   font-size: 13px;
   font-weight: 700;
 }
@@ -151,7 +155,7 @@
   align-items: center;
   gap: 7px;
   margin-top: 20px;
-  color: #817582;
+  color: rgba(255, 255, 255, 0.48);
   font-size: 12px;
 }
 .tap-phone-stage {
@@ -166,17 +170,23 @@
   width: 540px;
   height: 540px;
   border-radius: 50%;
-  background: var(--tap-mint);
-  box-shadow: inset 0 0 90px rgba(255, 255, 255, 0.45);
+  background: radial-gradient(
+    circle,
+    rgba(255, 91, 31, 0.28),
+    rgba(89, 47, 105, 0.16) 52%,
+    transparent 72%
+  );
+  box-shadow: none;
 }
 .tap-phone {
   position: relative;
   width: 318px;
   min-height: 604px;
   padding: 13px 18px 22px;
-  border: 8px solid var(--tap-ink);
+  border: 8px solid #322c36;
   border-radius: 44px;
-  background: #f9f7f1;
+  background: linear-gradient(165deg, #17101f, #0c0911);
+  color: white;
   box-shadow: 0 42px 90px rgba(36, 21, 43, 0.3);
   transform: rotate(2.5deg);
 }
@@ -230,23 +240,24 @@
   align-items: center;
   justify-content: space-between;
   padding: 11px 12px;
-  border: 1px solid #ddd4c8;
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 13px;
-  background: white;
+  background: rgba(255, 255, 255, 0.08);
   font-size: 11px;
 }
 .tap-context span {
   display: flex;
   align-items: center;
   gap: 5px;
-  color: #756a74;
+  color: rgba(255, 255, 255, 0.62);
 }
 .tap-answer-card {
   margin-top: 13px;
   padding: 17px;
   border-radius: 22px;
-  background: white;
-  box-shadow: 0 12px 30px rgba(53, 36, 54, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.075);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
 }
 .tap-answer-card > p {
   font: 700 9px var(--font-mono);
@@ -605,7 +616,10 @@
 }
 .tap-app-shell {
   background:
-    radial-gradient(circle at 110% -5%, rgba(185, 221, 207, 0.55), transparent 32%), #f7f3eb;
+    radial-gradient(circle at 88% 15%, rgba(255, 91, 31, 0.12), transparent 28%),
+    radial-gradient(circle at 12% 84%, rgba(95, 55, 111, 0.16), transparent 34%),
+    linear-gradient(155deg, #160f1d 0%, #0d0912 72%, #181020 100%);
+  color-scheme: dark;
 }
 .tap-app-shell .cs-safe-top {
   padding-top: max(18px, env(safe-area-inset-top));
@@ -616,12 +630,141 @@
   font-weight: 800;
   line-height: 0.98;
   letter-spacing: -0.055em;
+  color: #fff;
 }
 .tap-app-question {
-  padding: 22px 0 10px;
+  padding: 30px 0 8px;
+}
+.tap-app-shell .tap-app-question .cs-microlabel {
+  display: none;
+}
+.tap-app-shell .tap-app-question .cs-title-lg {
+  max-width: 330px;
+  font-size: clamp(42px, 12vw, 58px);
+  line-height: 0.98;
+}
+.tap-app-shell .tap-app-question .cs-title-lg::before {
+  content: "Where are you paying?";
+  font-size: inherit;
+}
+.tap-app-shell .tap-app-question .cs-title-lg {
+  font-size: 0;
+}
+.tap-app-shell .tap-app-question .cs-title-lg::before {
+  font-size: clamp(42px, 12vw, 58px);
+}
+.tap-app-shell .tap-app-question > p:last-child {
+  display: none;
 }
 .tap-app-shell input {
-  box-shadow: 0 10px 26px -18px rgba(36, 21, 43, 0.35);
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 14px 35px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(18px);
+}
+.tap-app-shell input::placeholder {
+  color: rgba(255, 255, 255, 0.64) !important;
+}
+.tap-app-shell main {
+  color: white;
+}
+.tap-app-shell .text-foreground {
+  color: #fff;
+}
+.tap-app-shell .text-muted-foreground {
+  color: rgba(255, 255, 255, 0.62);
+}
+.tap-app-shell .bg-white {
+  background-color: rgba(255, 255, 255, 0.075);
+}
+.tap-app-shell .border-border {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+.tap-app-shell header .bg-primary {
+  background: #ff5b1f;
+}
+.tap-app-shell .tap-mini-logo {
+  color: white;
+  font-size: 28px !important;
+  font-weight: 850;
+}
+.tap-app-shell .tap-mini-logo i {
+  width: 12px;
+  height: 12px;
+  background: transparent;
+  border: 2px solid #ff5b1f;
+  box-shadow:
+    0 0 0 5px rgba(255, 91, 31, 0.16),
+    inset 0 0 0 2px #ff5b1f;
+}
+.tap-app-shell nav {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(17, 11, 23, 0.9);
+  color: white;
+}
+
+/* The recommendation is the product: dark, decisive, and physical. */
+.tap-decision-screen {
+  min-height: 100vh;
+  color-scheme: dark;
+  background:
+    radial-gradient(circle at 78% 31%, rgba(255, 91, 31, 0.17), transparent 20%),
+    linear-gradient(155deg, #160f1d, #0c0911 75%, #181020);
+}
+.tap-decision-screen .text-foreground {
+  color: #fff;
+}
+.tap-decision-screen .text-muted-foreground {
+  color: rgba(255, 255, 255, 0.62);
+}
+.tap-decision-screen .border-border {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+.tap-decision-screen .bg-white {
+  background-color: rgba(255, 255, 255, 0.075);
+}
+.tap-decision-screen header button {
+  color: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+.tap-merchant-pill {
+  display: inline-flex;
+  width: max-content;
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: rgba(100, 72, 109, 0.4);
+  color: rgba(255, 255, 255, 0.76) !important;
+  letter-spacing: 0.02em !important;
+  text-transform: capitalize !important;
+}
+.tap-decision-title {
+  max-width: 390px;
+  color: white;
+  font-family: var(--font-display);
+  font-size: clamp(42px, 12vw, 58px);
+  font-weight: 820;
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+.tap-decision-screen .cs-btn-primary {
+  border-radius: 17px;
+  background: linear-gradient(135deg, #ff5b1f, #ff7035);
+  box-shadow: 0 14px 34px rgba(255, 91, 31, 0.25);
+}
+.tap-decision-screen .tap-proof-panel {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(18px);
+}
+.tap-decision-screen .tap-proof-panel button {
+  color: white;
+}
+.tap-decision-screen .tap-proof-panel .border-border\/70 {
+  border-color: rgba(255, 255, 255, 0.12);
 }
 .tap-empty-wallet {
   display: grid !important;

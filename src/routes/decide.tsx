@@ -301,7 +301,7 @@ function DecidePage() {
   });
 
   return (
-    <div className="cs-app-body min-h-screen flex flex-col text-foreground">
+    <div className="cs-app-body tap-decision-screen min-h-screen flex flex-col text-foreground">
       <header className="cs-safe-top px-5 pb-2 flex items-center justify-between">
         <button
           onClick={() => navigate({ to: "/home" })}
@@ -322,8 +322,12 @@ function DecidePage() {
       <main className="flex-1 px-5 pb-10 max-w-md w-full mx-auto">
         {/* Merchant header */}
         <div className="mt-2">
-          <p className="cs-microlabel text-[10px]">Checked · {detectedAt}</p>
-          <h1 className="cs-title-lg mt-1 text-foreground">{merchantName}</h1>
+          <p className="cs-microlabel tap-merchant-pill text-[10px]">
+            {merchantName} · {category.replace(/_/g, " ")}
+          </p>
+          <h1 className="tap-decision-title mt-5 text-foreground">
+            Use {plays[0] ? playFace(plays[0]).name : "your best card"}.
+          </h1>
           <button
             type="button"
             onClick={() => setSheet("amount")}

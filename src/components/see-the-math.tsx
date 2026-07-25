@@ -41,7 +41,7 @@ export function SeeTheMath({ winner, runnerUp, amountCents }: Props) {
   const delta = hasRunnerUp ? winner.totalValueCents - runnerUp!.totalValueCents : 0;
 
   return (
-    <div className="mt-4 rounded-2xl bg-white border border-border overflow-hidden">
+    <div className="tap-proof-panel mt-4 rounded-2xl bg-white border border-border overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
