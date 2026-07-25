@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "tap-independent-preview",
+  "workers_dev": true,
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
   "main": "src/server.ts",
@@ -9,12 +10,12 @@
   },
   "routes": [
     {
-      "pattern": "tapknows.com",
-      "custom_domain": true,
+      "pattern": "tapknows.com/*",
+      "zone_name": "tapknows.com",
     },
     {
-      "pattern": "www.tapknows.com",
-      "custom_domain": true,
+      "pattern": "www.tapknows.com/*",
+      "zone_name": "tapknows.com",
     },
   ],
 }
