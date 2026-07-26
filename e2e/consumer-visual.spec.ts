@@ -32,7 +32,7 @@ const routes = [
   { name: "purchases", path: "/purchases", redirectTo: "/login" },
   { name: "alerts", path: "/alerts", redirectTo: "/login" },
   { name: "settings", path: "/settings", redirectTo: "/login" },
-  { name: "login", path: "/login" },
+  { name: "login", path: "/login", readyText: "Continue with Apple" },
   { name: "privacy", path: "/privacy", heading: "Privacy Policy" },
   { name: "terms", path: "/terms", heading: "Terms of Use" },
   { name: "demo", path: "/demo", readyText: "Beat 1 of 6" },
@@ -60,6 +60,7 @@ test.describe("TAP consumer visual system", () => {
         await expect(page.locator("body")).toBeVisible();
         if ("redirectTo" in route && route.redirectTo) {
           await page.waitForURL(`**${route.redirectTo}`);
+          await expect(page.getByText("Continue with Apple")).toBeVisible();
         }
         if ("heading" in route && route.heading) {
           await expect(page.getByRole("heading", { name: route.heading })).toBeVisible();
@@ -69,6 +70,9 @@ test.describe("TAP consumer visual system", () => {
         }
         if (route.name === "home") {
           await expect(page.locator('[data-wallet-ready="true"]')).toBeVisible();
+        }
+        if (route.name === "onboarding") {
+          await expect(page.getByRole("button", { name: /Continue/ })).toBeEnabled();
         }
         await expect(page).toHaveScreenshot(`${route.name}-${viewport.name}.png`, {
           animations: "disabled",
