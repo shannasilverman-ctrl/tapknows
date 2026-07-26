@@ -162,3 +162,16 @@ export function computeWalletRoles(input: WalletRoleInput): WalletRole[] {
 
   return roles;
 }
+
+/**
+ * Full briefing view of the wallet. Unlike computeWalletRoles (which keeps
+ * Home compact by showing only distinct specialists), this returns the winner
+ * for every common situation—even when the same card wins more than one.
+ */
+export function computeWalletGuide(input: WalletRoleInput): WalletRole[] {
+  if (input.userCards.length === 0) return [];
+  return DOMAINS.map((domain) => {
+    const winner = runDomain(input, domain)[0];
+    return winner ? toRole(domain, winner) : null;
+  }).filter((role): role is WalletRole => role !== null);
+}

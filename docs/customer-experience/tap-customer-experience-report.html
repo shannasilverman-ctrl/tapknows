@@ -36,7 +36,7 @@ html:not([data-portable-source-tooltips-ready]) .portable-chart-summary>.portabl
 <body>
 <main id="data-analytics-portable-fallback" class="portable-fallback" data-portable-fallback="true" data-portable-surface="report"><header class="portable-page-header"><div class="portable-page-heading"><p class="portable-surface-label">Data Analytics report</p><h1>TAP Should Make the Payment Decision</h1><p class="portable-description">Customer evidence, journey audit, and prioritized product direction for TAP.</p></div><div class="portable-page-meta"><time datetime="2026-07-26T18:15:00.000Z">Jul 26, 2026, 6:15 PM UTC</time></div></header><div class="portable-block-stack">
 <div class="portable-block portable-layout-full" data-artifact-block-id="summary" data-artifact-block-type="markdown" data-layout="full"><section class="portable-markdown"><h2>Executive Summary</h2>
-<ul><li><strong>TAP&#39;s core job is a decision, not a dashboard.</strong> A customer should name the place and immediately understand what to use, why, and what to do next.</li><li><strong>Trust must change the answer—not merely decorate it.</strong> TAP should account for fees, interest risk, caps, assumptions, and uncertainty even when that means recommending cash or debit.</li><li><strong>The fastest experience begins outside the app.</strong> Home Screen launch, direct task shortcuts, nearby merchants, and respectful reminders reduce the work between intent and checkout.</li><li><strong>The product needs a tighter learning loop.</strong> Measure where customers hesitate—finding the merchant, adding cards, trusting the pick, or understanding the math—rather than relying on broad engagement alone.</li></ul></section></div>
+<ul><li><strong>TAP&#39;s core job is a decision, not a dashboard.</strong> A customer should name the place and immediately understand what to use, why, and what to do next.</li><li><strong>Wallet should teach the durable rule.</strong> Home answers the purchase in front of the customer; Wallet should remember the playbook—what each card is for, which travel and purchase benefits are verified, what credits remain, and which fees or caps can change the answer.</li><li><strong>Trust must change the answer—not merely decorate it.</strong> TAP should account for fees, interest risk, caps, assumptions, and uncertainty even when that means recommending cash or debit.</li><li><strong>The product needs a tighter learning loop.</strong> Measure where customers hesitate—finding the merchant, adding cards, trusting the pick, remembering the rule, or understanding the math—rather than relying on broad engagement alone.</li></ul></section></div>
 <div class="portable-block portable-layout-full" data-artifact-block-id="customer_context_intro" data-artifact-block-type="markdown" data-layout="full"><section class="portable-markdown"><h2>The customer is optimizing under financial pressure</h2>
 <p><strong>Rewards are only one part of the payment decision.</strong> Current cardholders frequently carry debt or encounter merchant surcharges. These figures use different survey populations, so they should not be added together; taken together, they show why TAP needs financial guardrails alongside reward optimization.</p></section><div class="portable-inline-source portable-source-summary" data-source-id="jd-power-2025"><div class="portable-inline-source-content portable-source-summary-content"><span class="portable-source-tooltip-heading" aria-hidden="true">Source for The customer is optimizing under financial pressure</span><strong>Source: J.D. Power 2025 U.S. Credit Card Satisfaction Study</strong><p class="portable-source-description-data">Reviewed percentages transcribed from the published 2025 study release and shaped into one comparison table.</p><pre class="portable-source-query-data" aria-hidden="true"><code>SELECT * FROM (VALUES (&#39;Used alternate payment after a surcharge&#39;, 0.81, &#39;Cardholders who experienced a surcharge&#39;, 1), (&#39;Experienced a credit-card surcharge&#39;, 0.65, &#39;U.S. credit-card customers&#39;, 2), (&#39;Classified as financially unhealthy&#39;, 0.56, &#39;U.S. credit-card customers&#39;, 3), (&#39;Carrying revolving card debt&#39;, 0.53, &#39;U.S. credit-card customers&#39;, 4)) AS evidence(signal, share, population, rank) ORDER BY rank</code></pre></div></div></div>
 <div class="portable-block portable-layout-full" data-artifact-block-id="customer_context_chart" data-artifact-block-type="chart" data-layout="full"><figure class="portable-content-card portable-chart-summary" data-artifact-id="customer-context" data-artifact-kind="chart" data-chart-id="customer-context" data-portable-visual-title="Credit-card customer context" data-portable-source-host="true" tabindex="0" aria-label="Credit-card customer context" aria-describedby="portable-source-tooltip-1"><figcaption class="portable-visual-header"><strong>Credit-card customer context</strong></figcaption><div class="portable-inline-source" data-source-id="jd-power-2025"><div class="portable-inline-source-content portable-source-tooltip-content" id="portable-source-tooltip-1" role="tooltip"><span class="portable-source-tooltip-heading" aria-hidden="true">Source for Credit-card customer context</span><strong>Source: J.D. Power 2025 U.S. Credit Card Satisfaction Study</strong><p class="portable-source-description-data">Reviewed percentages transcribed from the published 2025 study release and shaped into one comparison table.</p><pre class="portable-source-query-data" aria-hidden="true"><code>SELECT * FROM (VALUES (&#39;Used alternate payment after a surcharge&#39;, 0.81, &#39;Cardholders who experienced a surcharge&#39;, 1), (&#39;Experienced a credit-card surcharge&#39;, 0.65, &#39;U.S. credit-card customers&#39;, 2), (&#39;Classified as financially unhealthy&#39;, 0.56, &#39;U.S. credit-card customers&#39;, 3), (&#39;Carrying revolving card debt&#39;, 0.53, &#39;U.S. credit-card customers&#39;, 4)) AS evidence(signal, share, population, rank) ORDER BY rank</code></pre></div></div><div class="portable-static-chart" data-static-chart-id="customer-context" data-static-chart-block-id="customer_context_chart" role="img" aria-label="Credit-card customer context chart" style="max-width:768px"><div class="portable-static-chart-variant portable-static-chart-light" aria-hidden="true"><svg width="768" height="320" viewBox="0 0 768 320" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="portable-static-chart-svg" focusable="false" preserveAspectRatio="xMidYMid meet">
@@ -386,15 +386,19 @@ html:not([data-portable-source-tooltips-ready]) .portable-chart-summary>.portabl
 <p>The CFPB reported more than <span class="portable-source-tooltip portable-source-value" data-portable-source-host="true" tabindex="0" aria-describedby="portable-source-tooltip-2"><span class="portable-source-value-text">1,200</span><span class="portable-source-tooltip-content" id="portable-source-tooltip-2" role="tooltip"><span class="portable-source-tooltip-heading" aria-hidden="true">Source for 1,200</span><strong>Source: CFPB Credit Card Rewards Issue Spotlight</strong></span></span> credit-card rewards complaints in 2023, over <span class="portable-source-tooltip portable-source-value" data-portable-source-host="true" tabindex="0" aria-describedby="portable-source-tooltip-3"><span class="portable-source-value-text">70%</span><span class="portable-source-tooltip-content" id="portable-source-tooltip-3" role="tooltip"><span class="portable-source-tooltip-heading" aria-hidden="true">Source for 70%</span><strong>Source: CFPB Credit Card Rewards Issue Spotlight</strong></span></span> above pre-pandemic levels. Its recurring themes—unexpected conditions, devaluation, redemption problems, and revocation—map directly to TAP&#39;s proof experience. The practical implication is that rates, caps, valuation assumptions, terms dates, and correction paths must remain visible and specific.</p></section><div class="portable-inline-source portable-source-summary" data-source-id="cfpb-rewards-2024"><div class="portable-inline-source-content portable-source-summary-content"><span class="portable-source-tooltip-heading" aria-hidden="true">Source for Trust is the product</span><strong>Source: CFPB Credit Card Rewards Issue Spotlight</strong></div></div></div>
 <div class="portable-block portable-layout-full" data-artifact-block-id="moment" data-artifact-block-type="markdown" data-layout="full"><section class="portable-markdown"><h2>The winning interaction happens at the moment of payment</h2>
 <p>CardPointers&#39; current product emphasizes location-aware recommendations, lock-screen surfaces, shortcuts, and reminders so customers can get an answer without navigating a full app. MaxRewards similarly centers nearby merchants, a category cheatsheet, offers, credits, and balances. TAP should differentiate through a smaller promise: the clearest independent answer, with less setup and more transparent math.</p></section></div>
+<div class="portable-block portable-layout-full" data-artifact-block-id="wallet_playbook" data-artifact-block-type="markdown" data-layout="full"><section class="portable-markdown"><h2>Wallet should answer “what is every card for?”</h2>
+<p><strong>The previous Wallet route managed cards but did not brief the customer.</strong> The rich earn-rate, credit, protection, fee, cap, and issuer-source detail existed only behind Home&#39;s physical wallet, creating two inconsistent experiences. The rebuild makes Wallet a situation-first playbook and extracts one shared card guide used by both routes.</p>
+<p><strong>The information order now follows the customer’s decisions:</strong> common situation → recommended owned card → card-specific use cases → verified travel and purchase benefits → credits still available → fees, caps, dates, and issuer terms. Every situation can open a real recommendation, and every benefit claim is sourced rather than inferred from a generic card label.</p>
+<p><strong>This is a meaningful competitive wedge.</strong> CardPointers emphasizes category recommendations, MaxRewards exposes benefits and reward trackers, and AwardWallet tracks balances, credits, and expiration. TAP should remain narrower and more legible: decide now on Home; remember and learn in Wallet; evaluate future choices in Plan.</p></section></div>
 <div class="portable-block portable-layout-full" data-artifact-block-id="journey_intro" data-artifact-block-type="markdown" data-layout="full"><section class="portable-markdown"><h2>The journey should always reveal one obvious next step</h2>
 <p>The route-by-route audit found that the core home → recommendation → proof path is strong, but several surrounding controls were misleading or surprising. The first implementation pass removes those breaks and establishes the next measurement point for each customer job.</p></section></div>
 <div class="portable-block portable-layout-full" data-artifact-block-id="journey_table" data-artifact-block-type="table" data-layout="full"><section class="portable-content-card portable-table-card" data-artifact-id="journey-priorities" data-artifact-kind="table" data-table-id="journey-priorities" data-portable-visual-title="Customer journey priorities"><header class="portable-visual-header"><h2>Customer journey priorities</h2></header><div class="portable-inline-source portable-source-summary" data-source-id="tap-audit"><div class="portable-inline-source-content portable-source-summary-content"><span class="portable-source-tooltip-heading" aria-hidden="true">Source for Customer journey priorities</span><strong>Source: TAP consumer-route implementation audit, July 26, 2026</strong><p class="portable-source-description-data">Prioritized rows from the reviewed TAP consumer-route audit.</p><pre class="portable-source-query-data" aria-hidden="true"><code>SELECT * FROM (VALUES (1, &#39;Make the right payment choice&#39;, &#39;Rewards ignored merchant card fees&#39;), (2, &#39;Know what the primary button will do&#39;, &#39;CTA claimed an unavailable wallet action&#39;), (3, &#39;Navigate without surprises&#39;, &#39;Guest destinations unexpectedly opened sign-in&#39;), (4, &#39;Get to a decision quickly&#39;, &#39;Installed app opened on marketing&#39;), (5, &#39;Trust the math&#39;, &#39;Interest warning was missing&#39;), (6, &#39;Tell TAP what went wrong&#39;, &#39;Feedback categories were too broad&#39;)) AS audit(rank, customer_job, friction) ORDER BY rank</code></pre></div></div><div class="portable-table-source-region"><div class="portable-table-scroll"><table><caption>Customer journey priorities</caption><thead><tr><th scope="col" class="portable-table-number">Priority</th><th scope="col">Customer job</th><th scope="col">Observed friction</th><th scope="col">Product response</th><th scope="col">What to measure next</th></tr></thead><tbody><tr><td class="portable-table-source-cell portable-table-number"><span class="portable-source-tooltip portable-source-value" data-portable-source-host="true" tabindex="0" aria-describedby="portable-source-tooltip-4"><span class="portable-source-value-text">1</span><span class="portable-source-tooltip-content" id="portable-source-tooltip-4" role="tooltip"><span class="portable-source-tooltip-heading" aria-hidden="true">Source for 1</span><strong>Source: TAP consumer-route implementation audit, July 26, 2026</strong></span></span></td><td>Make the right payment choice</td><td>Rewards ignored merchant card fees</td><td>Compare the surcharge with reward value and recommend cash or debit when it wins</td><td>Share of decisions changed by fee</td></tr><tr><td class="portable-table-source-cell portable-table-number"><span class="portable-source-tooltip portable-source-value" data-portable-source-host="true" tabindex="0" aria-describedby="portable-source-tooltip-5"><span class="portable-source-value-text">2</span><span class="portable-source-tooltip-content" id="portable-source-tooltip-5" role="tooltip"><span class="portable-source-tooltip-heading" aria-hidden="true">Source for 2</span><strong>Source: TAP consumer-route implementation audit, July 26, 2026</strong></span></span></td><td>Know what the primary button will do</td><td>CTA claimed to open Apple or Google Wallet without that capability</td><td>Use an honest confirmation label and receipt</td><td>Choice completion rate</td></tr><tr><td class="portable-table-source-cell portable-table-number"><span class="portable-source-tooltip portable-source-value" data-portable-source-host="true" tabindex="0" aria-describedby="portable-source-tooltip-6"><span class="portable-source-value-text">3</span><span class="portable-source-tooltip-content" id="portable-source-tooltip-6" role="tooltip"><span class="portable-source-tooltip-heading" aria-hidden="true">Source for 3</span><strong>Source: TAP consumer-route implementation audit, July 26, 2026</strong></span></span></td><td>Navigate without surprises</td><td>Guest Alerts and Settings links unexpectedly opened sign-in</td><td>Show an explicit Sign in destination and remove unavailable guest destinations</td><td>Unexpected login exits</td></tr><tr><td class="portable-table-source-cell portable-table-number"><span class="portable-source-tooltip portable-source-value" data-portable-source-host="true" tabindex="0" aria-describedby="portable-source-tooltip-7"><span class="portable-source-value-text">4</span><span class="portable-source-tooltip-content" id="portable-source-tooltip-7" role="tooltip"><span class="portable-source-tooltip-heading" aria-hidden="true">Source for 4</span><strong>Source: TAP consumer-route implementation audit, July 26, 2026</strong></span></span></td><td>Get to a decision quickly</td><td>Installed web app opened on the marketing page</td><td>Open on Home and expose Choose card, Wallet, and Plan shortcuts</td><td>Time from launch to recommendation</td></tr><tr><td class="portable-table-source-cell portable-table-number"><span class="portable-source-tooltip portable-source-value" data-portable-source-host="true" tabindex="0" aria-describedby="portable-source-tooltip-8"><span class="portable-source-value-text">5</span><span class="portable-source-tooltip-content" id="portable-source-tooltip-8" role="tooltip"><span class="portable-source-tooltip-heading" aria-hidden="true">Source for 5</span><strong>Source: TAP consumer-route implementation audit, July 26, 2026</strong></span></span></td><td>Trust the math</td><td>Rewards framing did not explicitly warn about interest</td><td>Add debt-before-rewards guidance to proof and trust surfaces</td><td>Proof comprehension and trust</td></tr><tr><td class="portable-table-source-cell portable-table-number"><span class="portable-source-tooltip portable-source-value" data-portable-source-host="true" tabindex="0" aria-describedby="portable-source-tooltip-9"><span class="portable-source-value-text">6</span><span class="portable-source-tooltip-content" id="portable-source-tooltip-9" role="tooltip"><span class="portable-source-tooltip-heading" aria-hidden="true">Source for 6</span><strong>Source: TAP consumer-route implementation audit, July 26, 2026</strong></span></span></td><td>Tell TAP what went wrong</td><td>Feedback categories did not isolate the broken journey stage</td><td>Ask about merchant search, card setup, trust, and math comprehension</td><td>Feedback mix by journey stage</td></tr></tbody></table></div></div></section></div>
 <div class="portable-block portable-layout-full" data-artifact-block-id="next_steps" data-artifact-block-type="markdown" data-layout="full"><section class="portable-markdown"><h2>Recommended Next Steps</h2>
-<ol><li><strong>Instrument the decision funnel:</strong> wallet ready → merchant selected → recommendation viewed → proof opened → payment choice recorded → next purchase started.</li><li><strong>Measure decision confidence:</strong> preserve the improved third-use prompt and report responses by journey stage and wallet size.</li><li><strong>Add merchant-level fee memory:</strong> let customers remember that a merchant charges a surcharge so TAP can warn them automatically next time.</li><li><strong>Move the answer closer to checkout:</strong> validate Home Screen shortcuts and web-push reminders before investing in broader dashboards.</li><li><strong>Test the ethical guardrail:</strong> measure whether the interest and surcharge guidance increases trust without reducing comprehension or completion.</li></ol></section></div>
+<ol><li><strong>Instrument the decision funnel:</strong> wallet ready → merchant selected → recommendation viewed → proof opened → payment choice recorded → next purchase started.</li><li><strong>Instrument the learning loop:</strong> Wallet opened → situation tried → card guide opened → benefit detail opened → next recommendation completed.</li><li><strong>Measure decision confidence:</strong> preserve the improved third-use prompt and report responses by journey stage and wallet size.</li><li><strong>Add merchant-level fee memory:</strong> let customers remember that a merchant charges a surcharge so TAP can warn them automatically next time.</li><li><strong>Expand verified benefit coverage deliberately:</strong> label cards without sourced benefit data as not yet verified; never imply that an empty registry means the card has no benefits.</li><li><strong>Test the ethical guardrail:</strong> measure whether the interest and surcharge guidance increases trust without reducing comprehension or completion.</li></ol></section></div>
 <div class="portable-block portable-layout-full" data-artifact-block-id="questions" data-artifact-block-type="markdown" data-layout="full"><section class="portable-markdown"><h2>Further Questions</h2>
-<ul><li>Which entry path produces the fastest completed decision: search, recent merchant, nearby merchant, shortcut, or alert?</li><li>Where do customers abandon card setup, and is photo import reducing that friction?</li><li>How often does amount, a benefit, a cap, or a surcharge actually change the answer?</li><li>Do customers understand estimated reward value without opening proof?</li><li>Which reminders are useful enough to keep enabled, and which feel intrusive?</li></ul></section></div>
+<ul><li>Does the Wallet playbook help customers remember the right card without reopening TAP at checkout?</li><li>Which entry path produces the fastest completed decision: search, recent merchant, nearby merchant, shortcut, or alert?</li><li>Where do customers abandon card setup, and is photo import reducing that friction?</li><li>How often does amount, a benefit, a cap, or a surcharge actually change the answer?</li><li>Do customers understand estimated reward value without opening proof?</li><li>Which reminders are useful enough to keep enabled, and which feel intrusive?</li></ul></section></div>
 <div class="portable-block portable-layout-full" data-artifact-block-id="caveats" data-artifact-block-type="markdown" data-layout="full"><section class="portable-markdown"><h2>Caveats and Assumptions</h2>
-<p>This report combines a code-and-interface audit with external market evidence; TAP does not yet collect a complete anonymous product funnel, so behavioral priorities are provisional. Competitor capabilities describe their published product claims, not independent performance comparisons. The J.D. Power percentages use different denominators and are presented separately. The recommended direction should be updated as TAP&#39;s own journey data and customer interviews become available.</p></section></div></div><section class="portable-sources" aria-labelledby="portable-sources-heading"><h2 id="portable-sources-heading">Sources</h2><ol><li><strong>J.D. Power 2025 U.S. Credit Card Satisfaction Study</strong><span class="portable-source-meta">DuckDB · 2026-07-26T18:15:00.000Z</span><p>Reviewed percentages transcribed from the published 2025 study release and shaped into one comparison table.</p><details class="portable-source-query" open><summary>SQL query</summary><pre><code>SELECT * FROM (VALUES (&#39;Used alternate payment after a surcharge&#39;, 0.81, &#39;Cardholders who experienced a surcharge&#39;, 1), (&#39;Experienced a credit-card surcharge&#39;, 0.65, &#39;U.S. credit-card customers&#39;, 2), (&#39;Classified as financially unhealthy&#39;, 0.56, &#39;U.S. credit-card customers&#39;, 3), (&#39;Carrying revolving card debt&#39;, 0.53, &#39;U.S. credit-card customers&#39;, 4)) AS evidence(signal, share, population, rank) ORDER BY rank</code></pre></details></li><li><strong>CFPB Credit Card Rewards Issue Spotlight</strong></li><li><strong>CardPointers current product description</strong></li><li><strong>MaxRewards current product description</strong></li><li><strong>WebKit: Web Push for Home Screen web apps</strong></li><li><strong>MDN: Web app manifest shortcuts</strong></li><li><strong>TAP consumer-route implementation audit, July 26, 2026</strong><span class="portable-source-meta">DuckDB · 2026-07-26T18:15:00.000Z</span><p>Prioritized rows from the reviewed TAP consumer-route audit.</p><details class="portable-source-query" open><summary>SQL query</summary><pre><code>SELECT * FROM (VALUES (1, &#39;Make the right payment choice&#39;, &#39;Rewards ignored merchant card fees&#39;), (2, &#39;Know what the primary button will do&#39;, &#39;CTA claimed an unavailable wallet action&#39;), (3, &#39;Navigate without surprises&#39;, &#39;Guest destinations unexpectedly opened sign-in&#39;), (4, &#39;Get to a decision quickly&#39;, &#39;Installed app opened on marketing&#39;), (5, &#39;Trust the math&#39;, &#39;Interest warning was missing&#39;), (6, &#39;Tell TAP what went wrong&#39;, &#39;Feedback categories were too broad&#39;)) AS audit(rank, customer_job, friction) ORDER BY rank</code></pre></details></li></ol></section></main>
+<p>This report combines a code-and-interface audit with external market evidence; TAP does not yet collect a complete anonymous product funnel, so behavioral priorities are provisional. Competitor capabilities describe their published product claims, not independent performance comparisons. TAP&#39;s verified benefit registry is intentionally incomplete: missing entries mean “not yet verified in TAP,” not “this card has no benefit.” Reward rates, benefits, and protections can change, so the application must retain verification dates and direct issuer-source links. The recommended direction should be updated as TAP&#39;s own journey data and customer interviews become available.</p></section></div></div><section class="portable-sources" aria-labelledby="portable-sources-heading"><h2 id="portable-sources-heading">Sources</h2><ol><li><strong>J.D. Power 2025 U.S. Credit Card Satisfaction Study</strong><span class="portable-source-meta">DuckDB · 2026-07-26T18:15:00.000Z</span><p>Reviewed percentages transcribed from the published 2025 study release and shaped into one comparison table.</p><details class="portable-source-query" open><summary>SQL query</summary><pre><code>SELECT * FROM (VALUES (&#39;Used alternate payment after a surcharge&#39;, 0.81, &#39;Cardholders who experienced a surcharge&#39;, 1), (&#39;Experienced a credit-card surcharge&#39;, 0.65, &#39;U.S. credit-card customers&#39;, 2), (&#39;Classified as financially unhealthy&#39;, 0.56, &#39;U.S. credit-card customers&#39;, 3), (&#39;Carrying revolving card debt&#39;, 0.53, &#39;U.S. credit-card customers&#39;, 4)) AS evidence(signal, share, population, rank) ORDER BY rank</code></pre></details></li><li><strong>CFPB Credit Card Rewards Issue Spotlight</strong></li><li><strong>CardPointers current product description</strong></li><li><strong>MaxRewards current product description</strong></li><li><strong>AwardWallet current product description</strong></li><li><strong>Chase Sapphire Preferred current benefits</strong></li><li><strong>WebKit: Web Push for Home Screen web apps</strong></li><li><strong>MDN: Web app manifest shortcuts</strong></li><li><strong>TAP consumer-route implementation audit, July 26, 2026</strong><span class="portable-source-meta">DuckDB · 2026-07-26T18:15:00.000Z</span><p>Prioritized rows from the reviewed TAP consumer-route audit.</p><details class="portable-source-query" open><summary>SQL query</summary><pre><code>SELECT * FROM (VALUES (1, &#39;Make the right payment choice&#39;, &#39;Rewards ignored merchant card fees&#39;), (2, &#39;Know what the primary button will do&#39;, &#39;CTA claimed an unavailable wallet action&#39;), (3, &#39;Navigate without surprises&#39;, &#39;Guest destinations unexpectedly opened sign-in&#39;), (4, &#39;Get to a decision quickly&#39;, &#39;Installed app opened on marketing&#39;), (5, &#39;Trust the math&#39;, &#39;Interest warning was missing&#39;), (6, &#39;Tell TAP what went wrong&#39;, &#39;Feedback categories were too broad&#39;)) AS audit(rank, customer_job, friction) ORDER BY rank</code></pre></details></li></ol></section></main>
 <script data-data-analytics-portable-source-tooltips="true">(() => {
   const RUNTIME_FLAG = "__dataAnalyticsPortableSourceTooltipsInitialized";
   const READY_ATTRIBUTE = "data-portable-source-tooltips-ready";
@@ -735,86 +739,99 @@ html:not([data-portable-source-tooltips-ready]) .portable-chart-summary>.portabl
 })();</script>
 <div id="data-analytics-portable-reader" aria-hidden="true" inert></div>
 <template id="data-analytics-portable-artifact-payload-source" data-compression="gzip-base64">
-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
+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
 </template>
 <template id="data-analytics-portable-reader-runtime-source" data-compression="gzip-base64">
 H4sIAAAAAAACE+y9a3fjNrYg+v38CilTV0MeQ4pk15MyyqfiR6e665VyVdLVjseESUhCTIEKCNnl

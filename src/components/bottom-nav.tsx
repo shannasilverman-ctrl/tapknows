@@ -49,7 +49,7 @@ export function BottomNav() {
       <LegalFooter />
       <nav
         aria-label="Primary"
-        className="border-t border-border bg-surface px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex items-center justify-around text-xs sticky bottom-0"
+        className="border-t border-x border-border bg-surface px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex items-center justify-around text-xs sticky bottom-0 w-full max-w-md mx-auto rounded-t-2xl shadow-[0_-10px_30px_rgba(36,21,43,0.05)]"
       >
         {items.map((it) => {
           const active = pathname === it.to;

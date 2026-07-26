@@ -57,6 +57,7 @@ export const CARD_CATALOG: CatalogCard[] = [
     earn_rules: [
       { category: "travel_portal", multiplier: 5 },
       { category: "dining", multiplier: 3 },
+      { category: "gas", multiplier: 3, note: "includes EV charging" },
       { category: "online_groceries", multiplier: 3 },
       { category: "streaming", multiplier: 3 },
       { category: "travel", multiplier: 2 },

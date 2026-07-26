@@ -64,6 +64,12 @@ describe("catalog integrity", () => {
     expect(defaultCpp("hyatt_wob")).toBeCloseTo(0.016, 4);
     expect(defaultCpp("bilt")).toBeCloseTo(0.022, 4);
   });
+
+  it("keeps the current Sapphire Preferred gas category in the verified catalog", () => {
+    expect(CATALOG_BY_ID.chase_csp.earn_rules).toContainEqual(
+      expect.objectContaining({ category: "gas", multiplier: 3 }),
+    );
+  });
 });
 
 describe("engine — category cap pro-rate", () => {

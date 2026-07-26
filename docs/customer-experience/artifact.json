@@ -15,7 +15,7 @@
       {
         "id": "summary",
         "type": "markdown",
-        "body": "## Executive Summary\n\n- **TAP's core job is a decision, not a dashboard.** A customer should name the place and immediately understand what to use, why, and what to do next.\n- **Trust must change the answer—not merely decorate it.** TAP should account for fees, interest risk, caps, assumptions, and uncertainty even when that means recommending cash or debit.\n- **The fastest experience begins outside the app.** Home Screen launch, direct task shortcuts, nearby merchants, and respectful reminders reduce the work between intent and checkout.\n- **The product needs a tighter learning loop.** Measure where customers hesitate—finding the merchant, adding cards, trusting the pick, or understanding the math—rather than relying on broad engagement alone."
+        "body": "## Executive Summary\n\n- **TAP's core job is a decision, not a dashboard.** A customer should name the place and immediately understand what to use, why, and what to do next.\n- **Wallet should teach the durable rule.** Home answers the purchase in front of the customer; Wallet should remember the playbook—what each card is for, which travel and purchase benefits are verified, what credits remain, and which fees or caps can change the answer.\n- **Trust must change the answer—not merely decorate it.** TAP should account for fees, interest risk, caps, assumptions, and uncertainty even when that means recommending cash or debit.\n- **The product needs a tighter learning loop.** Measure where customers hesitate—finding the merchant, adding cards, trusting the pick, remembering the rule, or understanding the math—rather than relying on broad engagement alone."
       },
       {
         "id": "customer_context_intro",
@@ -40,6 +40,11 @@
         "body": "## The winning interaction happens at the moment of payment\n\nCardPointers' current product emphasizes location-aware recommendations, lock-screen surfaces, shortcuts, and reminders so customers can get an answer without navigating a full app. MaxRewards similarly centers nearby merchants, a category cheatsheet, offers, credits, and balances. TAP should differentiate through a smaller promise: the clearest independent answer, with less setup and more transparent math."
       },
       {
+        "id": "wallet_playbook",
+        "type": "markdown",
+        "body": "## Wallet should answer “what is every card for?”\n\n**The previous Wallet route managed cards but did not brief the customer.** The rich earn-rate, credit, protection, fee, cap, and issuer-source detail existed only behind Home's physical wallet, creating two inconsistent experiences. The rebuild makes Wallet a situation-first playbook and extracts one shared card guide used by both routes.\n\n**The information order now follows the customer’s decisions:** common situation → recommended owned card → card-specific use cases → verified travel and purchase benefits → credits still available → fees, caps, dates, and issuer terms. Every situation can open a real recommendation, and every benefit claim is sourced rather than inferred from a generic card label.\n\n**This is a meaningful competitive wedge.** CardPointers emphasizes category recommendations, MaxRewards exposes benefits and reward trackers, and AwardWallet tracks balances, credits, and expiration. TAP should remain narrower and more legible: decide now on Home; remember and learn in Wallet; evaluate future choices in Plan."
+      },
+      {
         "id": "journey_intro",
         "type": "markdown",
         "body": "## The journey should always reveal one obvious next step\n\nThe route-by-route audit found that the core home → recommendation → proof path is strong, but several surrounding controls were misleading or surprising. The first implementation pass removes those breaks and establishes the next measurement point for each customer job."
@@ -52,17 +57,17 @@
       {
         "id": "next_steps",
         "type": "markdown",
-        "body": "## Recommended Next Steps\n\n1. **Instrument the decision funnel:** wallet ready → merchant selected → recommendation viewed → proof opened → payment choice recorded → next purchase started.\n2. **Measure decision confidence:** preserve the improved third-use prompt and report responses by journey stage and wallet size.\n3. **Add merchant-level fee memory:** let customers remember that a merchant charges a surcharge so TAP can warn them automatically next time.\n4. **Move the answer closer to checkout:** validate Home Screen shortcuts and web-push reminders before investing in broader dashboards.\n5. **Test the ethical guardrail:** measure whether the interest and surcharge guidance increases trust without reducing comprehension or completion."
+        "body": "## Recommended Next Steps\n\n1. **Instrument the decision funnel:** wallet ready → merchant selected → recommendation viewed → proof opened → payment choice recorded → next purchase started.\n2. **Instrument the learning loop:** Wallet opened → situation tried → card guide opened → benefit detail opened → next recommendation completed.\n3. **Measure decision confidence:** preserve the improved third-use prompt and report responses by journey stage and wallet size.\n4. **Add merchant-level fee memory:** let customers remember that a merchant charges a surcharge so TAP can warn them automatically next time.\n5. **Expand verified benefit coverage deliberately:** label cards without sourced benefit data as not yet verified; never imply that an empty registry means the card has no benefits.\n6. **Test the ethical guardrail:** measure whether the interest and surcharge guidance increases trust without reducing comprehension or completion."
       },
       {
         "id": "questions",
         "type": "markdown",
-        "body": "## Further Questions\n\n- Which entry path produces the fastest completed decision: search, recent merchant, nearby merchant, shortcut, or alert?\n- Where do customers abandon card setup, and is photo import reducing that friction?\n- How often does amount, a benefit, a cap, or a surcharge actually change the answer?\n- Do customers understand estimated reward value without opening proof?\n- Which reminders are useful enough to keep enabled, and which feel intrusive?"
+        "body": "## Further Questions\n\n- Does the Wallet playbook help customers remember the right card without reopening TAP at checkout?\n- Which entry path produces the fastest completed decision: search, recent merchant, nearby merchant, shortcut, or alert?\n- Where do customers abandon card setup, and is photo import reducing that friction?\n- How often does amount, a benefit, a cap, or a surcharge actually change the answer?\n- Do customers understand estimated reward value without opening proof?\n- Which reminders are useful enough to keep enabled, and which feel intrusive?"
       },
       {
         "id": "caveats",
         "type": "markdown",
-        "body": "## Caveats and Assumptions\n\nThis report combines a code-and-interface audit with external market evidence; TAP does not yet collect a complete anonymous product funnel, so behavioral priorities are provisional. Competitor capabilities describe their published product claims, not independent performance comparisons. The J.D. Power percentages use different denominators and are presented separately. The recommended direction should be updated as TAP's own journey data and customer interviews become available."
+        "body": "## Caveats and Assumptions\n\nThis report combines a code-and-interface audit with external market evidence; TAP does not yet collect a complete anonymous product funnel, so behavioral priorities are provisional. Competitor capabilities describe their published product claims, not independent performance comparisons. TAP's verified benefit registry is intentionally incomplete: missing entries mean “not yet verified in TAP,” not “this card has no benefit.” Reward rates, benefits, and protections can change, so the application must retain verification dates and direct issuer-source links. The recommended direction should be updated as TAP's own journey data and customer interviews become available."
       }
     ],
     "charts": [
@@ -179,6 +184,16 @@
         "id": "maxrewards-current",
         "label": "MaxRewards current product description",
         "href": "https://qa.maxrewards.com/"
+      },
+      {
+        "id": "awardwallet-current",
+        "label": "AwardWallet current product description",
+        "href": "https://awardwallet.com/en/"
+      },
+      {
+        "id": "chase-csp-2026",
+        "label": "Chase Sapphire Preferred current benefits",
+        "href": "https://www.chase.com/sapphire-cards/personal/preferred"
       },
       {
         "id": "webkit-push",
@@ -325,6 +340,16 @@
       "id": "maxrewards-current",
       "label": "MaxRewards current product description",
       "href": "https://qa.maxrewards.com/"
+    },
+    {
+      "id": "awardwallet-current",
+      "label": "AwardWallet current product description",
+      "href": "https://awardwallet.com/en/"
+    },
+    {
+      "id": "chase-csp-2026",
+      "label": "Chase Sapphire Preferred current benefits",
+      "href": "https://www.chase.com/sapphire-cards/personal/preferred"
     },
     {
       "id": "webkit-push",

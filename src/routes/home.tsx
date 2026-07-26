@@ -12,8 +12,7 @@ import { isFeedbackDue } from "@/lib/feedback";
 import { SaveWalletCard } from "@/components/save-wallet-card";
 import { SaveWalletSheet } from "@/components/save-wallet-sheet";
 import { WalletStack, type StackCard } from "@/components/wallet-stack";
-import { PinnedCardDetail } from "@/components/pinned-card-detail";
-import { isCapReached, setCapReached, type CapPeriod } from "@/lib/capReached";
+import { WalletCardBriefing } from "@/components/wallet-card-briefing";
 import { AddCardSheet } from "@/components/add-card-sheet";
 import { OfflinePill } from "@/components/offline-pill";
 import { LinkedBankStatus } from "@/components/linked-bank-status";
@@ -50,8 +49,7 @@ import {
   detectExpiredBenefits,
   trackBenefitSurfaced,
 } from "@/lib/benefitState";
-import { BENEFITS_BY_CARD, currentPeriod, type CardBenefit } from "@/lib/benefits";
-import { BenefitDetailSheet } from "@/components/benefit-detail-sheet";
+import { BENEFITS_BY_CARD, currentPeriod } from "@/lib/benefits";
 import { dollars } from "@/lib/format";
 import {
   Search,
@@ -205,7 +203,6 @@ function HomePage() {
   const [nearbyIds, setNearbyIds] = useState<string[]>([]);
   const [nearbyBusy, setNearbyBusy] = useState(false);
   const [nearbyDenied, setNearbyDenied] = useState(false);
-  const [openBenefit, setOpenBenefit] = useState<CardBenefit | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const syncPlaid = useServerFn(syncPlaidTopMerchants);
   const listItems = useServerFn(listPlaidItems);
@@ -612,217 +609,20 @@ function HomePage() {
 
   // Detail view (pinned card) takes over the screen
   if (openedCard) {
-    const cat = CATALOG_BY_ID[openedCard.catalog_id];
-    const feeLabel = openedCard.annualFee ? `$${openedCard.annualFee} annual fee` : "No annual fee";
     return (
-      <>
-        <PinnedCardDetail
-          issuer={openedCard.issuer}
-          name={openedCard.name}
-          winner
-          nickname={openedCard.nickname}
-          onBack={() => setOpenedId(null)}
-          onRemove={() => handleRemove(openedCard.id)}
-          onRename={(nn) => handleRename(openedCard.id, nn)}
-        >
-          <section className="mt-6">
-            <p className="cs-microlabel text-[10px]">Earn rates</p>
-            <ul className="mt-2 divide-y divide-border rounded-2xl border border-border bg-white">
-              {(cat?.earn_rules ?? []).map((r) => {
-                const label = r.category.replace(/_/g, " ");
-                const rate =
-                  r.multiplier >= 1 ? `${r.multiplier}x` : `${Math.round(r.multiplier * 100)}%`;
-                const cap = r.cap_period_spend ?? r.cap_annual_spend ?? null;
-                const period = (r.cap_period ?? "annual") as CapPeriod;
-                const periodShort =
-                  period === "monthly" ? "mo" : period === "quarterly" ? "qtr" : "yr";
-                const postCap = r.post_cap_multiplier ?? null;
-                const postCapLabel =
-                  postCap == null
-                    ? null
-                    : postCap >= 1
-                      ? `${postCap}x`
-                      : `${Math.round(postCap * 100)}%`;
-                const reached =
-                  cap != null
-                    ? isCapReached(user?.id ?? null, openedCard.id, r.category, period)
-                    : false;
-                return (
-                  <li key={`${r.category}-${r.multiplier}`} className="px-4 py-3">
-                    <div className="flex items-baseline justify-between gap-3">
-                      <span className="text-[15px] text-foreground capitalize">{label}</span>
-                      <span className="cs-money text-[15px] font-semibold text-foreground">
-                        {rate}
-                      </span>
-                    </div>
-                    {cap != null && (
-                      <div className="mt-1.5 flex items-center justify-between gap-3 text-[12px] text-muted-foreground">
-                        <span>
-                          Up to ${cap.toLocaleString("en-US")}/{periodShort}
-                          {postCapLabel ? `, then ${postCapLabel}` : ""}
-                        </span>
-                        <label className="inline-flex items-center gap-2 min-h-11 cursor-pointer">
-                          <span>Cap reached</span>
-                          <input
-                            type="checkbox"
-                            checked={reached}
-                            onChange={(e) =>
-                              setCapReached(
-                                user?.id ?? null,
-                                openedCard.id,
-                                r.category,
-                                period,
-                                e.target.checked,
-                              )
-                            }
-                            className="size-4 accent-primary"
-                          />
-                        </label>
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-
-          {(() => {
-            const list = benefitsForCard(user?.id ?? null, openedCard.catalog_id);
-            if (!list.length) return null;
-            const redeemable = list.filter(
-              (s) => s.benefit.kind === "redeemable" && s.benefit.value_cents != null,
-            );
-            const standing = list.filter((s) => s.benefit.kind === "standing");
-
-            // Group standing benefits so they read as a browsable reference,
-            // not middot fine print. Any standing entry without an explicit
-            // group falls into "Membership" so nothing goes missing.
-            const groupOrder: Array<{
-              key: "protection" | "travel" | "purchase" | "membership";
-              label: string;
-            }> = [
-              { key: "protection", label: "Protections" },
-              { key: "travel", label: "Travel" },
-              { key: "purchase", label: "Purchase coverage" },
-              { key: "membership", label: "Memberships" },
-            ];
-            const grouped = groupOrder
-              .map(({ key, label }) => ({
-                key,
-                label,
-                items: standing.filter((s) => (s.benefit.group ?? "membership") === key),
-              }))
-              .filter((g) => g.items.length > 0);
-
-            if (redeemable.length === 0 && grouped.length === 0) return null;
-
-            return (
-              <>
-                {redeemable.length > 0 && (
-                  <section className="mt-6">
-                    <p className="cs-microlabel text-[10px]">Credits</p>
-                    <ul className="mt-2 divide-y divide-border rounded-2xl border border-border bg-white">
-                      {redeemable.map((s) => {
-                        const total = s.benefit.value_cents ?? 0;
-                        const remaining = s.remaining_cents;
-                        const pct = total > 0 ? Math.round(((total - remaining) / total) * 100) : 0;
-                        return (
-                          <li key={s.benefit.id} className="px-4 py-3">
-                            <div className="flex items-baseline justify-between gap-3">
-                              <span className="text-[14px] text-foreground leading-snug">
-                                {s.benefit.label}
-                              </span>
-                              <span className="cs-money text-[14px] font-semibold text-foreground whitespace-nowrap">
-                                {dollars(remaining)} left
-                              </span>
-                            </div>
-                            <div className="mt-2 h-1.5 rounded-full bg-secondary overflow-hidden">
-                              <div
-                                className="h-full bg-primary transition-all"
-                                style={{ width: `${pct}%` }}
-                              />
-                            </div>
-                            <p className="mt-1.5 text-[11px] text-muted-foreground">
-                              Resets{" "}
-                              {s.ends_at.toLocaleDateString([], {
-                                month: "short",
-                                day: "numeric",
-                              })}
-                            </p>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </section>
-                )}
-
-                {grouped.map(({ key, label, items }) => (
-                  <section key={key} className="mt-6">
-                    <p className="cs-microlabel text-[10px]">{label}</p>
-                    <ul className="mt-2 divide-y divide-border rounded-2xl border border-border bg-white overflow-hidden">
-                      {items.map((s) => {
-                        const b = s.benefit;
-                        const title = b.title ?? b.label;
-                        const summary = b.summary;
-                        return (
-                          <li key={b.id}>
-                            <button
-                              type="button"
-                              onClick={() => setOpenBenefit(b)}
-                              className="w-full text-left px-4 py-3 flex items-center gap-3 min-h-11 hover:bg-secondary/40 active:scale-[0.96] transition-transform"
-                              aria-label={`${title} — details`}
-                            >
-                              <div className="flex-1 min-w-0">
-                                <p className="text-[15px] text-foreground leading-snug">{title}</p>
-                                {summary ? (
-                                  <p className="mt-0.5 text-[12px] text-muted-foreground leading-snug">
-                                    {summary}
-                                  </p>
-                                ) : null}
-                              </div>
-                              <ChevronRight
-                                className="size-4 text-muted-foreground shrink-0"
-                                aria-hidden
-                              />
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </section>
-                ))}
-              </>
-            );
-          })()}
-
-          <section className="mt-6">
-            <p className="cs-microlabel text-[10px]">Card facts</p>
-            <div className="mt-2 rounded-2xl border border-border bg-white px-4 py-3">
-              <div className="flex items-baseline justify-between">
-                <span className="text-[15px] text-foreground">Annual fee</span>
-                <span className="cs-money text-[15px] font-semibold text-foreground">
-                  {feeLabel}
-                </span>
-              </div>
-              <div className="mt-2 flex items-baseline justify-between">
-                <span className="text-[15px] text-foreground">Foreign transactions</span>
-                <span className="cs-money text-[15px] font-semibold text-foreground">
-                  {cat?.foreign_tx_fee_pct ? `${cat.foreign_tx_fee_pct}%` : "None"}
-                </span>
-              </div>
-            </div>
-          </section>
-
-          {/* Offers and quarterly cap progress intentionally omitted here —
-            no live source yet, and empty placeholder frames read as
-            unfinished. Sections render only when real data exists. */}
-        </PinnedCardDetail>
-        <BenefitDetailSheet
-          benefit={openBenefit}
-          issuer={openedCard.issuer}
-          onClose={() => setOpenBenefit(null)}
-        />
-      </>
+      <WalletCardBriefing
+        card={{
+          id: openedCard.id,
+          catalogId: openedCard.catalog_id,
+          issuer: openedCard.issuer,
+          name: openedCard.name,
+          nickname: openedCard.nickname,
+        }}
+        userId={user?.id ?? null}
+        onBack={() => setOpenedId(null)}
+        onRemove={() => handleRemove(openedCard.id)}
+        onRename={(nickname) => handleRename(openedCard.id, nickname)}
+      />
     );
   }
 
@@ -1167,7 +967,7 @@ function HomePage() {
                   cards={stackCards}
                   onOpen={(id) => setOpenedId(id)}
                   pocket
-                  pocketLabel={`Your wallet · ${wallet.length} ${wallet.length === 1 ? "card" : "cards"}`}
+                  pocketLabel={`Your wallet · ${wallet.length} ${wallet.length === 1 ? "card" : "cards"} · Tap for guide`}
                 />
               </div>
             )}

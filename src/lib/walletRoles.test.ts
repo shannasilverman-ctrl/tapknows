@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeWalletRoles } from "./walletRoles";
+import { computeWalletGuide, computeWalletRoles } from "./walletRoles";
 import type { CardCatalog, PointsProgram, UserCard } from "./types";
 
 const PROGRAMS: Record<string, PointsProgram> = {
@@ -140,5 +140,26 @@ describe("walletRoles", () => {
     });
     const online = roles.find((r) => r.key === "online");
     expect(online?.cardCatalogId).toBe("prime");
+  });
+
+  it("full guide always answers every common spending situation", () => {
+    const flat = mkCard({
+      id: "flat",
+      earn_rules: [{ category: "everything_else", multiplier: 0.02 }],
+    });
+    const guide = computeWalletGuide({
+      userCards: [mkUc("u_flat", "flat")],
+      catalog: cat(flat),
+      programs: PROGRAMS,
+    });
+    expect(guide.map((role) => role.key)).toEqual([
+      "everyday",
+      "groceries",
+      "dining",
+      "gas",
+      "travel",
+      "online",
+    ]);
+    expect(new Set(guide.map((role) => role.cardCatalogId))).toEqual(new Set(["flat"]));
   });
 });

@@ -41,6 +41,30 @@ test.describe("TAP product system", () => {
     expect(errors).toEqual([]);
   });
 
+  test("turns Wallet into a briefing and opens the same sourced card guide", async ({ page }) => {
+    await page.goto("/cards");
+
+    await expect(page.getByRole("heading", { name: "Wallet" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Know what every card is for." })).toBeVisible();
+    await expect(page.getByText("Groceries", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Gold", { exact: true }).first()).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Open Chase Sapphire Preferred card guide" }),
+    ).toBeVisible();
+
+    await page.getByRole("button", { name: "Open Chase Sapphire Preferred card guide" }).click();
+    await expect(page).toHaveURL(/\/cards\?card=guest_chase/);
+    await expect(page.getByText("Travel ready", { exact: true })).toBeVisible();
+    await expect(page.getByText("No foreign transaction fee", { exact: true })).toBeVisible();
+    await expect(page.getByText("Emergency evacuation", { exact: true })).toBeVisible();
+    await expect(page.getByText("3x", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Gas & EV charging", { exact: true }).first()).toBeVisible();
+
+    await page.getByRole("button", { name: "Back to wallet" }).click();
+    await expect(page).toHaveURL(/\/cards$/);
+    await expect(page.getByRole("heading", { name: "Know what every card is for." })).toBeVisible();
+  });
+
   test("expands online shopping into merchant choices without losing search", async ({ page }) => {
     await page.goto("/home");
     const search = page.getByRole("textbox");

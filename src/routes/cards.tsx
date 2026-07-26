@@ -1,17 +1,32 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useMemo, useState } from "react";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import type { CardCatalog, EarnRule, PointsProgram, UserCard } from "@/lib/types";
 import { dollars } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
-import { CardPlay, type CardFace } from "@/components/card-play";
-import { addGuestCard, getGuestWallet, removeGuestCard } from "@/lib/guestWallet";
-import { ArrowLeft, CreditCard, Plus, Search, Trash2, X } from "lucide-react";
+import { CardFace } from "@/components/card-face";
+import {
+  addGuestCard,
+  getGuestWallet,
+  removeGuestCard,
+  updateGuestCardNickname,
+} from "@/lib/guestWallet";
+import { ArrowLeft, ArrowRight, BookOpen, CreditCard, Plus, Search, Trash2, X } from "lucide-react";
 import { Sheet } from "@/components/sheet";
 import { toast } from "sonner";
+import { CATALOG_BY_ID } from "@/lib/cardCatalog";
+import { computeWalletGuide, type WalletRole } from "@/lib/walletRoles";
+import { WalletCardBriefing } from "@/components/wallet-card-briefing";
+
+const cardsSearch = z.object({
+  card: z.string().optional(),
+  source: z.string().optional(),
+});
 
 export const Route = createFileRoute("/cards")({
+  validateSearch: (search) => cardsSearch.parse(search),
   component: CardsPage,
 });
 
@@ -25,6 +40,8 @@ type Data = {
 
 function CardsPage() {
   const { user, loading } = useAuth();
+  const search = Route.useSearch();
+  const navigate = useNavigate();
   const [data, setData] = useState<Data | null>(null);
   const [mode, setMode] = useState<"list" | "choose" | "catalog" | "manual">("list");
 
@@ -34,7 +51,23 @@ function CardsPage() {
       supabase.from("points_programs").select("*").order("name"),
     ]);
     const catalog: Record<string, CardCatalog & { is_custom?: boolean }> = {};
-    const catalogList = (cc.data ?? []) as unknown as (CardCatalog & { is_custom?: boolean })[];
+    const remoteCatalog = (cc.data ?? []) as unknown as (CardCatalog & {
+      is_custom?: boolean;
+    })[];
+    const catalogList = remoteCatalog.map((card) => {
+      const verified = CATALOG_BY_ID[card.id];
+      if (!verified || card.is_custom) return card;
+      return {
+        ...card,
+        issuer: verified.issuer,
+        name: verified.name,
+        annual_fee: verified.annual_fee,
+        points_program_id: verified.points_program_id,
+        foreign_tx_fee_pct: verified.foreign_tx_fee_pct,
+        earn_rules: verified.earn_rules,
+        notes: verified.notes ?? null,
+      };
+    });
     catalogList.forEach((c) => (catalog[c.id] = c));
 
     let userCards: UserCard[] = [];
@@ -71,10 +104,59 @@ function CardsPage() {
     void load();
   }, [user, loading]);
 
+  const walletRoles = useMemo(() => {
+    if (!data || data.userCards.length === 0) return [];
+    const programs = Object.fromEntries(data.programs.map((program) => [program.id, program]));
+    return computeWalletGuide({
+      userCards: data.userCards,
+      catalog: data.catalog,
+      programs,
+    });
+  }, [data]);
+
   if (loading) return <div className="min-h-screen bg-background" />;
 
   const isEmptyList = mode === "list" && data !== null && data.userCards.length === 0;
   const showHeaderAdd = mode === "list" && !isEmptyList && data !== null;
+  const selectedUserCard = data?.userCards.find((card) => card.id === search.card);
+  const selectedCatalog = selectedUserCard
+    ? data?.catalog[selectedUserCard.card_catalog_id]
+    : undefined;
+
+  if (selectedUserCard && selectedCatalog) {
+    return (
+      <WalletCardBriefing
+        card={{
+          id: selectedUserCard.id,
+          catalogId: selectedUserCard.card_catalog_id,
+          issuer: selectedCatalog.issuer,
+          name: selectedCatalog.name,
+          nickname: selectedUserCard.nickname,
+        }}
+        userId={user?.id ?? null}
+        onBack={() => {
+          void navigate({ to: "/cards", search: {} });
+        }}
+        onRemove={async () => {
+          if (data?.isGuest) removeGuestCard(selectedUserCard.id);
+          else await supabase.from("user_cards").delete().eq("id", selectedUserCard.id);
+          await load();
+          void navigate({ to: "/cards", search: {} });
+          toast.success("Card removed");
+        }}
+        onRename={async (nickname) => {
+          if (data?.isGuest) updateGuestCardNickname(selectedUserCard.id, nickname || null);
+          else
+            await supabase
+              .from("user_cards")
+              .update({ nickname: nickname || null })
+              .eq("id", selectedUserCard.id);
+          await load();
+        }}
+        showTryPurchase
+      />
+    );
+  }
 
   return (
     <div className="cs-app-body tap-consumer-screen min-h-screen bg-background flex flex-col">
@@ -134,8 +216,12 @@ function CardsPage() {
         ) : mode === "list" ? (
           <CardList
             data={data}
+            roles={walletRoles}
             onChanged={load}
             onAdd={() => setMode(data.isGuest ? "catalog" : "choose")}
+            onOpen={(cardId) => {
+              void navigate({ to: "/cards", search: { card: cardId } });
+            }}
           />
         ) : mode === "choose" ? (
           <ChooseMode
@@ -187,12 +273,16 @@ function CardListSkeleton() {
 
 function CardList({
   data,
+  roles,
   onChanged,
   onAdd,
+  onOpen,
 }: {
   data: Data;
+  roles: WalletRole[];
   onChanged: () => void;
   onAdd: () => void;
+  onOpen: (cardId: string) => void;
 }) {
   if (data.userCards.length === 0) {
     return (
@@ -219,11 +309,90 @@ function CardList({
     );
   }
   return (
-    <ul className="space-y-3 mt-2">
-      {data.userCards.map((uc) => (
-        <UserCardRow key={uc.id} userCard={uc} data={data} onChanged={onChanged} />
-      ))}
-    </ul>
+    <>
+      <WalletPlaybook roles={roles} />
+      <section className="mt-7">
+        <div className="flex items-end justify-between gap-3 px-1">
+          <div>
+            <p className="cs-microlabel text-[10px]">Each card's job</p>
+            <h2 className="mt-1 text-[21px] font-semibold text-foreground">Your card guides</h2>
+          </div>
+          <span className="text-[11px] text-muted-foreground">Tap to open</span>
+        </div>
+        <ul className="space-y-3 mt-3">
+          {data.userCards.map((uc) => (
+            <UserCardRow
+              key={uc.id}
+              userCard={uc}
+              data={data}
+              onChanged={onChanged}
+              onOpen={() => onOpen(uc.id)}
+            />
+          ))}
+        </ul>
+      </section>
+    </>
+  );
+}
+
+function WalletPlaybook({ roles }: { roles: WalletRole[] }) {
+  return (
+    <section className="mt-1 rounded-[1.75rem] bg-foreground text-background p-5 overflow-hidden relative">
+      <div
+        className="absolute -right-10 -top-10 size-36 rounded-full border border-primary/35"
+        aria-hidden
+      />
+      <div
+        className="absolute -right-4 -top-4 size-20 rounded-full border border-primary/50"
+        aria-hidden
+      />
+      <div className="relative">
+        <div className="flex items-center gap-2 text-primary">
+          <BookOpen className="size-4" aria-hidden />
+          <p className="text-[10px] uppercase tracking-[0.18em] font-semibold">Your playbook</p>
+        </div>
+        <h2 className="mt-3 text-[28px] font-semibold tracking-[-0.035em] leading-[1.02]">
+          Know what every card is for.
+        </h2>
+        <p className="mt-2 text-[13px] leading-relaxed text-background/70 max-w-[19rem]">
+          TAP keeps the short version here. Open any card for its credits, travel protections, fees,
+          caps, and verified terms.
+        </p>
+        <ul className="mt-5 grid grid-cols-2 gap-2">
+          {roles.map((role) => (
+            <li key={role.key}>
+              <Link
+                to="/decide"
+                search={{
+                  merchantName: role.merchantLabel,
+                  category: role.category,
+                  fromCategory: 1,
+                }}
+                className="min-h-[4.6rem] rounded-xl border border-background/15 bg-background/[0.04] p-3 flex flex-col justify-between gap-1 group"
+                aria-label={`Try ${role.label} with ${role.nickname ?? role.cardName}`}
+              >
+                <span className="text-[10px] uppercase tracking-[0.12em] text-background/55">
+                  {role.label}
+                </span>
+                <span className="w-full flex items-end gap-2">
+                  <span className="flex-1 text-[13px] font-semibold leading-tight">
+                    {role.nickname ?? role.cardName}
+                  </span>
+                  <ArrowRight
+                    className="size-3.5 text-primary shrink-0 group-hover:translate-x-0.5 transition-transform"
+                    aria-hidden
+                  />
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-[10px] leading-relaxed text-background/50">
+          Based on your current wallet, TAP's reward assumptions, and representative purchases.
+          Confirm the exact merchant category at checkout.
+        </p>
+      </div>
+    </section>
   );
 }
 
@@ -231,10 +400,12 @@ function UserCardRow({
   userCard,
   data,
   onChanged,
+  onOpen,
 }: {
   userCard: UserCard;
   data: Data;
   onChanged: () => void;
+  onOpen: () => void;
 }) {
   const card = data.catalog[userCard.card_catalog_id];
   const label = userCard.nickname ?? (card ? `${card.issuer} ${card.name}` : "Unknown card");
@@ -266,15 +437,6 @@ function UserCardRow({
     }, 220);
   };
 
-  const programName = card?.points_program_id
-    ? (data.programs.find((p) => p.id === card.points_program_id)?.name ?? null)
-    : null;
-  const face: CardFace = {
-    name: userCard.nickname ?? card?.name ?? "Unknown card",
-    issuer: card?.issuer ?? "",
-    program: programName,
-  };
-
   return (
     <li
       className="relative transition-all duration-200 ease-out"
@@ -283,33 +445,49 @@ function UserCardRow({
         transform: exiting ? "scale(0.94) translateY(-4px)" : "none",
       }}
     >
-      <CardPlay cards={[face]} variant="ivory" animate={false} />
-      <div className="mt-2 flex items-start justify-between gap-3 px-1">
-        <div className="min-w-0 flex-1">
-          {subLabel && <p className="text-[11px] text-muted-foreground truncate">{subLabel}</p>}
-          {card && (topRules.length > 0 || card.is_custom || card.annual_fee > 0) && (
-            <div className="mt-1 flex flex-wrap gap-1.5">
-              {card.is_custom && (
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground border border-border rounded px-1.5 py-0.5">
-                  Custom
-                </span>
-              )}
-              {topRules.map((r, i) => (
-                <span
-                  key={i}
-                  className="text-[10px] bg-accent text-accent-foreground rounded-md px-1.5 py-0.5"
-                >
-                  {r.multiplier}x {r.category.replace(/_/g, " ")}
-                </span>
-              ))}
-              {card.annual_fee > 0 && (
-                <span className="text-[10px] text-muted-foreground">
-                  · {dollars(card.annual_fee * 100)}/yr
-                </span>
-              )}
-            </div>
-          )}
-        </div>
+      <div className="rounded-2xl border border-border bg-white p-3 flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onOpen}
+          className="flex-1 min-w-0 flex items-center gap-3 text-left rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+          aria-label={`Open ${label} card guide`}
+        >
+          <div className="w-[6.75rem] shrink-0">
+            <CardFace
+              issuer={card?.issuer ?? ""}
+              name={userCard.nickname ?? card?.name ?? "Unknown card"}
+              variant="proof"
+              className="w-full"
+            />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[15px] font-semibold text-foreground truncate">{label}</p>
+            {subLabel ? (
+              <p className="text-[11px] text-muted-foreground truncate">{subLabel}</p>
+            ) : null}
+            {card && (topRules.length > 0 || card.is_custom || card.annual_fee > 0) ? (
+              <div className="mt-1.5 flex flex-wrap gap-1">
+                {card.is_custom ? (
+                  <span className="text-[9px] uppercase tracking-wider text-muted-foreground border border-border rounded px-1.5 py-0.5">
+                    Custom
+                  </span>
+                ) : null}
+                {topRules.slice(0, 2).map((rule, index) => (
+                  <span
+                    key={index}
+                    className="text-[9px] bg-accent text-accent-foreground rounded-md px-1.5 py-0.5"
+                  >
+                    {rule.multiplier >= 1
+                      ? `${rule.multiplier}x`
+                      : `${Math.round(rule.multiplier * 100)}%`}{" "}
+                    {rule.category.replace(/_/g, " ")}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+            <p className="mt-1.5 text-[10px] text-primary font-medium">Open guide →</p>
+          </div>
+        </button>
         <button
           onClick={() => setConfirmOpen(true)}
           className="inline-flex items-center justify-center shrink-0 rounded-full min-h-11 min-w-11 text-muted-foreground hover:text-destructive hover:bg-secondary/60 transition-colors active:scale-[0.96]"
