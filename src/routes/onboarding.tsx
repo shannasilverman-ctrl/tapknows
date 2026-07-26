@@ -6,6 +6,8 @@ import { Wordmark } from "@/components/wordmark";
 import { PlaidLinkButton } from "@/components/plaid-link-button";
 import { SaveWalletSheet } from "@/components/save-wallet-sheet";
 import { PhotoImportSheet } from "@/components/photo-import-sheet";
+import { TapAppShell } from "@/components/tap-primitives";
+import { WalletStack, type StackCard } from "@/components/wallet-stack";
 import { CARD_CATALOG, CATALOG_BY_ID, type CatalogCard } from "@/lib/cardCatalog";
 import { POINT_VALUATIONS } from "@/lib/pointValuations";
 import { recommend, type EngineCard } from "@/lib/recommendationEngine";
@@ -129,6 +131,22 @@ function OnboardingPage() {
     });
     return { winner: out.winner, sample: s };
   }, [sampleKey, selectedCatalogIds]);
+  const sampleStackCards = useMemo<StackCard[]>(() => {
+    const winningId = sampleResult?.winner?.legs[0]?.userCardId;
+    return Array.from(selectedCatalogIds).flatMap((catalogId) => {
+      const card = CATALOG_BY_ID[catalogId];
+      if (!card) return [];
+      const id = `catalog_${catalogId}`;
+      return [
+        {
+          id,
+          issuer: card.issuer,
+          name: card.name,
+          winner: id === winningId,
+        } satisfies StackCard,
+      ];
+    });
+  }, [sampleResult, selectedCatalogIds]);
 
   // Load current wallet on mount so returning users pick up where they left off
   useEffect(() => {
@@ -238,7 +256,7 @@ function OnboardingPage() {
   const progressPct = step === 1 ? 33 : step === 2 ? 66 : 100;
 
   return (
-    <div className="tap-onboarding min-h-screen flex flex-col bg-background text-foreground">
+    <TapAppShell className="tap-onboarding">
       <header className="tap-onboarding-header px-5 pt-6 pb-4 flex items-center justify-between">
         <button
           onClick={() => {
@@ -519,22 +537,19 @@ function OnboardingPage() {
             {sampleResult && (
               <div className="mt-6 cs-fade-up">
                 {sampleResult.winner ? (
-                  <div className="tap-onboarding-result rounded-2xl border border-foreground bg-white p-5 shadow-[0_4px_14px_-8px_rgba(15,23,42,0.15)]">
-                    <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                      Tap this card
-                    </p>
-                    <p className="mt-1 text-lg font-semibold text-foreground">
-                      {sampleResult.winner.legs[0]?.cardLabel}
-                    </p>
-                    <div className="tap-onboarding-mini-wallet" aria-hidden>
-                      <span className="tap-onboarding-mini-card tap-onboarding-mini-back" />
-                      <span className="tap-onboarding-mini-card tap-onboarding-mini-mid" />
-                      <span className="tap-onboarding-mini-card tap-onboarding-mini-win" />
-                      <span className="tap-onboarding-mini-pocket" />
+                  <div className="tap-onboarding-result">
+                    <div>
+                      <p>Use {sampleResult.winner.legs[0]?.cardLabel}.</p>
+                      <span>{sampleResult.sample.label}</span>
                     </div>
-                    <p className="mt-2 text-[13px] text-muted-foreground leading-snug">
-                      {sampleResult.winner.headline}
-                    </p>
+                    <WalletStack
+                      cards={sampleStackCards}
+                      mode="recommendation"
+                      raisedCardId={sampleResult.winner.legs[0]?.userCardId}
+                      pocket
+                      pocketLabel="The same recommendation you’ll see in TAP"
+                    />
+                    <p>{sampleResult.winner.headline}</p>
                   </div>
                 ) : (
                   <div className="rounded-2xl border border-border bg-secondary/40 p-5">
@@ -627,6 +642,6 @@ function OnboardingPage() {
         }}
         context="onboarding"
       />
-    </div>
+    </TapAppShell>
   );
 }

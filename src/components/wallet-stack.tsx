@@ -10,12 +10,17 @@ export type StackCard = {
   trailing?: React.ReactNode;
 };
 
-type Props = {
+export type LeatherWalletProps = {
   cards: StackCard[];
+  /** Consumer-facing interaction mode. Recommendation raises the winner and shows TAP's signal. */
+  mode?: "browse" | "recommendation";
   /** Peek strip height between cards in collapsed state (px). */
   peek?: number;
   onRaise?: (id: string) => void;
   onOpen?: (id: string) => void;
+  /** Preferred public name for the controlled raised card. */
+  raisedCardId?: string | null;
+  /** @deprecated Use raisedCardId. Kept for compatibility with existing routes. */
   raisedId?: string | null;
   enterFromStack?: boolean;
   /** Wrap the stack in TAP's woven leather pocket. */
@@ -45,25 +50,29 @@ const prefersReducedMotion = () =>
  */
 export function WalletStack({
   cards,
+  mode = "browse",
   peek = 32,
   onRaise,
   onOpen,
+  raisedCardId,
   raisedId,
   enterFromStack = false,
   pocket = false,
   signal = false,
   pocketLabel,
-}: Props) {
+}: LeatherWalletProps) {
+  const controlledRaisedId = raisedCardId !== undefined ? raisedCardId : raisedId;
+  const showSignal = mode === "recommendation" || signal;
   const initial = useMemo(
-    () => raisedId ?? cards.find((c) => c.winner)?.id ?? cards[0]?.id ?? null,
-    [cards, raisedId],
+    () => controlledRaisedId ?? cards.find((c) => c.winner)?.id ?? cards[0]?.id ?? null,
+    [cards, controlledRaisedId],
   );
   const [internal, setInternal] = useState<string | null>(initial);
   const [entered, setEntered] = useState(!enterFromStack);
 
   useEffect(() => {
-    if (raisedId !== undefined) setInternal(raisedId);
-  }, [raisedId]);
+    if (controlledRaisedId !== undefined) setInternal(controlledRaisedId);
+  }, [controlledRaisedId]);
 
   useEffect(() => {
     if (!enterFromStack) {
@@ -275,7 +284,7 @@ export function WalletStack({
           // In the recommendation moment the winning card physically rises
           // above the rest of the wallet. This is the central TAP gesture:
           // the answer should be visible before the explanation is read.
-          const winnerLift = signal && k === 0 ? Math.min(78, cardHeight * 0.32) : 0;
+          const winnerLift = showSignal && k === 0 ? Math.min(78, cardHeight * 0.32) : 0;
           const y = raisedY - k * gap - winnerLift;
 
           // Scale interpolates toward 1 as we expand.
@@ -341,7 +350,7 @@ export function WalletStack({
         <>
           <div
             className="tap-contactless-signal"
-            data-visible={signal ? "true" : "false"}
+            data-visible={showSignal ? "true" : "false"}
             aria-hidden
           >
             <i />
@@ -359,3 +368,5 @@ export function WalletStack({
     </div>
   );
 }
+
+export { WalletStack as LeatherWallet };

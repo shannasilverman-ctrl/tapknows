@@ -149,6 +149,45 @@ describe("core math", () => {
     expect(plays[0].totalValueCents).toBe(500);
   });
 
+  it("uses grocery earn at Whole Foods unless the card has an exact merchant rule", () => {
+    const grocery = mkCard({
+      id: "grocery",
+      points_program_id: "mr",
+      earn_rules: [
+        { category: "groceries", multiplier: 4 },
+        { category: "everything_else", multiplier: 1 },
+      ],
+    });
+    const exact = mkCard({
+      id: "exact",
+      points_program_id: "cashback",
+      earn_rules: [
+        { category: "whole_foods", multiplier: 0.05 },
+        { category: "everything_else", multiplier: 0.01 },
+      ],
+    });
+
+    const groceryOnly = planPurchase(
+      baseInput({
+        userCards: [mkUc("u_grocery", "grocery")],
+        catalog: catalog(grocery),
+        amountCents: 8400,
+        merchantCategory: "whole_foods",
+      }),
+    );
+    expect(groceryOnly[0].totalValueCents).toBe(672);
+
+    const exactAndGrocery = planPurchase(
+      baseInput({
+        userCards: [mkUc("u_grocery", "grocery"), mkUc("u_exact", "exact")],
+        catalog: catalog(grocery, exact),
+        amountCents: 8400,
+        merchantCategory: "whole_foods",
+      }),
+    );
+    expect(exactAndGrocery[0].legs[0].userCardId).toBe("u_grocery");
+  });
+
   it("unknown category falls back to base 'all' rule", () => {
     const c = mkCard({
       id: "g",

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/bottom-nav";
+import { TapAppShell } from "@/components/tap-primitives";
 import { ContextualPushSheet } from "@/components/contextual-push-sheet";
 import { FeedbackSheet } from "@/components/feedback-sheet";
 import { isFeedbackDue } from "@/lib/feedback";
@@ -814,7 +815,7 @@ function HomePage() {
   }
 
   return (
-    <div className="cs-app-body tap-app-shell min-h-screen flex flex-col text-foreground">
+    <TapAppShell className="tap-app-shell">
       <header className="cs-safe-top tap-home-header px-5 pb-1 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="tap-mini-logo text-[18px]">
@@ -1315,6 +1316,6 @@ function HomePage() {
       <SaveWalletSheet open={saveSheetOpen} onClose={() => setSaveSheetOpen(false)} />
 
       <FeedbackSheet open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
-    </div>
+    </TapAppShell>
   );
 }

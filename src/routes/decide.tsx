@@ -15,6 +15,7 @@ import type { CardCatalog, PointsProgram, UserCard, UserOffer } from "@/lib/type
 import { dollars } from "@/lib/format";
 import { ArrowLeft, Wallet, ShieldCheck, AlertTriangle, Sliders, Sparkles } from "lucide-react";
 import { SeeTheMath } from "@/components/see-the-math";
+import { TapAppShell } from "@/components/tap-primitives";
 
 import { applyPriorities, STRONG_PROTECTION_CARDS } from "@/lib/priorities";
 import { recordRecovered } from "@/lib/recovered";
@@ -90,6 +91,10 @@ function DecidePage() {
   }, [search.merchant]);
   const category = merchant?.category ?? search.category ?? "everything_else";
   const merchantName = merchant?.name ?? search.merchantName ?? "Custom purchase";
+  const categoryLabel =
+    category === "whole_foods"
+      ? "Groceries"
+      : category.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
   const isCategoryFallback = !merchant && !!search.merchantName && !!search.category;
 
   useEffect(() => {
@@ -301,7 +306,7 @@ function DecidePage() {
   });
 
   return (
-    <div className="cs-app-body tap-decision-screen min-h-screen flex flex-col text-foreground">
+    <TapAppShell surface="decision">
       <header className="cs-safe-top tap-decision-header px-5 pb-2 flex items-center justify-between">
         <button
           onClick={() => navigate({ to: "/home" })}
@@ -324,7 +329,7 @@ function DecidePage() {
           {/* Merchant header */}
           <div className="mt-2 tap-stage tap-decision-intro">
             <p className="cs-microlabel tap-merchant-pill text-[10px]">
-              {merchantName} · {category.replace(/_/g, " ")}
+              {merchantName} · {categoryLabel}
             </p>
             <h1 className="tap-decision-title mt-5 text-foreground">
               Use {plays[0] ? playFace(plays[0]).name : "your best card"}.
@@ -334,7 +339,7 @@ function DecidePage() {
               onClick={() => setSheet("amount")}
               className="mt-1 text-[13px] text-muted-foreground capitalize hover:text-foreground transition-colors text-left"
             >
-              {category.replace(/_/g, " ")} ·{" "}
+              {categoryLabel} ·{" "}
               <span className="text-foreground font-medium underline underline-offset-2 decoration-border-strong">
                 {dollars(Math.round(amount * 100))}
               </span>
@@ -359,11 +364,11 @@ function DecidePage() {
             {plays.length > 0 ? (
               <WalletStack
                 cards={stackCards}
-                raisedId={raisedPlayId}
+                mode="recommendation"
+                raisedCardId={raisedPlayId}
                 onRaise={(id) => setRaisedPlayId(id)}
                 enterFromStack={!!search.fromStack}
                 pocket
-                signal
               />
             ) : (
               <div className="text-center">
@@ -404,6 +409,7 @@ function DecidePage() {
               winner={raisedPlay}
               runnerUp={plays.find((p) => p.id !== raisedPlay.id) ?? null}
               amountCents={Math.round(amount * 100)}
+              onEditAssumptions={() => navigate({ to: "/settings" })}
             />
           ) : null}
 
@@ -631,6 +637,6 @@ function DecidePage() {
           </button>
         </div>
       </Sheet>
-    </div>
+    </TapAppShell>
   );
 }

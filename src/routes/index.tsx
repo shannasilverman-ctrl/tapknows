@@ -1,15 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
-import {
-  ArrowRight,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  LockKeyhole,
-  MapPin,
-  ScanLine,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, Check, ChevronLeft, ChevronRight, LockKeyhole } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { getGuestWallet } from "@/lib/guestWallet";
 
@@ -64,8 +55,8 @@ function Landing() {
           <i aria-hidden />
         </Link>
         <div className="tap-nav-links">
-          <a href="#how">How it works</a>
-          <a href="#trust">Trust</a>
+          <a href="#how">How TAP decides</a>
+          <a href="#trust">Why trust TAP</a>
         </div>
         <Link to="/login" className="tap-nav-signin">
           Sign in
@@ -74,19 +65,17 @@ function Landing() {
 
       <section className="tap-showcase-hero">
         <div className="tap-showcase-copy">
-          <p className="tap-kicker">
-            <Sparkles size={14} /> Your wallet, finally decisive
-          </p>
           <h1>
             Know before
             <br /> you tap.
           </h1>
           <p className="tap-deck">
-            One clear card recommendation, the real value, and the reason—before you pay.
+            Tell TAP where you’re paying. It compares the cards you already carry and shows which
+            one earns the most, with the math attached.
           </p>
           <div className="tap-hero-actions">
             <Link to={startTo} className="tap-primary">
-              {returning ? "Open my wallet" : "Build my wallet"} <ArrowRight size={18} />
+              {returning ? "Open my wallet" : "Add my cards"} <ArrowRight size={18} />
             </Link>
             <Link to="/demo" className="tap-text-link">
               See a 30-second demo
@@ -333,61 +322,68 @@ function Landing() {
       </section>
 
       <section className="tap-promise">
-        <p>TAP doesn’t give you another dashboard to manage.</p>
-        <h2>It ends the decision.</h2>
+        <p className="tap-promise-intro">One recommendation, calculated from</p>
+        <div
+          className="tap-promise-equation"
+          aria-label="Your cards plus this purchase plus current terms equals the card to use"
+        >
+          <span>Your cards</span>
+          <i>+</i>
+          <span>This purchase</span>
+          <i>+</i>
+          <span>Current terms</span>
+          <b>
+            <ArrowRight aria-hidden />
+            The card to use
+          </b>
+        </div>
       </section>
 
       <section id="how" className="tap-how">
         <div className="tap-section-heading">
-          <p>One tiny habit</p>
-          <h2>From “which card?” to done.</h2>
+          <h2>
+            Three details in.
+            <br />
+            One card out.
+          </h2>
+          <p>
+            TAP keeps setup small because the decision happens in real life, usually while someone
+            is waiting behind you.
+          </p>
         </div>
-        <div className="tap-steps">
-          <article>
-            <span className="tap-step-number">01</span>
-            <div className="tap-step-icon">
-              <ScanLine />
-            </div>
+        <ol className="tap-steps">
+          <li>
             <h3>Add the cards you already have</h3>
             <p>Search, scan a wallet screenshot, or add them manually. No full card numbers.</p>
-          </article>
-          <article>
-            <span className="tap-step-number">02</span>
-            <div className="tap-step-icon">
-              <MapPin />
-            </div>
-            <h3>Say what you’re buying</h3>
-            <p>
-              Merchant and amount are enough. TAP handles rewards, credits, caps, and your goals.
-            </p>
-          </article>
-          <article className="tap-step-answer">
-            <span className="tap-step-number">03</span>
-            <div className="tap-step-icon">
-              <Sparkles />
-            </div>
-            <h3>Tap the answer</h3>
+            <span>Amex Gold · Sapphire · Double Cash</span>
+          </li>
+          <li>
+            <h3>Tell TAP where you’re paying</h3>
+            <p>A merchant or category is enough. Add the amount when it can change the pick.</p>
+            <span>Whole Foods · Groceries · $84</span>
+          </li>
+          <li className="tap-step-answer">
+            <h3>Use the winner</h3>
             <p>One recommendation up front, with the runner-up and assumptions one tap away.</p>
-          </article>
-        </div>
+            <span>Amex Gold · about $3.36 back</span>
+          </li>
+        </ol>
       </section>
 
       <section className="tap-wallet-story">
         <div>
-          <p className="tap-kicker">A wallet with a point of view</p>
-          <h2>Every card gets a job.</h2>
+          <h2>A job for every card.</h2>
           <p>
-            TAP turns a stack of plastic into a simple playbook. You’ll know what each card is for,
-            what it’s worth, and when another one wins.
+            TAP turns your existing wallet into a usable playbook. See where each card wins, what
+            that reward is worth, and when the answer changes.
           </p>
           <Link to={startTo} className="tap-text-link tap-text-link-dark">
             See what your wallet can do <ArrowRight size={17} />
           </Link>
         </div>
         <div className="tap-wallet-board">
-          {proof.map((item, index) => (
+          {proof.map((item) => (
             <div className={`tap-wallet-row tap-${item.tone}`} key={item.label}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
               <div className="tap-mini-card">
                 <i />
               </div>
@@ -402,38 +398,36 @@ function Landing() {
       </section>
 
       <section id="trust" className="tap-trust">
-        <div className="tap-trust-mark">
-          <LockKeyhole />
+        <div className="tap-trust-heading">
+          <LockKeyhole aria-hidden />
+          <h2>Clear math. No hidden agenda.</h2>
+          <p>TAP is useful only if you can see why it chose a card and what it did not use.</p>
         </div>
-        <div>
-          <p className="tap-kicker">Trust is a product feature</p>
-          <h2>Your recommendation has no hidden agenda.</h2>
-        </div>
-        <div className="tap-trust-grid">
-          <p>
-            <b>No affiliate ranking.</b>
-            <span>TAP recommends the card that pays you—not us.</span>
-          </p>
-          <p>
-            <b>No card numbers.</b>
-            <span>We only need the product names in your wallet.</span>
-          </p>
-          <p>
-            <b>No mystery math.</b>
-            <span>Rates, credits, caps, and assumptions stay visible.</span>
-          </p>
-          <p>
-            <b>No bank connection required.</b>
-            <span>Linking is optional, read-only, and reversible.</span>
-          </p>
-        </div>
+        <dl className="tap-trust-grid">
+          <div>
+            <dt>No affiliate ranking</dt>
+            <dd>TAP recommends the card that pays you, not us.</dd>
+          </div>
+          <div>
+            <dt>No card numbers</dt>
+            <dd>Only the product names in your wallet are needed.</dd>
+          </div>
+          <div>
+            <dt>Visible assumptions</dt>
+            <dd>Rates, credits, caps, and point values stay in view.</dd>
+          </div>
+          <div>
+            <dt>Bank linking is optional</dt>
+            <dd>If you connect an account, access is read-only and reversible.</dd>
+          </div>
+        </dl>
       </section>
 
       <section className="tap-close">
-        <p>At the register, certainty is worth more than another spreadsheet.</p>
-        <h2>Know before you tap.</h2>
+        <h2>Bring the right card to checkout.</h2>
+        <p>Add the cards you already carry. TAP handles the comparison.</p>
         <Link to={startTo} className="tap-primary tap-primary-light">
-          {returning ? "Open TAP" : "Build my wallet"} <ArrowRight size={18} />
+          {returning ? "Open TAP" : "Add my cards"} <ArrowRight size={18} />
         </Link>
       </section>
 

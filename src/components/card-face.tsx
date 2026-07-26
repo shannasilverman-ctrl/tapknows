@@ -3,9 +3,11 @@ import { issuerFaceClass } from "@/lib/cardFace";
 type Props = {
   issuer: string;
   name: string;
-  variant?: "default" | "winner";
+  variant?: "default" | "winner" | "proof";
   /** Optional card-face bottom-row trailing content (e.g. a small $ value). */
   trailing?: React.ReactNode;
+  /** Shared value treatment used by recommendation and compact proof variants. */
+  value?: React.ReactNode;
   /** Last four of the card. If omitted, derived deterministically from name+issuer. */
   last4?: string;
   /** Cardholder line (spaced caps). Defaults to "TAP MEMBER". */
@@ -27,11 +29,18 @@ export function CardFace({
   name,
   variant = "default",
   trailing,
+  value,
   last4,
   holder,
   className,
 }: Props) {
-  const tint = `${issuerFaceClass(issuer, name)}${variant === "winner" ? " cs-face--winner cs-face--metal" : ""}`;
+  const tint = `${issuerFaceClass(issuer, name)}${
+    variant === "winner"
+      ? " cs-face--winner cs-face--metal"
+      : variant === "proof"
+        ? " cs-face--proof"
+        : ""
+  }`;
   const digits = last4 ?? deriveLast4(`${issuer}:${name}`);
   const holderLine = (holder ?? "TAP MEMBER").toUpperCase();
   return (
@@ -61,9 +70,9 @@ export function CardFace({
             <p className="cs-face-product">{name}</p>
           </div>
 
-          {trailing ? (
+          {(value ?? trailing) ? (
             <div className="mt-[3%] flex justify-end">
-              <div className="cs-face-trailing">{trailing}</div>
+              <div className="cs-face-trailing">{value ?? trailing}</div>
             </div>
           ) : null}
         </div>

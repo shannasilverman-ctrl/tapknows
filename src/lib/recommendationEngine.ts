@@ -24,6 +24,13 @@ export type EarnRule = {
 // one. Caps still apply.
 const UNIVERSAL_MATCH_SLUGS = new Set(["top_category", "rotating_5pct", "choose_category"]);
 
+// Merchant-specific categories can carry an issuer-specific earn rule while
+// still belonging to a broader spend category for every other card. Exact
+// rules always win; aliases are only consulted when a card has no exact rule.
+const CATEGORY_FALLBACKS: Record<string, string> = {
+  whole_foods: "groceries",
+};
+
 export type EngineCard = {
   id: string; // stable user-card id (uuid for authed users, guest_* for local)
   card_catalog_id: string;
@@ -145,6 +152,11 @@ function findFallback(rules: EarnRule[]): EarnRule {
 function findMatchingRule(rules: EarnRule[], category: string): EarnRule | null {
   const direct = rules.find((r) => r.category === category);
   if (direct) return direct;
+  const broaderCategory = CATEGORY_FALLBACKS[category];
+  if (broaderCategory) {
+    const broader = rules.find((r) => r.category === broaderCategory);
+    if (broader) return broader;
+  }
   // Universal-match rules (Custom Cash top_category, rotating 5% quarters,
   // BofA choose_category) count as a category match at the rule's cap.
   const universal = rules.find((r) => UNIVERSAL_MATCH_SLUGS.has(r.category));

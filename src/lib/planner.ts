@@ -79,6 +79,13 @@ function programKind(
 function pickRule(rules: EarnRule[], category: string): EarnRule {
   const direct = rules.find((r) => r.category === category);
   if (direct) return direct;
+  // A merchant-specific slug may have a bespoke issuer rule while still
+  // belonging to a broad category for the rest of the wallet.
+  const broaderCategory = category === "whole_foods" ? "groceries" : null;
+  if (broaderCategory) {
+    const broader = rules.find((r) => r.category === broaderCategory);
+    if (broader) return broader;
+  }
   // Base rate can be encoded as either "all" (test fixtures / legacy) or
   // "everything_else" (the real catalog). Fall through to either.
   const base =

@@ -481,6 +481,68 @@ describe("recommendationEngine — invariant: never dead-end on category", () =>
   });
 });
 
+describe("recommendationEngine — merchant-category fallbacks", () => {
+  const amexGold: EngineCard = {
+    id: "uc_amex_gold",
+    card_catalog_id: "amex_gold",
+    issuer: "American Express",
+    name: "Gold",
+    points_program_id: "amex_mr",
+    foreign_tx_fee_pct: 0,
+    earn_rules: [
+      { category: "groceries", multiplier: 4 },
+      { category: "everything_else", multiplier: 1 },
+    ],
+  };
+  const sapphire: EngineCard = {
+    id: "uc_sapphire",
+    card_catalog_id: "chase_csp",
+    issuer: "Chase",
+    name: "Sapphire Preferred",
+    points_program_id: "chase_ur",
+    foreign_tx_fee_pct: 0,
+    earn_rules: [{ category: "everything_else", multiplier: 1 }],
+  };
+  const primeVisa: EngineCard = {
+    id: "uc_prime",
+    card_catalog_id: "amazon_prime_visa",
+    issuer: "Chase",
+    name: "Prime Visa",
+    points_program_id: "cashback",
+    foreign_tx_fee_pct: 0,
+    earn_rules: [
+      { category: "whole_foods", multiplier: 0.05 },
+      { category: "everything_else", multiplier: 0.01 },
+    ],
+  };
+
+  it("treats Whole Foods as groceries when a card has no merchant-specific rule", () => {
+    const out = recommend({
+      amountCents: 8400,
+      category: "whole_foods",
+      wallet: [amexGold, sapphire],
+      offers: [],
+      valuations: { amex_mr: 1, chase_ur: 1 },
+    });
+
+    expect(out.winner?.legs[0].userCardId).toBe("uc_amex_gold");
+    expect(out.winner?.totalValueCents).toBe(336);
+  });
+
+  it("prefers an exact Whole Foods rule over the grocery fallback", () => {
+    const out = recommend({
+      amountCents: 8400,
+      category: "whole_foods",
+      wallet: [amexGold, primeVisa],
+      offers: [],
+      valuations: { amex_mr: 1, cashback: 1 },
+    });
+
+    expect(out.winner?.legs[0].userCardId).toBe("uc_prime");
+    expect(out.winner?.totalValueCents).toBe(420);
+  });
+});
+
 describe("earn caps — reason line honesty + toggle rescoring", () => {
   const capped = (): EngineCard => ({
     id: "card_capped",
