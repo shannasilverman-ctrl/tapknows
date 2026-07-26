@@ -5291,6 +5291,37 @@ body {
   transform: scale(0.94);
 }
 
+.tap-merchant-bubbles[data-mode="online"] .tap-online-store-bubble {
+  animation: tap-online-bubble-in 320ms var(--tap-ease-out) both;
+}
+
+.tap-merchant-bubbles[data-mode="online"] .tap-online-store-bubble:nth-of-type(2) {
+  animation-delay: 35ms;
+}
+
+.tap-merchant-bubbles[data-mode="online"] .tap-online-store-bubble:nth-of-type(3) {
+  animation-delay: 70ms;
+}
+
+.tap-merchant-bubbles[data-mode="online"] .tap-online-store-bubble:nth-of-type(4) {
+  animation-delay: 105ms;
+}
+
+.tap-merchant-bubbles[data-mode="online"] .tap-online-store-bubble:nth-of-type(n + 5) {
+  animation-delay: 140ms;
+}
+
+@keyframes tap-online-bubble-in {
+  from {
+    opacity: 0;
+    transform: translateX(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* Recommendation pacing continues the Home sequence. */
 .tap-decision-intro {
   animation-delay: 80ms;
@@ -5443,7 +5474,8 @@ body {
   .tap-onboarding-mini-pocket,
   .tap-evaluation-copy span,
   .tap-evaluation-orbit i,
-  .tap-evaluation-scan {
+  .tap-evaluation-scan,
+  .tap-online-store-bubble {
     animation: none !important;
     opacity: 1 !important;
     filter: none !important;

@@ -41,6 +41,27 @@ test.describe("TAP product system", () => {
     expect(errors).toEqual([]);
   });
 
+  test("expands online shopping into merchant choices without losing search", async ({ page }) => {
+    await page.goto("/home");
+    const search = page.getByRole("textbox");
+    await expect(search).toBeVisible();
+
+    await page.getByRole("button", { name: "Show common online stores" }).click();
+    await expect(search).toHaveAttribute("placeholder", "Search Amazon, Target, any online store…");
+    await expect(page.getByRole("button", { name: "Amazon.com", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Walmart.com", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Target.com", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "BestBuy.com", exact: true })).toBeVisible();
+
+    await search.fill("Nike");
+    await expect(page.getByText("Nike", { exact: true })).toBeVisible();
+    await search.fill("");
+    await expect(page.getByRole("button", { name: "Amazon.com", exact: true })).toBeVisible();
+
+    await page.getByRole("button", { name: "Amazon.com", exact: true }).click();
+    await expect(page).toHaveURL(/\/decide\?merchant=local_amazon/);
+  });
+
   test("turns the landing mockup into an interactive mobile walkthrough", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");

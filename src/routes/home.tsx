@@ -56,6 +56,7 @@ import { dollars } from "@/lib/format";
 import {
   Search,
   ArrowRight,
+  ArrowLeft,
   Bell,
   Wand2,
   Plus,
@@ -70,6 +71,16 @@ import {
 import { toast } from "sonner";
 
 const SAVE_DISMISSED_KEY = "tap.saveWalletDismissed";
+
+const ONLINE_STORES = [
+  { merchant: "Amazon", label: "Amazon.com" },
+  { merchant: "Walmart", label: "Walmart.com" },
+  { merchant: "Target", label: "Target.com" },
+  { merchant: "Best Buy", label: "BestBuy.com" },
+  { merchant: "Chewy", label: "Chewy" },
+  { merchant: "eBay", label: "eBay" },
+  { merchant: "Etsy", label: "Etsy" },
+] as const;
 
 const homeSearch = z.object({
   firstRun: z.coerce.number().optional(),
@@ -168,6 +179,7 @@ function HomePage() {
   const [ready, setReady] = useState(false);
   const [alerts, setAlerts] = useState<AlertRow[]>([]);
   const [query, setQuery] = useState("");
+  const [onlineStoresOpen, setOnlineStoresOpen] = useState(false);
   const [openedId, setOpenedId] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   // Read persisted recovered value on first render so the money line never
@@ -894,9 +906,12 @@ function HomePage() {
             user's power case, we lead with a one-tap answer above search. */}
           {ready && wallet.length > 0 && onlineDominant && (
             <button
-              onClick={() => goDecideCustom("Online shopping", "amazon")}
+              onClick={() => {
+                setOnlineStoresOpen(true);
+              }}
               className="mt-4 w-full flex items-center justify-between rounded-2xl border border-primary/40 bg-white px-4 py-3 hover:border-primary/70 transition-colors text-left shadow-[0_2px_10px_-6px_rgba(15,23,42,0.15)] min-h-11"
-              aria-label="Online shopping — one-tap recommendation"
+              aria-label="Show common online stores"
+              aria-expanded={onlineStoresOpen}
             >
               <div className="flex items-center gap-3 min-w-0">
                 <span className="inline-flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary shrink-0">
@@ -905,7 +920,7 @@ function HomePage() {
                 <div className="min-w-0">
                   <p className="text-[15px] font-medium text-foreground">Online shopping</p>
                   <p className="text-[12px] text-muted-foreground">
-                    Your most common case. Tap for the card.
+                    Choose the store or keep searching.
                   </p>
                 </div>
               </div>
@@ -922,7 +937,11 @@ function HomePage() {
                   ref={searchRef}
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Try Whole Foods, Delta, Amazon…"
+                  placeholder={
+                    onlineStoresOpen
+                      ? "Search Amazon, Target, any online store…"
+                      : "Try Whole Foods, Delta, Amazon…"
+                  }
                   autoComplete="off"
                   className="w-full h-12 rounded-2xl bg-white border border-border pl-11 pr-4 text-[15px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 shadow-[0_2px_10px_-6px_rgba(15,23,42,0.15)]"
                 />
@@ -999,40 +1018,76 @@ function HomePage() {
               ))}
 
             {!query.trim() && wallet.length > 0 && (
-              <div className="mt-3 -mx-1 flex gap-2 overflow-x-auto no-scrollbar px-1 pb-1">
-                {/* Online shopping — always first when there's no location
-                  context. One tap answers the question for the everyday
-                  online case; amount is editable on decide. */}
-                {nearbyIds.length === 0 && !onlineDominant && (
-                  <button
-                    onClick={() => goDecideCustom("Online shopping", "amazon")}
-                    className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-white hover:border-primary/70 transition-colors px-3.5 py-1.5 text-[13px] font-medium text-foreground min-h-11 whitespace-nowrap"
-                    aria-label="Online shopping"
-                  >
-                    <ShoppingBag className="size-3.5 text-primary" aria-hidden />
-                    Online shopping
-                  </button>
-                )}
-                {quickPicks.map((p) => (
-                  <button
-                    key={p.merchant.id}
-                    onClick={() => goDecide(p.merchant, p.opportunity)}
-                    className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border bg-white transition-colors px-3.5 py-1.5 text-[13px] font-medium text-foreground min-h-11 whitespace-nowrap ${
-                      p.opportunity
-                        ? "border-primary/40 hover:border-primary/70"
-                        : "border-border hover:border-primary/40"
-                    }`}
-                    aria-label={
-                      p.opportunity ? `${p.merchant.name} — opportunity` : p.merchant.name
-                    }
-                  >
-                    {p.nearby && <MapPin className="size-3 text-primary" aria-hidden />}
-                    {p.opportunity && !p.nearby && (
-                      <span className="inline-block size-1.5 rounded-full bg-primary" aria-hidden />
+              <div
+                className="tap-merchant-bubbles mt-3 -mx-1 flex gap-2 overflow-x-auto no-scrollbar px-1 pb-1"
+                data-mode={onlineStoresOpen ? "online" : "default"}
+                aria-label={onlineStoresOpen ? "Common online stores" : "Suggested places"}
+              >
+                {onlineStoresOpen ? (
+                  <>
+                    <button
+                      onClick={() => setOnlineStoresOpen(false)}
+                      className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/50 hover:border-primary/40 transition-colors px-3.5 py-1.5 text-[13px] font-medium text-foreground min-h-11 whitespace-nowrap"
+                    >
+                      <ArrowLeft className="size-3.5" aria-hidden />
+                      All places
+                    </button>
+                    {ONLINE_STORES.map((store) => {
+                      const merchant = resolveMerchant(store.merchant);
+                      if (!merchant) return null;
+                      return (
+                        <button
+                          key={store.merchant}
+                          onClick={() => goDecide(merchant)}
+                          className="tap-online-store-bubble shrink-0 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-white hover:border-primary/70 transition-colors px-3.5 py-1.5 text-[13px] font-medium text-foreground min-h-11 whitespace-nowrap"
+                        >
+                          {store.label}
+                        </button>
+                      );
+                    })}
+                  </>
+                ) : (
+                  <>
+                    {/* Online shopping opens a focused merchant set while the
+                        search field and the rest of the decision surface persist. */}
+                    {nearbyIds.length === 0 && !onlineDominant && (
+                      <button
+                        onClick={() => {
+                          setOnlineStoresOpen(true);
+                        }}
+                        className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-white hover:border-primary/70 transition-colors px-3.5 py-1.5 text-[13px] font-medium text-foreground min-h-11 whitespace-nowrap"
+                        aria-label="Show common online stores"
+                        aria-expanded="false"
+                      >
+                        <ShoppingBag className="size-3.5 text-primary" aria-hidden />
+                        Online shopping
+                      </button>
                     )}
-                    {p.merchant.name}
-                  </button>
-                ))}
+                    {quickPicks.map((p) => (
+                      <button
+                        key={p.merchant.id}
+                        onClick={() => goDecide(p.merchant, p.opportunity)}
+                        className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border bg-white transition-colors px-3.5 py-1.5 text-[13px] font-medium text-foreground min-h-11 whitespace-nowrap ${
+                          p.opportunity
+                            ? "border-primary/40 hover:border-primary/70"
+                            : "border-border hover:border-primary/40"
+                        }`}
+                        aria-label={
+                          p.opportunity ? `${p.merchant.name} — opportunity` : p.merchant.name
+                        }
+                      >
+                        {p.nearby && <MapPin className="size-3 text-primary" aria-hidden />}
+                        {p.opportunity && !p.nearby && (
+                          <span
+                            className="inline-block size-1.5 rounded-full bg-primary"
+                            aria-hidden
+                          />
+                        )}
+                        {p.merchant.name}
+                      </button>
+                    ))}
+                  </>
+                )}
               </div>
             )}
           </div>
