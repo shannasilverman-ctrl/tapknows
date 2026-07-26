@@ -4001,9 +4001,40 @@ body {
   position: sticky;
   z-index: 5;
   top: 0;
-  min-height: 68px;
+  min-height: 54px;
   background: rgba(248, 247, 245, 0.94);
   backdrop-filter: blur(18px);
+}
+
+.tap-decision-core
+  .tap-proof-panel:has(button[aria-expanded="true"])
+  > button
+  > span
+  > span:first-child {
+  display: none;
+}
+
+.tap-decision-core .tap-proof-panel:has(button[aria-expanded="true"]) > button .text-foreground {
+  color: var(--tap-ink) !important;
+}
+
+.tap-decision-core
+  .tap-proof-panel:has(button[aria-expanded="true"])
+  > button
+  .text-muted-foreground {
+  color: var(--tap-muted) !important;
+}
+
+.tap-decision-core .tap-proof-panel:has(button[aria-expanded="true"]) > button span {
+  color: var(--tap-ink) !important;
+}
+
+.tap-decision-core
+  .tap-proof-panel:has(button[aria-expanded="true"])
+  > button
+  span
+  span:last-child {
+  color: var(--tap-muted) !important;
 }
 
 .tap-decision-core .tap-proof-panel:has(button[aria-expanded="true"]) .tap-proof-title {
@@ -4068,5 +4099,564 @@ body {
     justify-content: center;
     overflow: hidden;
     font-size: 0;
+  }
+}
+
+/* ============================================================
+   TAP MOTION SYSTEM — one continuous story:
+   ask → locate → reveal the wallet → lift the answer → prove it.
+   Motion is finite, directional, and never required for meaning.
+   ============================================================ */
+:root {
+  --tap-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --tap-ease-soft: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@keyframes tap-scene-enter {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+    box-shadow: 0 12px 34px rgba(36, 21, 43, 0.08);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes tap-stage-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes tap-header-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes tap-flow-draw {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+@keyframes tap-flow-step {
+  0% {
+    color: rgba(255, 255, 255, 0.44);
+  }
+  35% {
+    color: #fff;
+  }
+  100% {
+    color: rgba(255, 255, 255, 0.7);
+  }
+}
+
+@keyframes tap-card-rise {
+  from {
+    opacity: 0;
+    transform: translateY(72px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes tap-pocket-settle {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes tap-signal-breathe {
+  0%,
+  100% {
+    opacity: 0.58;
+    transform: scale(0.88);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes tap-proof-row-enter {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes tap-arrow-nudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes tap-loading-shimmer {
+  from {
+    background-position: 120% 0;
+  }
+  to {
+    background-position: -120% 0;
+  }
+}
+
+.tap-motion-scene {
+  animation: tap-scene-enter 640ms var(--tap-ease-out) both;
+}
+
+.tap-stage {
+  animation: tap-stage-enter 620ms var(--tap-ease-out) both;
+}
+
+.tap-home-header,
+.tap-decision-header,
+.tap-onboarding-header {
+  animation: tap-header-enter 480ms var(--tap-ease-out) both;
+}
+
+.tap-home-summary,
+.tap-onboarding-progress {
+  animation: tap-stage-enter 520ms var(--tap-ease-out) 80ms both;
+}
+
+.tap-stage-question {
+  animation-delay: 90ms;
+}
+
+.tap-stage-search {
+  animation-delay: 220ms;
+}
+
+.tap-stage-recent {
+  animation-delay: 340ms;
+}
+
+.tap-stage-wallet {
+  animation-delay: 490ms;
+}
+
+.tap-stage-cta {
+  animation-delay: 660ms;
+}
+
+.tap-home-flow {
+  display: grid;
+  grid-template-columns: auto 1fr auto 1fr auto;
+  gap: 9px;
+  align-items: center;
+  max-width: 310px;
+  margin-top: 16px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.tap-home-flow span {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  animation: tap-flow-step 900ms var(--tap-ease-soft) both;
+}
+
+.tap-home-flow span:nth-of-type(1) {
+  animation-delay: 340ms;
+}
+
+.tap-home-flow span:nth-of-type(2) {
+  animation-delay: 520ms;
+}
+
+.tap-home-flow span:nth-of-type(3) {
+  animation-delay: 700ms;
+}
+
+.tap-home-flow b {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--tap-orange);
+  font-size: 10px;
+}
+
+.tap-home-flow i {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 100, 31, 0.7), rgba(255, 255, 255, 0.12));
+  transform-origin: left;
+  animation: tap-flow-draw 520ms var(--tap-ease-out) both;
+}
+
+.tap-home-flow i:nth-of-type(1) {
+  animation-delay: 430ms;
+}
+
+.tap-home-flow i:nth-of-type(2) {
+  animation-delay: 610ms;
+}
+
+.tap-home-core::after {
+  animation: tap-signal-breathe 5.8s ease-in-out 900ms infinite;
+}
+
+.tap-home-core input,
+.tap-decision-core button,
+.tap-onboarding button,
+.tap-consumer-screen button,
+.tap-consumer-screen a {
+  transition:
+    transform 180ms var(--tap-ease-soft),
+    border-color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 220ms ease,
+    color 180ms ease;
+}
+
+.tap-home-core input:focus {
+  transform: translateY(-1px);
+  border-color: rgba(255, 100, 31, 0.62) !important;
+  box-shadow:
+    0 0 0 4px rgba(255, 100, 31, 0.12),
+    0 18px 42px rgba(0, 0, 0, 0.28) !important;
+}
+
+.tap-recent-row {
+  transition:
+    transform 180ms var(--tap-ease-soft),
+    background-color 180ms ease,
+    border-color 180ms ease;
+}
+
+.tap-recent-row:hover {
+  z-index: 2;
+  transform: translateX(4px);
+  border-color: rgba(255, 100, 31, 0.32);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.tap-recent-row:active,
+.tap-demo-wallet-cta:active,
+.tap-decision-core .cs-btn-primary:active,
+.tap-onboarding footer button:active {
+  transform: scale(0.98);
+}
+
+.tap-sample-wallet .tap-wallet-pocket {
+  animation: tap-pocket-settle 620ms var(--tap-ease-out) 540ms both;
+}
+
+.tap-sample-wallet .tap-sample-card {
+  animation: tap-card-rise 720ms var(--tap-ease-out) both;
+}
+
+.tap-sample-wallet .tap-sample-card-one {
+  animation-delay: 610ms;
+}
+
+.tap-sample-wallet .tap-sample-card-two {
+  animation-delay: 690ms;
+}
+
+.tap-sample-wallet .tap-sample-card-three {
+  animation-delay: 770ms;
+}
+
+.tap-home-loading-state {
+  display: grid;
+  gap: 18px;
+  min-height: 410px;
+  animation: tap-stage-enter 360ms var(--tap-ease-out) both;
+}
+
+.tap-loading-recent {
+  display: grid;
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+}
+
+.tap-loading-recent span {
+  display: block;
+  height: 47px;
+  background:
+    linear-gradient(100deg, transparent 25%, rgba(255, 255, 255, 0.075) 42%, transparent 60%),
+    rgba(255, 255, 255, 0.035);
+  background-size: 220% 100%;
+  animation: tap-loading-shimmer 1.4s ease-in-out infinite;
+}
+
+.tap-loading-wallet {
+  margin-top: 0;
+}
+
+.tap-loading-wallet .tap-wallet-pocket {
+  animation-delay: 20ms;
+}
+
+.tap-loading-wallet .tap-sample-card-one {
+  animation-delay: 70ms;
+}
+
+.tap-loading-wallet .tap-sample-card-two {
+  animation-delay: 130ms;
+}
+
+.tap-loading-wallet .tap-sample-card-three {
+  animation-delay: 190ms;
+}
+
+.tap-demo-wallet-cta svg {
+  animation: tap-arrow-nudge 760ms var(--tap-ease-soft) 1s 2;
+}
+
+.tap-demo-wallet-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 42px rgba(255, 91, 31, 0.3);
+}
+
+.tap-demo-wallet-cta:hover svg {
+  transform: translateX(4px);
+}
+
+.tap-nav-item {
+  position: relative;
+  transition:
+    color 180ms ease,
+    transform 180ms var(--tap-ease-soft);
+}
+
+.tap-nav-item::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  width: 24px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--tap-orange);
+  opacity: 0;
+  transform: scaleX(0.3);
+  transition:
+    opacity 180ms ease,
+    transform 260ms var(--tap-ease-out);
+}
+
+.tap-nav-item[data-active="true"]::before {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.tap-nav-item[data-active="true"] svg {
+  transform: translateY(-1px);
+}
+
+.tap-nav-item:active {
+  transform: scale(0.94);
+}
+
+/* Recommendation pacing continues the Home sequence. */
+.tap-decision-intro {
+  animation-delay: 80ms;
+}
+
+.tap-decision-wallet {
+  animation-delay: 210ms;
+}
+
+.tap-decision-reason {
+  animation-delay: 430ms;
+}
+
+.tap-decision-proof {
+  animation-delay: 540ms;
+}
+
+.tap-decision-cta {
+  animation-delay: 650ms;
+}
+
+.tap-decision-notes {
+  animation-delay: 590ms;
+}
+
+.tap-decision-notes > div {
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  color: rgba(255, 255, 255, 0.74);
+  backdrop-filter: blur(14px);
+}
+
+.tap-decision-notes .text-muted-foreground,
+.tap-decision-notes .text-foreground {
+  color: rgba(255, 255, 255, 0.74) !important;
+}
+
+.tap-contactless-signal[data-visible="true"] i {
+  animation: tap-signal-breathe 2.8s ease-in-out infinite;
+}
+
+.tap-contactless-signal[data-visible="true"] i:nth-child(2) {
+  animation-delay: 120ms;
+}
+
+.tap-contactless-signal[data-visible="true"] i:nth-child(3) {
+  animation-delay: 240ms;
+}
+
+.tap-decision-core .tap-proof-panel:has(button[aria-expanded="true"]) .tap-proof-card,
+.tap-decision-core .tap-proof-panel:has(button[aria-expanded="true"]) .tap-proof-delta,
+.tap-decision-core .tap-proof-panel:has(button[aria-expanded="true"]) .tap-proof-assumptions,
+.tap-decision-core .tap-proof-panel:has(button[aria-expanded="true"]) .tap-proof-independence {
+  animation: tap-proof-row-enter 440ms var(--tap-ease-out) both;
+}
+
+.tap-decision-core
+  .tap-proof-panel:has(button[aria-expanded="true"])
+  .tap-proof-card:nth-of-type(1) {
+  animation-delay: 80ms;
+}
+
+.tap-decision-core
+  .tap-proof-panel:has(button[aria-expanded="true"])
+  .tap-proof-card:nth-of-type(2) {
+  animation-delay: 150ms;
+}
+
+.tap-decision-core .tap-proof-panel:has(button[aria-expanded="true"]) .tap-proof-delta {
+  animation-delay: 220ms;
+}
+
+.tap-decision-core .tap-proof-panel:has(button[aria-expanded="true"]) .tap-proof-assumptions {
+  animation-delay: 290ms;
+}
+
+.tap-decision-core .tap-proof-panel:has(button[aria-expanded="true"]) .tap-proof-independence {
+  animation-delay: 360ms;
+}
+
+/* Onboarding feels like one guided sequence instead of three static forms. */
+.tap-onboarding main > .cs-fade-up > * {
+  animation: tap-stage-enter 560ms var(--tap-ease-out) both;
+}
+
+.tap-onboarding main > .cs-fade-up > *:nth-child(1) {
+  animation-delay: 80ms;
+}
+
+.tap-onboarding main > .cs-fade-up > *:nth-child(2) {
+  animation-delay: 150ms;
+}
+
+.tap-onboarding main > .cs-fade-up > *:nth-child(n + 3) {
+  animation-delay: 240ms;
+}
+
+.tap-onboarding-mini-card {
+  animation: tap-card-rise 660ms var(--tap-ease-out) both;
+}
+
+.tap-onboarding-mini-back {
+  animation-delay: 120ms;
+}
+
+.tap-onboarding-mini-mid {
+  animation-delay: 200ms;
+}
+
+.tap-onboarding-mini-win {
+  animation-delay: 320ms;
+}
+
+.tap-onboarding-mini-pocket {
+  animation: tap-pocket-settle 620ms var(--tap-ease-out) 90ms both;
+}
+
+@media (hover: hover) {
+  .tap-onboarding main button:hover,
+  .tap-consumer-screen main button:hover,
+  .tap-consumer-screen main a:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px rgba(36, 21, 43, 0.1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tap-motion-scene,
+  .tap-stage,
+  .tap-home-header,
+  .tap-home-summary,
+  .tap-decision-header,
+  .tap-onboarding-header,
+  .tap-onboarding-progress,
+  .tap-home-flow span,
+  .tap-home-flow i,
+  .tap-home-core::after,
+  .tap-sample-wallet .tap-wallet-pocket,
+  .tap-sample-wallet .tap-sample-card,
+  .tap-home-loading-state,
+  .tap-loading-recent span,
+  .tap-demo-wallet-cta svg,
+  .tap-contactless-signal[data-visible="true"] i,
+  .tap-decision-core .tap-proof-panel:has(button[aria-expanded="true"]) .tap-proof-card,
+  .tap-decision-core .tap-proof-panel:has(button[aria-expanded="true"]) .tap-proof-delta,
+  .tap-decision-core .tap-proof-panel:has(button[aria-expanded="true"]) .tap-proof-assumptions,
+  .tap-decision-core .tap-proof-panel:has(button[aria-expanded="true"]) .tap-proof-independence,
+  .tap-onboarding main > .cs-fade-up > *,
+  .tap-onboarding-mini-card,
+  .tap-onboarding-mini-pocket {
+    animation: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+  }
+
+  .tap-home-core input,
+  .tap-recent-row,
+  .tap-demo-wallet-cta,
+  .tap-nav-item,
+  .tap-nav-item::before,
+  .tap-decision-core button,
+  .tap-onboarding button,
+  .tap-consumer-screen button,
+  .tap-consumer-screen a {
+    transition: none !important;
   }
 }

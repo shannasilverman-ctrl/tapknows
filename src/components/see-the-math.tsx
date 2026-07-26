@@ -43,7 +43,7 @@ export function SeeTheMath({ winner, runnerUp, amountCents }: Props) {
   const delta = hasRunnerUp ? winner.totalValueCents - runnerUp!.totalValueCents : 0;
 
   return (
-    <div className="tap-proof-panel mt-4 rounded-2xl bg-white border border-border overflow-hidden">
+    <div className="tap-proof-panel tap-stage tap-decision-proof mt-4 rounded-2xl bg-white border border-border overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -52,10 +52,16 @@ export function SeeTheMath({ winner, runnerUp, amountCents }: Props) {
         className="w-full flex items-center justify-between gap-3 px-4 py-3 min-h-[44px] text-left hover:bg-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 transition-colors"
       >
         <span>
-          <span className="block text-[14px] font-semibold text-foreground">
+          <span
+            className="block text-[14px] font-semibold text-foreground"
+            style={open ? { color: "#24152b" } : undefined}
+          >
             Why {playLabel(winner)}?
           </span>
-          <span className="mt-0.5 block text-[11px] text-muted-foreground">
+          <span
+            className="mt-0.5 block text-[11px] text-muted-foreground"
+            style={open ? { color: "#756d75" } : undefined}
+          >
             {hasRunnerUp && delta > 0
               ? `${dollars(delta)} more value than your next-best card`
               : "See the reward math and assumptions"}

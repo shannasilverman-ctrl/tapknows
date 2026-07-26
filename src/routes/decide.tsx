@@ -302,7 +302,7 @@ function DecidePage() {
 
   return (
     <div className="cs-app-body tap-decision-screen min-h-screen flex flex-col text-foreground">
-      <header className="cs-safe-top px-5 pb-2 flex items-center justify-between">
+      <header className="cs-safe-top tap-decision-header px-5 pb-2 flex items-center justify-between">
         <button
           onClick={() => navigate({ to: "/home" })}
           className="inline-flex items-center gap-1 text-[15px] text-primary hover:opacity-80 transition-opacity"
@@ -320,9 +320,9 @@ function DecidePage() {
       </header>
 
       <main className="flex-1 px-5 pb-10 max-w-md w-full mx-auto">
-        <section className="tap-decision-core">
+        <section className="tap-decision-core tap-motion-scene">
           {/* Merchant header */}
-          <div className="mt-2">
+          <div className="mt-2 tap-stage tap-decision-intro">
             <p className="cs-microlabel tap-merchant-pill text-[10px]">
               {merchantName} · {category.replace(/_/g, " ")}
             </p>
@@ -355,7 +355,7 @@ function DecidePage() {
           {/* The physical recommendation — raised card + receded stack.
             enterFromStack replays the "pile → winner rises" beat so decide
             reads as a continuation of the home stack, not a page swap. */}
-          <div className="mt-6">
+          <div className="mt-6 tap-stage tap-decision-wallet">
             {plays.length > 0 ? (
               <WalletStack
                 cards={stackCards}
@@ -382,7 +382,7 @@ function DecidePage() {
 
           {/* Reasoning under the raised card */}
           {raisedPlay ? (
-            <div className="mt-5">
+            <div className="mt-5 tap-stage tap-decision-reason">
               <p className="cs-microlabel text-[10px]">
                 {raisedIsWinner ? "Tap this card" : "If you use this card"}
               </p>
@@ -409,7 +409,7 @@ function DecidePage() {
 
           {/* Priority + protection + utilization notes */}
           {(priorityReason || raisedHasProtections || utilizationCaution) && (
-            <div className="mt-4 space-y-2">
+            <div className="tap-decision-notes tap-stage mt-4 space-y-2">
               {priorityReason && (
                 <div className="flex items-start gap-2.5 rounded-xl bg-primary/8 border border-primary/20 px-3.5 py-2.5">
                   <ShieldCheck className="size-4 text-primary shrink-0 mt-0.5" />
@@ -453,7 +453,7 @@ function DecidePage() {
               });
             }}
             disabled={recorded}
-            className="mt-6 w-full cs-btn-primary h-14 text-[15px] disabled:opacity-100"
+            className="tap-stage tap-decision-cta mt-6 w-full cs-btn-primary h-14 text-[15px] disabled:opacity-100"
           >
             {recorded ? (
               <>

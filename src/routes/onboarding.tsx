@@ -239,7 +239,7 @@ function OnboardingPage() {
 
   return (
     <div className="tap-onboarding min-h-screen flex flex-col bg-background text-foreground">
-      <header className="px-5 pt-6 pb-4 flex items-center justify-between">
+      <header className="tap-onboarding-header px-5 pt-6 pb-4 flex items-center justify-between">
         <button
           onClick={() => {
             if (step === 1) navigate({ to: "/" });
@@ -260,7 +260,7 @@ function OnboardingPage() {
       </header>
 
       {/* Progress */}
-      <div className="px-5">
+      <div className="tap-onboarding-progress px-5">
         <div className="h-1 bg-secondary rounded-full overflow-hidden max-w-md mx-auto">
           <div
             className="h-full bg-foreground transition-all duration-500"

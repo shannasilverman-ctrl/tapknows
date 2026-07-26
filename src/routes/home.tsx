@@ -815,7 +815,7 @@ function HomePage() {
 
   return (
     <div className="cs-app-body tap-app-shell min-h-screen flex flex-col text-foreground">
-      <header className="cs-safe-top px-5 pb-1 flex items-center justify-between">
+      <header className="cs-safe-top tap-home-header px-5 pb-1 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="tap-mini-logo text-[18px]">
             TAP
@@ -866,7 +866,7 @@ function HomePage() {
         {/* Compact summary row — recovered on the left, unused benefits as a
             tap target on the right. Replaces two stacked money lines. */}
         {ready && wallet.length > 0 && (
-          <div className="mt-2 flex items-end justify-between gap-3">
+          <div className="tap-home-summary mt-2 flex items-end justify-between gap-3">
             <div className="min-w-0">
               <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
                 Recovered this month
@@ -937,13 +937,26 @@ function HomePage() {
         )}
 
         {/* The product starts with the customer's question, not their data. */}
-        <section className="tap-home-core">
-          <div className="mt-6 tap-app-question">
+        <section className="tap-home-core tap-motion-scene">
+          <div className="mt-6 tap-app-question tap-stage tap-stage-question">
             <p className="cs-microlabel text-[10px] text-primary mb-2">Ask TAP</p>
             <h1 className="cs-title-lg text-foreground">Where are you paying?</h1>
             <p className="mt-2 text-[15px] text-muted-foreground">
               Name the place. TAP will name the card.
             </p>
+            <div className="tap-home-flow" aria-label="How TAP works">
+              <span>
+                <b>1</b> Place
+              </span>
+              <i aria-hidden />
+              <span>
+                <b>2</b> Card
+              </span>
+              <i aria-hidden />
+              <span>
+                <b>3</b> Value
+              </span>
+            </div>
           </div>
 
           {/* Online-dominant lead — when decide history shows online as this
@@ -970,7 +983,7 @@ function HomePage() {
           )}
 
           {/* Search sits above the stack */}
-          <div className="mt-4">
+          <div className="mt-4 tap-stage tap-stage-search">
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
@@ -1096,16 +1109,27 @@ function HomePage() {
           {/* The wallet supports the answer; it is no longer the opening task. */}
           <div className={`mt-6 ${newlyAddedId ? "cs-card-drop-in" : ""}`}>
             {!ready ? (
-              // Quiet loading skeleton at the true 1.586:1 aspect so first
-              // paint reserves the stack region — no empty-to-full pop.
-              <div
-                className="w-full rounded-[18px] bg-secondary/60 motion-safe:animate-pulse"
-                style={{ aspectRatio: "1.586 / 1" }}
-                aria-hidden
-              />
+              // The first paint already tells the product story. This keeps
+              // the wallet's real silhouette in place while local state loads.
+              <div className="tap-home-loading-state" aria-hidden>
+                <div className="tap-loading-recent">
+                  <span />
+                  <span />
+                  <span />
+                </div>
+                <div className="tap-sample-wallet tap-loading-wallet">
+                  <span className="tap-sample-card tap-sample-card-one" />
+                  <span className="tap-sample-card tap-sample-card-two" />
+                  <span className="tap-sample-card tap-sample-card-three" />
+                  <span className="tap-wallet-pocket" />
+                </div>
+              </div>
             ) : wallet.length === 0 ? (
               <div className="text-center tap-demo-wallet-state">
-                <div className="tap-recent-merchants text-left" aria-label="Recent merchants">
+                <div
+                  className="tap-recent-merchants tap-stage tap-stage-recent text-left"
+                  aria-label="Recent merchants"
+                >
                   <p>Recent</p>
                   <Link to="/demo" className="tap-recent-row">
                     <span className="tap-merchant-mark">◌</span>
@@ -1126,7 +1150,7 @@ function HomePage() {
                 <button
                   type="button"
                   onClick={() => setAddOpen(true)}
-                  className="tap-empty-wallet tap-sample-wallet block w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                  className="tap-empty-wallet tap-sample-wallet tap-stage tap-stage-wallet block w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                   aria-label="Add your first card"
                 >
                   <span className="tap-sample-card tap-sample-card-one" />
@@ -1135,7 +1159,7 @@ function HomePage() {
                   <span className="tap-wallet-pocket" />
                   <span className="tap-empty-title">Your wallet · add cards</span>
                 </button>
-                <Link to="/demo" className="tap-demo-wallet-cta">
+                <Link to="/demo" className="tap-demo-wallet-cta tap-stage tap-stage-cta">
                   Try Whole Foods with a demo wallet <ArrowRight className="size-4" />
                 </Link>
                 {/* Single connect entry in the empty state — the main-flow
@@ -1152,12 +1176,14 @@ function HomePage() {
                 </div>
               </div>
             ) : (
-              <WalletStack
-                cards={stackCards}
-                onOpen={(id) => setOpenedId(id)}
-                pocket
-                pocketLabel={`Your wallet · ${wallet.length} ${wallet.length === 1 ? "card" : "cards"}`}
-              />
+              <div className="tap-stage tap-stage-wallet">
+                <WalletStack
+                  cards={stackCards}
+                  onOpen={(id) => setOpenedId(id)}
+                  pocket
+                  pocketLabel={`Your wallet · ${wallet.length} ${wallet.length === 1 ? "card" : "cards"}`}
+                />
+              </div>
             )}
           </div>
         </section>
