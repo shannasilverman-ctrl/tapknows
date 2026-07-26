@@ -863,80 +863,10 @@ function HomePage() {
         </div>
       </header>
 
-      <main className="flex-1 px-5 pb-10 max-w-md w-full mx-auto cs-stack-scroll">
-        {/* Compact summary row — recovered on the left, unused benefits as a
-            tap target on the right. Replaces two stacked money lines. */}
-        {ready && wallet.length > 0 && (
-          <div className="tap-home-summary mt-2 flex items-end justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-                Recovered this month
-              </p>
-              <p className="cs-money text-[22px] font-semibold text-foreground tabular-nums mt-0.5">
-                {dollars(recovered)}
-              </p>
-              {recovered === 0 && (
-                <p className="mt-1 text-[11px] text-muted-foreground leading-snug">
-                  Money TAP has caught for you this month.
-                </p>
-              )}
-            </div>
-            {benefitsSummary.unusedCents > 0 ? (
-              <button
-                type="button"
-                onClick={() => {
-                  const target = benefitsSummary.topCatalogId;
-                  if (!target) return;
-                  const card = wallet.find((c) => c.catalog_id === target);
-                  if (card) setOpenedId(card.id);
-                }}
-                className="shrink-0 inline-flex items-center gap-1.5 min-h-11 rounded-full border border-border bg-white pl-3 pr-2.5 text-[12px] text-muted-foreground hover:border-primary/40 transition-colors text-left"
-                aria-label="View card credits you haven't used"
-              >
-                <span className="tabular-nums text-foreground font-medium">
-                  {dollars(benefitsSummary.unusedCents)}
-                </span>
-                <span>in card credits you haven't used</span>
-                <ArrowRight className="size-3 text-muted-foreground shrink-0" aria-hidden />
-              </button>
-            ) : (
-              <p className="text-[11px] text-muted-foreground shrink-0">
-                {wallet.length} {wallet.length === 1 ? "card" : "cards"}
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* Linked bank status appears only when a bank needs reconnecting.
-            Healthy links stay quiet. */}
-        {user && (
-          <div className="mt-3 -mx-1">
-            <LinkedBankStatus />
-          </div>
-        )}
-
-        {/* Connect affordance — single quiet button when nothing is linked
-            yet. When one or more banks are linked, this block disappears
-            entirely; the wallet stack becomes the hero. The full add flow
-            still lives in the + button and the empty state. */}
-        {hasLinkedItems === false && wallet.length > 0 && (
-          <div className="mt-3">
-            <WalletConnectEntry
-              isGuest={!user}
-              singleQuiet
-              onManual={() => setAddOpen(true)}
-              onPlaidNeedAuth={() => setSaveSheetOpen(true)}
-              onPlaidComplete={() => loadWallet()}
-            />
-          </div>
-        )}
-
-        {!user && firstDecideDone && !saveDismissed && !pushSheetOpen && (
-          <div className="mt-5">
-            <SaveWalletCard onSave={() => setSaveSheetOpen(true)} onDismiss={dismissSave} />
-          </div>
-        )}
-
+      <main
+        className="flex-1 px-5 pb-10 max-w-md w-full mx-auto cs-stack-scroll"
+        data-wallet-ready={ready ? "true" : "false"}
+      >
         {/* The product starts with the customer's question, not their data. */}
         <section className="tap-home-core tap-motion-scene">
           <div className="mt-6 tap-app-question tap-stage tap-stage-question">
@@ -1188,6 +1118,73 @@ function HomePage() {
             )}
           </div>
         </section>
+
+        {/* Supporting account context follows the core decision moment so
+            the customer's question is always the first action on the page. */}
+        {ready && wallet.length > 0 && (
+          <section className="tap-home-summary mt-8 flex items-end justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                Recovered this month
+              </p>
+              <p className="cs-money text-[22px] font-semibold text-foreground tabular-nums mt-0.5">
+                {dollars(recovered)}
+              </p>
+              {recovered === 0 && (
+                <p className="mt-1 text-[11px] text-muted-foreground leading-snug">
+                  Money TAP has caught for you this month.
+                </p>
+              )}
+            </div>
+            {benefitsSummary.unusedCents > 0 ? (
+              <button
+                type="button"
+                onClick={() => {
+                  const target = benefitsSummary.topCatalogId;
+                  if (!target) return;
+                  const card = wallet.find((c) => c.catalog_id === target);
+                  if (card) setOpenedId(card.id);
+                }}
+                className="shrink-0 inline-flex items-center gap-1.5 min-h-11 rounded-full border border-border bg-white pl-3 pr-2.5 text-[12px] text-muted-foreground hover:border-primary/40 transition-colors text-left"
+                aria-label="View card credits you haven't used"
+              >
+                <span className="tabular-nums text-foreground font-medium">
+                  {dollars(benefitsSummary.unusedCents)}
+                </span>
+                <span>in card credits you haven't used</span>
+                <ArrowRight className="size-3 text-muted-foreground shrink-0" aria-hidden />
+              </button>
+            ) : (
+              <p className="text-[11px] text-muted-foreground shrink-0">
+                {wallet.length} {wallet.length === 1 ? "card" : "cards"}
+              </p>
+            )}
+          </section>
+        )}
+
+        {user && (
+          <div className="mt-3 -mx-1">
+            <LinkedBankStatus />
+          </div>
+        )}
+
+        {hasLinkedItems === false && wallet.length > 0 && (
+          <div className="mt-3">
+            <WalletConnectEntry
+              isGuest={!user}
+              singleQuiet
+              onManual={() => setAddOpen(true)}
+              onPlaidNeedAuth={() => setSaveSheetOpen(true)}
+              onPlaidComplete={() => loadWallet()}
+            />
+          </div>
+        )}
+
+        {!user && firstDecideDone && !saveDismissed && !pushSheetOpen && (
+          <div className="mt-5">
+            <SaveWalletCard onSave={() => setSaveSheetOpen(true)} onDismiss={dismissSave} />
+          </div>
+        )}
 
         {/* Your wallet at a glance — role rows. Only when the wallet is
             large enough for roles to mean anything. Editorial: no badges,

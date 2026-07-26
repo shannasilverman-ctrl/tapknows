@@ -67,6 +67,9 @@ test.describe("TAP consumer visual system", () => {
         if ("readyText" in route && route.readyText) {
           await expect(page.getByText(route.readyText)).toBeVisible();
         }
+        if (route.name === "home") {
+          await expect(page.locator('[data-wallet-ready="true"]')).toBeVisible();
+        }
         await expect(page).toHaveScreenshot(`${route.name}-${viewport.name}.png`, {
           animations: "disabled",
           caret: "hide",
