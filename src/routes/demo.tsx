@@ -402,16 +402,18 @@ function BeatOptimize() {
       <div className="tap-demo-recommendation rounded-3xl bg-surface border border-border p-4">
         <p className="tap-merchant-pill">Whole Foods · groceries</p>
         <h2 className="tap-demo-pick">Use Amex Gold.</h2>
-        <WalletStack
-          cards={cards}
-          raisedId={winner.id}
-          enterFromStack
-          pocket
-          signal
-          pocketLabel="Your wallet · 4 cards"
-        />
+        <div className="tap-demo-wallet-stage">
+          <WalletStack
+            cards={cards}
+            mode="recommendation"
+            raisedCardId={winner.id}
+            enterFromStack
+            pocket
+            pocketLabel="Your wallet · 4 cards"
+          />
+        </div>
 
-        <div className="mt-4 rounded-2xl bg-primary/6 border border-primary/12 px-4 py-3">
+        <div className="tap-demo-value-panel rounded-2xl bg-primary/6 border border-primary/12 px-4 py-3">
           <p className="cs-microlabel text-[10px] text-primary">Value of this choice</p>
           <p className="tap-demo-value">About $3.36 in reward value</p>
           <p className="mt-1 text-[13px] text-muted-foreground">Next best: about $0.84</p>

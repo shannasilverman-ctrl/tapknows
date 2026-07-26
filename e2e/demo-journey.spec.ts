@@ -54,6 +54,21 @@ test.describe("Demo six-beat journey", () => {
     await expect(page.locator(".tap-leather-pocket")).toBeVisible();
     await expect(page.locator('.tap-contactless-signal[data-visible="true"]')).toBeVisible();
     await expect(page.getByText(/Value of this choice/i)).toBeVisible();
+    const demoSpacing = await page.evaluate(() => {
+      const wallet = document.querySelector(".tap-demo-wallet-stage");
+      const value = document.querySelector(".tap-demo-value-panel");
+      const centerRing = document.querySelector(".tap-contactless-signal i:nth-child(3)");
+      if (!wallet || !value || !centerRing) return null;
+      const walletRect = wallet.getBoundingClientRect();
+      const valueRect = value.getBoundingClientRect();
+      return {
+        gap: Math.round(valueRect.top - walletRect.bottom),
+        centerBackground: getComputedStyle(centerRing).backgroundColor,
+      };
+    });
+    expect(demoSpacing).not.toBeNull();
+    expect(demoSpacing!.gap).toBeGreaterThanOrEqual(24);
+    expect(demoSpacing!.centerBackground).toBe("rgba(0, 0, 0, 0)");
 
     // ---------- Beat 6 · Paid (receipt + balance ticks up) ----------
     await expect(page.getByText(/Beat 6 of 6/i)).toBeVisible({ timeout: 15_000 });

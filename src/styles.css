@@ -4330,6 +4330,34 @@ body {
   color: white;
 }
 
+.tap-demo-wallet-stage {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 30px;
+}
+
+.tap-demo-value-panel {
+  position: relative;
+  z-index: 30;
+  clear: both;
+}
+
+/* Keep TAP's orange decision rings, but remove the filled center disc and
+   the circular white metal highlight that read as a sticker on the Gold card. */
+.tap-demo-recommendation .tap-contactless-signal i:nth-child(3) {
+  background: transparent;
+  box-shadow: 0 0 20px rgba(255, 100, 31, 0.72);
+}
+
+.tap-demo-recommendation .cs-face--amex-gold.cs-face--metal::after {
+  background: linear-gradient(
+    118deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.1) 48%,
+    transparent 70%
+  );
+}
+
 .tap-demo-recommendation .text-muted-foreground {
   color: rgba(255, 255, 255, 0.64);
 }
