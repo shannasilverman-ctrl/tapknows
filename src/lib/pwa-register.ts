@@ -38,7 +38,11 @@ export async function registerAppServiceWorker(): Promise<void> {
   try {
     // Retire old push-only worker; the combined SW handles push now.
     await unregisterMatching(OLD_PATHS);
-    await navigator.serviceWorker.register(SW_PATH, { scope: "/" });
+    const registration = await navigator.serviceWorker.register(SW_PATH, {
+      scope: "/",
+      updateViaCache: "none",
+    });
+    await registration.update();
   } catch {
     // Silent — offline is a progressive enhancement.
   }

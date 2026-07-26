@@ -2,7 +2,7 @@
 // Runtime NetworkFirst for navigations, CacheFirst for hashed assets.
 // Client-side recommendation engine works offline once the shell is cached.
 
-const CACHE_VERSION = "tap-v3";
+const CACHE_VERSION = "tap-v4-motion";
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 
