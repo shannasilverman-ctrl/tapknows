@@ -254,7 +254,11 @@ export function WalletStack({
   // anchored at the bottom.
   const extraHeight = Math.max(0, count - 1) * Math.max(0, spreadGap - peek);
   const dynamicPadTop = Math.max(0, expand) * extraHeight;
-  const collapsedH = cardHeight + Math.max(0, count - 1) * peek;
+  // Recommendation mode physically lifts the answer above the pocket. Reserve
+  // that lift inside the component's own layout so a one-card wallet cannot
+  // escape upward into the recommendation headline.
+  const recommendationLift = showSignal ? Math.min(78, cardHeight * 0.32) : 0;
+  const collapsedH = cardHeight + Math.max(0, count - 1) * peek + recommendationLift;
 
   const raisedY = collapsedH - cardHeight; // raised card top offset (bottom-anchor).
 
@@ -284,7 +288,7 @@ export function WalletStack({
           // In the recommendation moment the winning card physically rises
           // above the rest of the wallet. This is the central TAP gesture:
           // the answer should be visible before the explanation is read.
-          const winnerLift = showSignal && k === 0 ? Math.min(78, cardHeight * 0.32) : 0;
+          const winnerLift = k === 0 ? recommendationLift : 0;
           const y = raisedY - k * gap - winnerLift;
 
           // Scale interpolates toward 1 as we expand.

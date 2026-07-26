@@ -433,6 +433,41 @@ function DecidePage() {
             </div>
           ) : null}
 
+          {/* The payment decision is the primary next step. Keep it before
+              supporting proof so it stays visible without exploratory scroll. */}
+          <button
+            onClick={() => {
+              if (!recorded) {
+                if (raisedPlay && !feeOutweighsReward) {
+                  const baseline = Math.round(amount * 100 * 0.01);
+                  const delta = Math.max(0, raisedPlay.totalValueCents - baseline - cardFeeCents);
+                  if (delta > 0) recordRecovered(delta);
+                }
+                if (merchant) recordDecide(merchant.id, category);
+                bumpDecideCount();
+                setRecorded(true);
+              }
+              setTapped(true);
+              requestAnimationFrame(() => {
+                receiptRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+              });
+            }}
+            disabled={recorded}
+            className="tap-stage tap-decision-cta mt-5 w-full cs-btn-primary h-14 text-[15px] disabled:opacity-100"
+          >
+            {recorded ? (
+              <>
+                <Check className="size-5" />
+                {feeOutweighsReward ? "Payment choice saved" : "Card chosen"}
+              </>
+            ) : (
+              <>
+                <Wallet className="size-5" />
+                {feeOutweighsReward ? "I’ll use cash or debit" : "I’m using this card"}
+              </>
+            )}
+          </button>
+
           {/* See the math — proof panel using engine-computed values only. */}
           {raisedPlay ? (
             <SeeTheMath
@@ -468,41 +503,6 @@ function DecidePage() {
               )}
             </div>
           )}
-
-          {/* CTA describes the action TAP can actually record. */}
-          <button
-            onClick={() => {
-              if (!recorded) {
-                if (raisedPlay && !feeOutweighsReward) {
-                  const baseline = Math.round(amount * 100 * 0.01);
-                  const delta = Math.max(0, raisedPlay.totalValueCents - baseline - cardFeeCents);
-                  if (delta > 0) recordRecovered(delta);
-                }
-                if (merchant) recordDecide(merchant.id, category);
-                bumpDecideCount();
-                setRecorded(true);
-              }
-              setTapped(true);
-              // Smooth-scroll the receipt into view on the next frame.
-              requestAnimationFrame(() => {
-                receiptRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-              });
-            }}
-            disabled={recorded}
-            className="tap-stage tap-decision-cta mt-6 w-full cs-btn-primary h-14 text-[15px] disabled:opacity-100"
-          >
-            {recorded ? (
-              <>
-                <Check className="size-5" />
-                {feeOutweighsReward ? "Payment choice saved" : "Card chosen"}
-              </>
-            ) : (
-              <>
-                <Wallet className="size-5" />
-                {feeOutweighsReward ? "I’ll use cash or debit" : "I’m using this card"}
-              </>
-            )}
-          </button>
         </section>
 
         {/* Earnings receipt after acting */}
