@@ -111,6 +111,21 @@ test.describe("TAP product system", () => {
     await expect(page.getByText(/Rates verified/)).toBeVisible();
   });
 
+  test("keeps an easy back action visible throughout the recommendation", async ({ page }) => {
+    await page.goto("/decide?merchant=local_amazon&amount=84&fromStack=1");
+    const back = page.getByRole("button", { name: "Back to merchant search" });
+    await expect(back).toBeVisible();
+
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await expect(back).toBeVisible();
+    const box = await back.boundingBox();
+    expect(box?.y ?? 999).toBeLessThan(100);
+
+    await back.click();
+    await expect(page).toHaveURL(/\/home$/);
+    await expect(page.getByRole("heading", { name: "Where are you paying?" })).toBeVisible();
+  });
+
   test("puts a card surcharge ahead of rewards when cash or debit wins", async ({ page }) => {
     await page.goto("/decide?merchant=whole_foods&category=groceries&amount=84");
 

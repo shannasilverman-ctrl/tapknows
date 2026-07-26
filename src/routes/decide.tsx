@@ -306,15 +306,18 @@ function DecidePage() {
     <TapAppShell surface="decision">
       <header className="cs-safe-top tap-decision-header px-5 pb-2 flex items-center justify-between">
         <button
+          type="button"
           onClick={() => navigate({ to: "/home" })}
-          className="inline-flex items-center gap-1 text-[15px] text-primary hover:opacity-80 transition-opacity"
+          className="tap-decision-back inline-flex min-h-11 items-center gap-1.5 rounded-full border border-border bg-white px-3 text-[14px] font-medium text-foreground hover:border-primary/40 transition-colors"
+          aria-label="Back to merchant search"
         >
           <ArrowLeft className="size-5" />
-          Wallet
+          Back
         </button>
         <button
+          type="button"
           onClick={() => setSheet("amount")}
-          className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground transition-colors rounded-full px-3 py-1.5 border border-border bg-white"
+          className="inline-flex min-h-11 items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground transition-colors rounded-full px-3 py-1.5 border border-border bg-white"
         >
           <Sliders className="size-3.5" />
           {dollars(Math.round(amount * 100))}
