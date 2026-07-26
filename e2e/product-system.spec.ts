@@ -104,6 +104,9 @@ test.describe("TAP product system", () => {
   });
 
   test("uses the editorial system throughout onboarding", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.removeItem("card_savvy_guest_wallet_v1");
+    });
     await page.goto("/onboarding");
     await expect(page.locator(".tap-onboarding")).toHaveCSS(
       "background-color",
