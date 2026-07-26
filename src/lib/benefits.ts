@@ -1068,19 +1068,225 @@ export const BENEFITS: CardBenefit[] = [
     source_url: "https://www.biltrewards.com/terms/blue-card-guide-to-benefits",
     verified_on: "2026-07-18",
   },
+
+  // ── Chase Freedom Flex ──────────────────────────────────────────────────
+  // Standing-protection pass (2026-07-26): confirmed against the Chase
+  // Freedom benefits guide and the Freedom Flex product page. No dollar-value
+  // redeemable credit exists on this card, so every entry is standing.
+  {
+    id: "chase_flex_cell_phone",
+    card_catalog_id: "chase_freedom_flex",
+    label: "Cell phone protection",
+    kind: "standing",
+    cadence: "annual",
+    value_cents: null,
+    source:
+      "https://www.chase.com/personal/credit-cards/education/chase-cards/chase-freedom-benefits-guide",
+    group: "protection",
+    title: "Cell phone protection",
+    summary: "Covers theft or damage when you pay your phone bill with the card.",
+    terms:
+      "Protection against theft or damage for phones listed on your monthly bill, when the bill is paid with the card.",
+    coverage_cap: "Up to $800 per claim, $1,000 per year",
+    source_url:
+      "https://www.chase.com/personal/credit-cards/education/chase-cards/chase-freedom-benefits-guide",
+    verified_on: "2026-07-26",
+  },
+  {
+    id: "chase_flex_purchase_protection",
+    card_catalog_id: "chase_freedom_flex",
+    label: "Purchase protection",
+    kind: "standing",
+    cadence: "annual",
+    value_cents: null,
+    source:
+      "https://www.chase.com/personal/credit-cards/education/chase-cards/chase-freedom-benefits-guide",
+    group: "purchase",
+    title: "Purchase protection",
+    summary: "New purchases covered against damage or theft.",
+    terms:
+      "Covers eligible new purchases for 120 days from the date of purchase against damage or theft (90 days for New York residents).",
+    coverage_cap: "Up to $500 per item",
+    source_url:
+      "https://www.chase.com/personal/credit-cards/education/chase-cards/chase-freedom-benefits-guide",
+    verified_on: "2026-07-26",
+  },
+  {
+    id: "chase_flex_extended_warranty",
+    card_catalog_id: "chase_freedom_flex",
+    label: "Extended warranty protection",
+    kind: "standing",
+    cadence: "annual",
+    value_cents: null,
+    source:
+      "https://www.chase.com/personal/credit-cards/education/chase-cards/chase-freedom-benefits-guide",
+    group: "purchase",
+    title: "Extended warranty protection",
+    summary: "Adds a year to eligible manufacturer warranties.",
+    terms:
+      "Extends the manufacturer's U.S. warranty by an additional year on eligible warranties of three years or less, up to four years from the date of purchase.",
+    source_url:
+      "https://www.chase.com/personal/credit-cards/education/chase-cards/chase-freedom-benefits-guide",
+    verified_on: "2026-07-26",
+  },
+
+  // ── Chase Freedom Unlimited ─────────────────────────────────────────────
+  {
+    id: "chase_cfu_purchase_protection",
+    card_catalog_id: "chase_freedom_unlimited",
+    label: "Purchase protection",
+    kind: "standing",
+    cadence: "annual",
+    value_cents: null,
+    source: "https://www.chase.com/personal/credit-cards/freedom/unlimited",
+    group: "purchase",
+    title: "Purchase protection",
+    summary: "New purchases covered against damage or theft.",
+    terms:
+      "Covers eligible new purchases for 120 days from the date of purchase against damage or theft.",
+    coverage_cap: "Up to $500 per item",
+    source_url: "https://www.chase.com/personal/credit-cards/freedom/unlimited",
+    verified_on: "2026-07-26",
+  },
+  {
+    id: "chase_cfu_extended_warranty",
+    card_catalog_id: "chase_freedom_unlimited",
+    label: "Extended warranty protection",
+    kind: "standing",
+    cadence: "annual",
+    value_cents: null,
+    source: "https://www.chase.com/personal/credit-cards/freedom/unlimited",
+    group: "purchase",
+    title: "Extended warranty protection",
+    summary: "Adds a year to eligible manufacturer warranties.",
+    terms:
+      "Extends the manufacturer's U.S. warranty by an additional year on eligible warranties of three years or less, up to four years from the date of purchase.",
+    source_url: "https://www.chase.com/personal/credit-cards/freedom/unlimited",
+    verified_on: "2026-07-26",
+  },
+  {
+    id: "chase_cfu_trip_cancellation",
+    card_catalog_id: "chase_freedom_unlimited",
+    label: "Trip cancellation and interruption insurance",
+    kind: "standing",
+    cadence: "annual",
+    value_cents: null,
+    source: "https://www.chase.com/personal/credit-cards/freedom/unlimited",
+    group: "travel",
+    title: "Trip cancellation and interruption insurance",
+    summary: "Reimburses pre-paid, non-refundable fares for covered reasons.",
+    terms:
+      "Reimburses pre-paid, non-refundable passenger fares when a trip is cancelled or interrupted by sickness, severe weather, or other covered situations.",
+    coverage_cap: "Up to $1,500 per covered traveler and $6,000 per trip",
+    source_url: "https://www.chase.com/personal/credit-cards/freedom/unlimited",
+    verified_on: "2026-07-26",
+  },
+  {
+    id: "chase_cfu_auto_rental",
+    card_catalog_id: "chase_freedom_unlimited",
+    label: "Auto rental collision damage waiver",
+    kind: "standing",
+    cadence: "annual",
+    value_cents: null,
+    source: "https://www.chase.com/personal/credit-cards/freedom/unlimited",
+    group: "travel",
+    title: "Auto rental collision damage waiver",
+    summary: "Covers theft and collision damage on most rentals.",
+    terms:
+      "Reimbursement for theft and collision damage on most rental vehicles when you decline the rental company's collision insurance and charge the full rental cost to the card. Secondary to personal insurance in the U.S.",
+    source_url: "https://www.chase.com/personal/credit-cards/freedom/unlimited",
+    verified_on: "2026-07-26",
+  },
+
+  // ── Capital One Venture ─────────────────────────────────────────────────
+  // The Global Entry / TSA PreCheck credit is recorded as STANDING, not
+  // redeemable: it recurs every four years, which no cadence in this file can
+  // express, and treating it as an annual credit would overstate the card in
+  // money math.
+  {
+    id: "capone_venture_global_entry",
+    card_catalog_id: "capone_venture",
+    label: "Global Entry / TSA PreCheck credit",
+    kind: "standing",
+    cadence: "annual",
+    value_cents: null,
+    source: "https://www.capitalone.com/credit-cards/venture/",
+    group: "travel",
+    title: "Global Entry or TSA PreCheck fee credit",
+    summary: "Statement credit for the application fee.",
+    terms:
+      "Up to a $120 statement credit when you use the card to apply for Global Entry or TSA PreCheck. One statement credit per account every four years.",
+    coverage_cap: "Up to $120 every 4 years",
+    source_url: "https://www.capitalone.com/credit-cards/venture/",
+    verified_on: "2026-07-26",
+  },
+  {
+    id: "capone_venture_no_fx",
+    card_catalog_id: "capone_venture",
+    label: "No foreign transaction fees",
+    kind: "standing",
+    cadence: "annual",
+    value_cents: null,
+    source: "https://www.capitalone.com/credit-cards/venture/",
+    group: "travel",
+    title: "No foreign transaction fees",
+    summary: "Nothing extra on purchases made abroad.",
+    terms: "No foreign transaction fees on purchases made outside the United States.",
+    source_url: "https://www.capitalone.com/credit-cards/venture/",
+    verified_on: "2026-07-26",
+  },
+  {
+    id: "capone_venture_auto_rental",
+    card_catalog_id: "capone_venture",
+    label: "Auto rental collision damage waiver",
+    kind: "standing",
+    cadence: "annual",
+    value_cents: null,
+    source: "https://www.capitalone.com/credit-cards/venture/",
+    group: "travel",
+    title: "Auto rental collision damage waiver",
+    summary: "Covers collision or theft on an eligible rental.",
+    terms:
+      "Rent an eligible vehicle with the card and you can be covered for damage due to collision or theft.",
+    source_url: "https://www.capitalone.com/credit-cards/venture/",
+    verified_on: "2026-07-26",
+  },
+
+  // ── Capital One Savor ───────────────────────────────────────────────────
+  {
+    id: "capone_savor_no_fx",
+    card_catalog_id: "capone_savor",
+    label: "No foreign transaction fees",
+    kind: "standing",
+    cadence: "annual",
+    value_cents: null,
+    source: "https://www.capitalone.com/credit-cards/savorone-dining-rewards/",
+    group: "travel",
+    title: "No foreign transaction fees",
+    summary: "Nothing extra on purchases made abroad.",
+    terms: "No foreign transaction fees on purchases made outside of the United States.",
+    source_url: "https://www.capitalone.com/credit-cards/savorone-dining-rewards/",
+    verified_on: "2026-07-26",
+  },
 ];
 
 // Audited on 2026-07-17 with no dollar-value credits verifiable from the
 // issuer product page — empty benefit arrays are intentional and correct:
 //   amex_blue_cash_everyday, amex_blue_cash_preferred, amex_delta_gold,
 //   boa_customized_cash, boa_premium_rewards,
-//   capone_savor, capone_venture,
-//   chase_amazon_prime_visa, chase_freedom_flex, chase_freedom_unlimited,
+//   chase_amazon_prime_visa,
 //   chase_united_explorer, chase_world_of_hyatt,
 //   citi_custom_cash, citi_double_cash, citi_strata_premier,
 //   discover_it_cash_back,
 //   usbank_altitude_go,
 //   wf_active_cash, wf_autograph.
+//
+// Standing-protection pass (2026-07-26) added chase_freedom_flex,
+// chase_freedom_unlimited, capone_venture, and capone_savor, each verified
+// against the issuer page cited in `source_url` on that date. Cards still
+// listed above stayed empty because their product pages did not state
+// coverage terms specifically enough to cite — "not yet verified in TAP",
+// never "no benefits".
 
 export const BENEFITS_BY_CARD: Record<string, CardBenefit[]> = (() => {
   const m: Record<string, CardBenefit[]> = {};

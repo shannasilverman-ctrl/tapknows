@@ -1,10 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, ChevronRight, Plane, ShieldCheck } from "lucide-react";
 import { BenefitDetailSheet } from "@/components/benefit-detail-sheet";
 import { PinnedCardDetail } from "@/components/pinned-card-detail";
 import { benefitsForCard } from "@/lib/benefitState";
 import type { CardBenefit } from "@/lib/benefits";
+import { UNVERIFIED_COPY, benefitCoverage } from "@/lib/benefitCoverage";
+import { trackJourneyEvent } from "@/lib/journeyEvents";
 import { CATALOG_BY_ID } from "@/lib/cardCatalog";
 import { isCapReached, setCapReached, type CapPeriod } from "@/lib/capReached";
 import { dollars } from "@/lib/format";
@@ -97,6 +99,20 @@ export function WalletCardBriefing({
     }))
     .filter((group) => group.items.length > 0);
   const firstTryRule = bestRules[0] ?? catalog?.earn_rules[0];
+  // HONESTY RULE: an empty benefit list means TAP has not checked this card
+  // yet — it never means the card has no benefits. Say which one it is.
+  const coverage = benefitCoverage(card.catalogId);
+  const showsUnverified = coverage === "not_yet_verified";
+
+  // Learning loop: the customer came back to understand a card. Emitted from
+  // the shared briefing so Home's tactile wallet and the Wallet playbook are
+  // instrumented by the same code path.
+  useEffect(() => {
+    trackJourneyEvent("card_guide_opened", {
+      catalogId: card.catalogId,
+      coverage,
+    });
+  }, [card.catalogId, coverage]);
 
   return (
     <>
@@ -224,80 +240,111 @@ export function WalletCardBriefing({
           </ul>
         </section>
 
-        {redeemable.length > 0 ? (
-          <section className="mt-6">
-            <p className="cs-microlabel text-[10px]">Credits to use</p>
-            <ul className="mt-2 divide-y divide-border rounded-2xl border border-border bg-white">
-              {redeemable.map((state) => {
-                const total = state.benefit.value_cents ?? 0;
-                const percent =
-                  total > 0 ? Math.round(((total - state.remaining_cents) / total) * 100) : 0;
-                const anniversaryBased = state.benefit.note
-                  ?.toLowerCase()
-                  .includes("account anniversary");
-                return (
-                  <li key={state.benefit.id} className="px-4 py-3">
-                    <div className="flex items-baseline justify-between gap-3">
-                      <span className="text-[14px] text-foreground leading-snug">
-                        {state.benefit.label}
-                      </span>
-                      <span className="cs-money text-[14px] font-semibold text-foreground whitespace-nowrap">
-                        {dollars(state.remaining_cents)} left
-                      </span>
-                    </div>
-                    <div className="mt-2 h-1.5 rounded-full bg-secondary overflow-hidden">
-                      <div
-                        className="h-full bg-primary transition-all"
-                        style={{ width: `${percent}%` }}
-                      />
-                    </div>
-                    <p className="mt-1.5 text-[11px] text-muted-foreground">
-                      {anniversaryBased
-                        ? "Resets each account anniversary"
-                        : `Resets ${state.ends_at.toLocaleDateString([], {
-                            month: "short",
-                            day: "numeric",
-                          })}`}
-                    </p>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        ) : null}
+        {/* Everything benefit-related lives in one container so the unverified
+            label is grouped with benefit content, never floated elsewhere. */}
+        <div data-testid="card-briefing-benefits">
+          {showsUnverified ? (
+            <section className="mt-6">
+              <p className="cs-microlabel text-[10px]">Benefits</p>
+              <div className="mt-2 rounded-2xl border border-border bg-white px-4 py-3">
+                <p
+                  data-testid="benefits-unverified-label"
+                  className="text-[15px] text-foreground leading-snug"
+                >
+                  {UNVERIFIED_COPY}
+                </p>
+                <p className="mt-1 text-[12px] text-muted-foreground leading-snug">
+                  This card may well have benefits — TAP only lists what it has confirmed against
+                  the issuer&rsquo;s own page.
+                </p>
+              </div>
+            </section>
+          ) : null}
 
-        {grouped.map((group) => (
-          <section key={group.key} className="mt-6">
-            <p className="cs-microlabel text-[10px]">{group.label}</p>
-            <ul className="mt-2 divide-y divide-border rounded-2xl border border-border bg-white overflow-hidden">
-              {group.items.map((state) => {
-                const benefit = state.benefit;
-                const title = benefit.title ?? benefit.label;
-                return (
-                  <li key={benefit.id}>
-                    <button
-                      type="button"
-                      onClick={() => setOpenBenefit(benefit)}
-                      className="w-full text-left px-4 py-3 flex items-center gap-3 min-h-11 hover:bg-secondary/40 active:scale-[0.98] transition-transform"
-                      aria-label={`${title} — details`}
-                    >
-                      <ShieldCheck className="size-4 text-primary shrink-0" aria-hidden />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[15px] text-foreground leading-snug">{title}</p>
-                        {benefit.summary ? (
-                          <p className="mt-0.5 text-[12px] text-muted-foreground leading-snug">
-                            {benefit.summary}
-                          </p>
-                        ) : null}
+          {redeemable.length > 0 ? (
+            <section className="mt-6">
+              <p className="cs-microlabel text-[10px]">Credits to use</p>
+              <ul className="mt-2 divide-y divide-border rounded-2xl border border-border bg-white">
+                {redeemable.map((state) => {
+                  const total = state.benefit.value_cents ?? 0;
+                  const percent =
+                    total > 0 ? Math.round(((total - state.remaining_cents) / total) * 100) : 0;
+                  const anniversaryBased = state.benefit.note
+                    ?.toLowerCase()
+                    .includes("account anniversary");
+                  return (
+                    <li key={state.benefit.id} className="px-4 py-3">
+                      <div className="flex items-baseline justify-between gap-3">
+                        <span className="text-[14px] text-foreground leading-snug">
+                          {state.benefit.label}
+                        </span>
+                        <span className="cs-money text-[14px] font-semibold text-foreground whitespace-nowrap">
+                          {dollars(state.remaining_cents)} left
+                        </span>
                       </div>
-                      <ChevronRight className="size-4 text-muted-foreground shrink-0" aria-hidden />
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        ))}
+                      <div className="mt-2 h-1.5 rounded-full bg-secondary overflow-hidden">
+                        <div
+                          className="h-full bg-primary transition-all"
+                          style={{ width: `${percent}%` }}
+                        />
+                      </div>
+                      <p className="mt-1.5 text-[11px] text-muted-foreground">
+                        {anniversaryBased
+                          ? "Resets each account anniversary"
+                          : `Resets ${state.ends_at.toLocaleDateString([], {
+                              month: "short",
+                              day: "numeric",
+                            })}`}
+                      </p>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ) : null}
+
+          {grouped.map((group) => (
+            <section key={group.key} className="mt-6">
+              <p className="cs-microlabel text-[10px]">{group.label}</p>
+              <ul className="mt-2 divide-y divide-border rounded-2xl border border-border bg-white overflow-hidden">
+                {group.items.map((state) => {
+                  const benefit = state.benefit;
+                  const title = benefit.title ?? benefit.label;
+                  return (
+                    <li key={benefit.id}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          trackJourneyEvent("benefit_detail_opened", {
+                            catalogId: card.catalogId,
+                            benefitId: benefit.id,
+                          });
+                          setOpenBenefit(benefit);
+                        }}
+                        className="w-full text-left px-4 py-3 flex items-center gap-3 min-h-11 hover:bg-secondary/40 active:scale-[0.98] transition-transform"
+                        aria-label={`${title} — details`}
+                      >
+                        <ShieldCheck className="size-4 text-primary shrink-0" aria-hidden />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[15px] text-foreground leading-snug">{title}</p>
+                          {benefit.summary ? (
+                            <p className="mt-0.5 text-[12px] text-muted-foreground leading-snug">
+                              {benefit.summary}
+                            </p>
+                          ) : null}
+                        </div>
+                        <ChevronRight
+                          className="size-4 text-muted-foreground shrink-0"
+                          aria-hidden
+                        />
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ))}
+        </div>
 
         <section className="mt-6">
           <p className="cs-microlabel text-[10px]">Watch-outs</p>
