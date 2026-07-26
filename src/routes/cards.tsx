@@ -133,6 +133,7 @@ function CardsPage() {
           name: selectedCatalog.name,
           nickname: selectedUserCard.nickname,
         }}
+        catalogOverride={selectedCatalog.is_custom ? selectedCatalog : undefined}
         userId={user?.id ?? null}
         onBack={() => {
           void navigate({ to: "/cards", search: {} });

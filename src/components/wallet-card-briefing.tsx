@@ -8,6 +8,7 @@ import type { CardBenefit } from "@/lib/benefits";
 import { CATALOG_BY_ID } from "@/lib/cardCatalog";
 import { isCapReached, setCapReached, type CapPeriod } from "@/lib/capReached";
 import { dollars } from "@/lib/format";
+import type { CardCatalog } from "@/lib/types";
 
 export type WalletBriefingCard = {
   id: string;
@@ -19,6 +20,7 @@ export type WalletBriefingCard = {
 
 type Props = {
   card: WalletBriefingCard;
+  catalogOverride?: CardCatalog;
   userId: string | null;
   onBack: () => void;
   onRemove?: () => void;
@@ -56,6 +58,7 @@ function rateLabel(multiplier: number): string {
  */
 export function WalletCardBriefing({
   card,
+  catalogOverride,
   userId,
   onBack,
   onRemove,
@@ -63,7 +66,8 @@ export function WalletCardBriefing({
   showTryPurchase = false,
 }: Props) {
   const [openBenefit, setOpenBenefit] = useState<CardBenefit | null>(null);
-  const catalog = CATALOG_BY_ID[card.catalogId];
+  const verifiedCatalog = CATALOG_BY_ID[card.catalogId];
+  const catalog = catalogOverride ?? verifiedCatalog;
   const feeLabel = catalog?.annual_fee
     ? `${dollars(catalog.annual_fee * 100)} annual fee`
     : "No annual fee";
@@ -166,11 +170,17 @@ export function WalletCardBriefing({
           <p className="cs-microlabel text-[10px]">All earn rates</p>
           <ul className="mt-2 divide-y divide-border rounded-2xl border border-border bg-white">
             {(catalog?.earn_rules ?? []).map((rule) => {
-              const cap = rule.cap_period_spend ?? rule.cap_annual_spend ?? null;
-              const period = (rule.cap_period ?? "annual") as CapPeriod;
+              const cap =
+                ("cap_period_spend" in rule ? rule.cap_period_spend : null) ??
+                ("cap_annual_spend" in rule ? rule.cap_annual_spend : null) ??
+                null;
+              const period = (
+                "cap_period" in rule ? (rule.cap_period ?? "annual") : "annual"
+              ) as CapPeriod;
               const periodShort =
                 period === "monthly" ? "mo" : period === "quarterly" ? "qtr" : "yr";
-              const postCap = rule.post_cap_multiplier ?? null;
+              const postCap =
+                "post_cap_multiplier" in rule ? (rule.post_cap_multiplier ?? null) : null;
               const reached =
                 cap != null ? isCapReached(userId, card.id, rule.category, period) : false;
               return (
@@ -311,11 +321,11 @@ export function WalletCardBriefing({
                 {catalog.notes}
               </p>
             ) : null}
-            {catalog ? (
+            {verifiedCatalog ? (
               <p className="mt-3 pt-3 border-t border-border text-[11px] text-muted-foreground">
-                Rates verified {catalog.rates_verified_on}.{" "}
+                Rates verified {verifiedCatalog.rates_verified_on}.{" "}
                 <a
-                  href={catalog.source}
+                  href={verifiedCatalog.source}
                   target="_blank"
                   rel="noreferrer noopener"
                   className="underline underline-offset-2 text-foreground"
