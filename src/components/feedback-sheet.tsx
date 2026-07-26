@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { Sheet } from "@/components/sheet";
-import { submitFeedback, markFeedbackShown } from "@/lib/feedback";
+import {
+  FEEDBACK_STAGES,
+  markFeedbackShown,
+  recordFeedbackStage,
+  submitFeedback,
+  type FeedbackStageId,
+} from "@/lib/feedback";
 import { toast } from "sonner";
 
-const CHIPS = [
-  "Finding the store",
-  "Adding cards",
-  "Trusting the pick",
-  "Understanding the math",
-  "Nothing — it worked",
-  "Something else",
-] as const;
+// Stage options render from the canonical set in `lib/feedback` so a visible
+// label can never drift from what gets recorded. The two catch-all chips stay
+// separate — they are not journey stages, they are exits.
+const CHIPS = ["Nothing — it worked", "Something else"] as const;
 
 type Props = {
   open: boolean;
@@ -23,9 +25,18 @@ type Props = {
  * reappears from the automatic trigger.
  */
 export function FeedbackSheet({ open, onClose }: Props) {
+  const [stage, setStage] = useState<FeedbackStageId | null>(null);
   const [chips, setChips] = useState<string[]>([]);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
+
+  // Single-select: naming one broken stage is the point. Tapping the active
+  // stage again clears it.
+  const pickStage = (id: FeedbackStageId) => {
+    const next = stage === id ? null : id;
+    setStage(next);
+    recordFeedbackStage(next);
+  };
 
   const toggleChip = (c: string) => {
     setChips((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]));
@@ -33,6 +44,8 @@ export function FeedbackSheet({ open, onClose }: Props) {
 
   const dismiss = () => {
     markFeedbackShown();
+    setStage(null);
+    recordFeedbackStage(null);
     setChips([]);
     setText("");
     onClose();
@@ -42,7 +55,7 @@ export function FeedbackSheet({ open, onClose }: Props) {
     if (busy) return;
     setBusy(true);
     try {
-      await submitFeedback({ chips, text });
+      await submitFeedback({ chips, text, stage });
       toast.success("Thanks — noted.");
       dismiss();
     } catch (e) {
@@ -52,15 +65,39 @@ export function FeedbackSheet({ open, onClose }: Props) {
     }
   };
 
-  const canSend = chips.length > 0 || text.trim().length > 0;
+  const canSend = !!stage || chips.length > 0 || text.trim().length > 0;
 
   return (
     <Sheet open={open} onClose={dismiss} title="Quick feedback" busy={busy}>
       <p className="mt-1 text-[14px] leading-relaxed text-muted-foreground">
-        What felt hard or uncertain while using TAP?
+        Which part felt hard or uncertain?
       </p>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-wrap gap-2" data-testid="feedback-stages">
+        {FEEDBACK_STAGES.map((s) => {
+          const active = stage === s.id;
+          return (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => pickStage(s.id)}
+              aria-pressed={active}
+              data-testid={`feedback-stage-${s.id}`}
+              data-stage-id={s.id}
+              className={[
+                "min-h-11 px-3.5 rounded-full text-[13px] font-medium transition-colors",
+                active
+                  ? "bg-foreground text-background border border-foreground"
+                  : "bg-white text-foreground border border-border hover:border-foreground/40",
+              ].join(" ")}
+            >
+              {s.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
         {CHIPS.map((c) => {
           const active = chips.includes(c);
           return (

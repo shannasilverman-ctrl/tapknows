@@ -57,15 +57,69 @@ function getClientId(): string {
   return id;
 }
 
+// ── journey stages ─────────────────────────────────────────────────────────
+//
+// The customer-experience report asks feedback to isolate WHICH stage of the
+// journey broke, instead of asking broadly and collecting an unactionable "it
+// was confusing". These four are the stages it names. The set is canonical:
+// the feedback sheet renders its options from here, so a visible label can
+// never drift out of sync with what actually gets recorded.
+
+export const FEEDBACK_STAGES = [
+  { id: "finding_merchant", label: "Finding the store" },
+  { id: "setting_up_cards", label: "Adding cards" },
+  { id: "trusting_the_pick", label: "Trusting the pick" },
+  { id: "understanding_the_math", label: "Understanding the math" },
+] as const;
+
+export type FeedbackStage = (typeof FEEDBACK_STAGES)[number];
+export type FeedbackStageId = FeedbackStage["id"];
+
+const STAGE_BY_ID = new Map<string, FeedbackStage>(FEEDBACK_STAGES.map((s) => [s.id, s]));
+
+export function isFeedbackStageId(id: string): id is FeedbackStageId {
+  return STAGE_BY_ID.has(id);
+}
+
+export function feedbackStageLabel(id: FeedbackStageId): string {
+  return STAGE_BY_ID.get(id)?.label ?? id;
+}
+
+// The stage the customer most recently picked, recorded at SELECTION time
+// rather than submit time — so the choice is observable without a network
+// round trip. The e2e suite reads it back off `window`.
+const STAGE_SINK_KEY = "__tapFeedbackStage";
+
+/** The window key the e2e suite reads the recorded stage back from. */
+export const FEEDBACK_STAGE_SINK_KEY = STAGE_SINK_KEY;
+
+export function recordFeedbackStage(id: FeedbackStageId | null): void {
+  if (typeof window === "undefined") return;
+  (window as unknown as Record<string, unknown>)[STAGE_SINK_KEY] = id;
+}
+
+export function readRecordedFeedbackStage(): FeedbackStageId | null {
+  if (typeof window === "undefined") return null;
+  const v = (window as unknown as Record<string, unknown>)[STAGE_SINK_KEY];
+  return typeof v === "string" && isFeedbackStageId(v) ? v : null;
+}
+
 export type FeedbackPayload = {
   chips: string[];
   text: string;
+  /** Which journey stage broke, when the customer named one. */
+  stage?: FeedbackStageId | null;
 };
 
 export async function submitFeedback(payload: FeedbackPayload): Promise<void> {
-  const { chips, text } = payload;
+  const { chips, text, stage } = payload;
   const trimmed = text.trim().slice(0, 2000) || null;
-  const cleanChips = Array.from(new Set(chips)).slice(0, 10);
+  // The named stage is the most actionable signal, so it leads the chip list.
+  const stageLabel = stage && isFeedbackStageId(stage) ? feedbackStageLabel(stage) : null;
+  const cleanChips = Array.from(new Set([...(stageLabel ? [stageLabel] : []), ...chips])).slice(
+    0,
+    10,
+  );
 
   const { data: userRes } = await supabase.auth.getUser();
   const uid = userRes.user?.id ?? null;
@@ -86,6 +140,7 @@ export async function submitFeedback(payload: FeedbackPayload): Promise<void> {
   // with the rest of the client-side event trail.
   console.info("[analytics] feedback_submitted", {
     chips: cleanChips,
+    stage: stage ?? null,
     has_text: !!trimmed,
     signed_in: !!uid,
   });
