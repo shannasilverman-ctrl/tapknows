@@ -1801,6 +1801,254 @@
   }
 }
 
+/* ============================================================
+   LANDING PRODUCT WALKTHROUGH — a real carousel on touch screens.
+   Desktop keeps the three-screen editorial spread; mobile shows one
+   complete product screen at a time with swipe and explicit controls.
+   ============================================================ */
+.tap-product-walkthrough {
+  width: min(1320px, 100%);
+  margin-inline: auto;
+}
+
+.tap-device-stage {
+  display: block;
+  width: 100%;
+  touch-action: pan-y;
+  outline: none;
+}
+
+.tap-device-stage:focus-visible {
+  box-shadow:
+    inset 0 0 0 3px rgba(255, 100, 31, 0.28),
+    inset 0 1px 0 white;
+}
+
+.tap-device-track {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 0.92fr 1.08fr 0.92fr;
+  align-items: end;
+  gap: clamp(14px, 2.4vw, 36px);
+}
+
+.tap-device-slide {
+  display: flex;
+  min-width: 0;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.tap-device-search,
+.tap-device-recents,
+.tap-device-dock {
+  width: 100%;
+  color: inherit;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tap-device-search {
+  display: block;
+}
+
+.tap-device-search:active,
+.tap-device-recents:active,
+.tap-device-dock:active {
+  transform: scale(0.985);
+}
+
+.tap-device-search:focus-visible,
+.tap-device-recents:focus-visible,
+.tap-device-dock:focus-visible,
+.tap-choice-actions button:focus-visible {
+  outline: 2px solid var(--tap-orange);
+  outline-offset: 2px;
+}
+
+.tap-choice-actions a,
+.tap-choice-actions button {
+  display: grid;
+  place-items: center;
+  min-height: 39px;
+  border: 1px solid #9b8ca0;
+  border-radius: 11px;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.tap-walkthrough-controls {
+  display: none;
+}
+
+@keyframes tap-carousel-screen-enter {
+  from {
+    opacity: 0.5;
+    transform: translateY(12px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .tap-device-stage {
+    display: block;
+    padding: 42px 0 44px;
+    overflow: hidden;
+    scroll-snap-type: none;
+  }
+
+  .tap-device-stage::before,
+  .tap-device-stage::after {
+    display: none;
+  }
+
+  .tap-device-track {
+    display: flex;
+    gap: 0;
+    width: 100%;
+    align-items: flex-end;
+    transform: translate3d(calc(var(--tap-active-screen) * -100%), 0, 0);
+    transition: transform 520ms var(--tap-ease-out);
+    will-change: transform;
+  }
+
+  .tap-device-slide {
+    flex: 0 0 100%;
+    width: 100%;
+    padding-inline: max(20px, calc((100vw - 390px) / 2));
+  }
+
+  .tap-device-slide[data-active="true"] .tap-device {
+    animation: tap-carousel-screen-enter 520ms var(--tap-ease-out) both;
+  }
+
+  .tap-device {
+    flex: none;
+    width: min(344px, 100%);
+  }
+
+  .tap-walkthrough-controls {
+    display: grid;
+    grid-template-columns: 48px 1fr 48px;
+    gap: 12px;
+    align-items: center;
+    width: min(390px, calc(100% - 32px));
+    margin: 16px auto 0;
+  }
+
+  .tap-walkthrough-controls > button {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    place-items: center;
+    border: 1px solid #ded9d5;
+    border-radius: 50%;
+    background: #fff;
+    color: var(--tap-ink);
+    box-shadow: 0 10px 24px rgba(36, 21, 43, 0.08);
+    transition:
+      transform 180ms var(--tap-ease-soft),
+      opacity 180ms ease,
+      border-color 180ms ease;
+  }
+
+  .tap-walkthrough-controls > button svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .tap-walkthrough-controls > button:not(:disabled):active {
+    transform: scale(0.92);
+  }
+
+  .tap-walkthrough-controls > button:disabled {
+    opacity: 0.28;
+  }
+
+  .tap-walkthrough-progress {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .tap-walkthrough-progress > div {
+    display: flex;
+    gap: 4px;
+  }
+
+  .tap-walkthrough-progress > div button {
+    display: grid;
+    width: 28px;
+    height: 18px;
+    place-items: center;
+  }
+
+  .tap-walkthrough-progress i {
+    display: block;
+    width: 20px;
+    height: 3px;
+    border-radius: 999px;
+    background: #d5d0cc;
+    transition:
+      width 260ms var(--tap-ease-out),
+      background-color 180ms ease;
+  }
+
+  .tap-walkthrough-progress button[aria-current="step"] i {
+    width: 28px;
+    background: var(--tap-orange);
+  }
+
+  .tap-walkthrough-progress span {
+    overflow: hidden;
+    color: var(--tap-ink);
+    font-size: 13px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tap-walkthrough-progress small {
+    color: var(--tap-muted);
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 560px) {
+  .tap-device-stage {
+    padding: 28px 0 34px;
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0;
+  }
+
+  .tap-device-slide {
+    padding-inline: 20px;
+  }
+
+  .tap-device {
+    width: min(310px, 100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tap-device-track,
+  .tap-walkthrough-progress i,
+  .tap-walkthrough-controls > button {
+    transition: none !important;
+  }
+
+  .tap-device-slide[data-active="true"] .tap-device {
+    animation: none !important;
+  }
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

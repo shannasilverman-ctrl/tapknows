@@ -1,6 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { ArrowRight, Check, LockKeyhole, MapPin, ScanLine, Sparkles } from "lucide-react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
+import {
+  ArrowRight,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  LockKeyhole,
+  MapPin,
+  ScanLine,
+  Sparkles,
+} from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { getGuestWallet } from "@/lib/guestWallet";
 
@@ -21,10 +30,14 @@ const proof = [
   { label: "Everything else", rate: "2×", card: "Double Cash", tone: "sage" },
 ] as const;
 
+const walkthroughScreens = ["Choose the place", "See your best card", "Check the math"] as const;
+
 function Landing() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [returning, setReturning] = useState(false);
+  const [activeScreen, setActiveScreen] = useState(0);
+  const swipeStartX = useRef<number | null>(null);
 
   useEffect(() => {
     if (!loading && user) navigate({ to: "/home" });
@@ -39,6 +52,9 @@ function Landing() {
   }, []);
 
   const startTo = returning ? "/home" : "/onboarding";
+  const showScreen = (screen: number) => {
+    setActiveScreen(Math.max(0, Math.min(walkthroughScreens.length - 1, screen)));
+  };
 
   return (
     <main className="tap-landing">
@@ -81,128 +97,237 @@ function Landing() {
           </p>
         </div>
 
-        <div className="tap-device-stage" aria-label="TAP product experience">
-          <div className="tap-device tap-device-home">
-            <div className="tap-device-screen">
-              <div className="tap-device-status">
-                <b>9:41</b>
-                <span>▮▮▮ ◒ ▰</span>
+        <div className="tap-product-walkthrough">
+          <div
+            className="tap-device-stage"
+            role="region"
+            aria-roledescription="carousel"
+            aria-label="Swipe through the TAP product experience"
+            tabIndex={0}
+            onKeyDown={(event) => {
+              if (event.key === "ArrowLeft") showScreen(activeScreen - 1);
+              if (event.key === "ArrowRight") showScreen(activeScreen + 1);
+            }}
+            onPointerDown={(event) => {
+              swipeStartX.current = event.clientX;
+            }}
+            onPointerUp={(event) => {
+              if (swipeStartX.current == null) return;
+              const distance = event.clientX - swipeStartX.current;
+              swipeStartX.current = null;
+              if (Math.abs(distance) < 42) return;
+              showScreen(activeScreen + (distance < 0 ? 1 : -1));
+            }}
+            onPointerCancel={() => {
+              swipeStartX.current = null;
+            }}
+          >
+            <div
+              className="tap-device-track"
+              style={{ "--tap-active-screen": activeScreen } as CSSProperties}
+            >
+              <div
+                className="tap-device-slide"
+                data-active={activeScreen === 0 ? "true" : "false"}
+                role="group"
+                aria-roledescription="slide"
+                aria-label="1 of 3: Choose the place"
+              >
+                <div className="tap-device tap-device-home">
+                  <div className="tap-device-screen">
+                    <div className="tap-device-status">
+                      <b>9:41</b>
+                      <span>▮▮▮ ◒ ▰</span>
+                    </div>
+                    <div className="tap-device-brand">
+                      <b>TAP</b>
+                      <i />
+                    </div>
+                    <h2>
+                      Where are
+                      <br />
+                      you paying?
+                    </h2>
+                    <button
+                      type="button"
+                      className="tap-device-search"
+                      onClick={() => showScreen(1)}
+                      aria-label="Choose a store and see the recommended card"
+                    >
+                      ⌕&nbsp;&nbsp; Store or category
+                    </button>
+                    <p className="tap-device-label">Recent</p>
+                    <button
+                      type="button"
+                      className="tap-device-recents"
+                      onClick={() => showScreen(1)}
+                      aria-label="Choose Whole Foods and see the recommended card"
+                    >
+                      <span>♧</span>
+                      <b>Whole Foods</b>
+                      <i>›</i>
+                      <span>◎</span>
+                      <b>Target</b>
+                      <i>›</i>
+                      <span>▱</span>
+                      <b>Starbucks</b>
+                      <i>›</i>
+                    </button>
+                    <div className="tap-leather-wallet tap-leather-wallet-home">
+                      <span className="tap-wallet-card tap-wallet-card-silver" />
+                      <span className="tap-wallet-card tap-wallet-card-rose" />
+                      <span className="tap-wallet-card tap-wallet-card-gold" />
+                      <span className="tap-wallet-mouth" />
+                    </div>
+                    <button
+                      type="button"
+                      className="tap-device-dock"
+                      onClick={() => showScreen(1)}
+                      aria-label="Open the four-card wallet"
+                    >
+                      <b>Your wallet · 4 cards</b>
+                      <span>⌖&nbsp;&nbsp; Use location once</span>
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div className="tap-device-brand">
-                <b>TAP</b>
-                <i />
+
+              <div
+                className="tap-device-slide"
+                data-active={activeScreen === 1 ? "true" : "false"}
+                role="group"
+                aria-roledescription="slide"
+                aria-label="2 of 3: See your best card"
+              >
+                <div className="tap-device tap-device-winner">
+                  <div className="tap-device-screen">
+                    <div className="tap-device-status">
+                      <b>9:41</b>
+                      <span>▮▮▮ ◒ ▰</span>
+                    </div>
+                    <div className="tap-device-pill">Whole Foods&nbsp; · &nbsp;Groceries</div>
+                    <h2>Use Amex Gold.</h2>
+                    <div className="tap-choice-wallet">
+                      <span className="tap-choice-card tap-choice-card-back" />
+                      <span className="tap-choice-card tap-choice-card-middle" />
+                      <span className="tap-choice-card tap-choice-card-gold">
+                        <i className="tap-card-line" />
+                      </span>
+                      <div className="tap-signal-rings">
+                        <i />
+                        <i />
+                        <i />
+                      </div>
+                      <span className="tap-wallet-mouth" />
+                    </div>
+                    <div className="tap-choice-value">
+                      <h3>About $3.36 in reward value</h3>
+                      <p>Next best: about $0.84</p>
+                      <div>
+                        <span>Estimated difference:</span>
+                        <b>+$2.52</b>
+                      </div>
+                      <small>Amount won’t change this pick.</small>
+                    </div>
+                    <div className="tap-choice-actions">
+                      <Link to="/demo">Used it</Link>
+                      <button type="button" onClick={() => showScreen(2)}>
+                        Why this card?
+                      </button>
+                      <Link to="/demo">Wrong merchant or card?</Link>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <h2>
-                Where are
-                <br />
-                you paying?
-              </h2>
-              <div className="tap-device-search">⌕&nbsp;&nbsp; Store or category</div>
-              <p className="tap-device-label">Recent</p>
-              <div className="tap-device-recents">
-                <span>♧</span>
-                <b>Whole Foods</b>
-                <i>›</i>
-                <span>◎</span>
-                <b>Target</b>
-                <i>›</i>
-                <span>▱</span>
-                <b>Starbucks</b>
-                <i>›</i>
-              </div>
-              <div className="tap-leather-wallet tap-leather-wallet-home">
-                <span className="tap-wallet-card tap-wallet-card-silver" />
-                <span className="tap-wallet-card tap-wallet-card-rose" />
-                <span className="tap-wallet-card tap-wallet-card-gold" />
-                <span className="tap-wallet-mouth" />
-              </div>
-              <div className="tap-device-dock">
-                <b>Your wallet · 4 cards</b>
-                <span>⌖&nbsp;&nbsp; Use location once</span>
+
+              <div
+                className="tap-device-slide"
+                data-active={activeScreen === 2 ? "true" : "false"}
+                role="group"
+                aria-roledescription="slide"
+                aria-label="3 of 3: Check the math"
+              >
+                <div className="tap-device tap-device-proof">
+                  <div className="tap-device-screen">
+                    <div className="tap-device-status tap-device-status-dark">
+                      <b>9:41</b>
+                      <span>▮▮▮ ◒ ▰</span>
+                    </div>
+                    <h2>Why Amex Gold?</h2>
+                    <div className="tap-proof-choice">
+                      <span className="tap-proof-mini-card tap-proof-mini-gold" />
+                      <p>
+                        <b>Amex Gold</b>
+                        <small>4× groceries</small>
+                      </p>
+                      <strong>~$3.36</strong>
+                    </div>
+                    <div className="tap-proof-choice">
+                      <span className="tap-proof-mini-card tap-proof-mini-blue" />
+                      <p>
+                        <b>Sapphire</b>
+                        <small>1×</small>
+                      </p>
+                      <strong className="tap-proof-muted">~$0.84</strong>
+                    </div>
+                    <div className="tap-proof-gap">
+                      <span>Estimated difference</span>
+                      <b>+$2.52</b>
+                    </div>
+                    <div className="tap-proof-facts">
+                      <p>▣&nbsp;&nbsp; Terms checked Jul 18, 2026</p>
+                      <p>⚖&nbsp;&nbsp; Assumption: 1 point = 1¢</p>
+                      <p>ⓘ&nbsp;&nbsp; Bonus cap status: not provided</p>
+                      <div>
+                        <button>Edit assumptions</button>
+                        <button>Report an issue</button>
+                      </div>
+                    </div>
+                    <p className="tap-proof-trust">
+                      TAP never recommends a card
+                      <br />
+                      because it pays us.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="tap-device tap-device-winner">
-            <div className="tap-device-screen">
-              <div className="tap-device-status">
-                <b>9:41</b>
-                <span>▮▮▮ ◒ ▰</span>
+          <div className="tap-walkthrough-controls" aria-label="Product screens">
+            <button
+              type="button"
+              onClick={() => showScreen(activeScreen - 1)}
+              disabled={activeScreen === 0}
+              aria-label="Previous product screen"
+            >
+              <ChevronLeft />
+            </button>
+            <div className="tap-walkthrough-progress" aria-live="polite">
+              <div>
+                {walkthroughScreens.map((label, index) => (
+                  <button
+                    type="button"
+                    key={label}
+                    onClick={() => showScreen(index)}
+                    aria-label={`Show ${label}`}
+                    aria-current={activeScreen === index ? "step" : undefined}
+                  >
+                    <i />
+                  </button>
+                ))}
               </div>
-              <div className="tap-device-pill">Whole Foods&nbsp; · &nbsp;Groceries</div>
-              <h2>Use Amex Gold.</h2>
-              <div className="tap-choice-wallet">
-                <span className="tap-choice-card tap-choice-card-back" />
-                <span className="tap-choice-card tap-choice-card-middle" />
-                <span className="tap-choice-card tap-choice-card-gold">
-                  <i className="tap-card-line" />
-                </span>
-                <div className="tap-signal-rings">
-                  <i />
-                  <i />
-                  <i />
-                </div>
-                <span className="tap-wallet-mouth" />
-              </div>
-              <div className="tap-choice-value">
-                <h3>About $3.36 in reward value</h3>
-                <p>Next best: about $0.84</p>
-                <div>
-                  <span>Estimated difference:</span>
-                  <b>+$2.52</b>
-                </div>
-                <small>Amount won’t change this pick.</small>
-              </div>
-              <div className="tap-choice-actions">
-                <Link to="/demo">Used it</Link>
-                <Link to="/demo">Why this card?</Link>
-                <Link to="/demo">Wrong merchant or card?</Link>
-              </div>
+              <span>{walkthroughScreens[activeScreen]}</span>
+              <small>Swipe to explore</small>
             </div>
-          </div>
-
-          <div className="tap-device tap-device-proof">
-            <div className="tap-device-screen">
-              <div className="tap-device-status tap-device-status-dark">
-                <b>9:41</b>
-                <span>▮▮▮ ◒ ▰</span>
-              </div>
-              <h2>Why Amex Gold?</h2>
-              <div className="tap-proof-choice">
-                <span className="tap-proof-mini-card tap-proof-mini-gold" />
-                <p>
-                  <b>Amex Gold</b>
-                  <small>4× groceries</small>
-                </p>
-                <strong>~$3.36</strong>
-              </div>
-              <div className="tap-proof-choice">
-                <span className="tap-proof-mini-card tap-proof-mini-blue" />
-                <p>
-                  <b>Sapphire</b>
-                  <small>1×</small>
-                </p>
-                <strong className="tap-proof-muted">~$0.84</strong>
-              </div>
-              <div className="tap-proof-gap">
-                <span>Estimated difference</span>
-                <b>+$2.52</b>
-              </div>
-              <div className="tap-proof-facts">
-                <p>▣&nbsp;&nbsp; Terms checked Jul 18, 2026</p>
-                <p>⚖&nbsp;&nbsp; Assumption: 1 point = 1¢</p>
-                <p>ⓘ&nbsp;&nbsp; Bonus cap status: not provided</p>
-                <div>
-                  <button>Edit assumptions</button>
-                  <button>Report an issue</button>
-                </div>
-              </div>
-              <p className="tap-proof-trust">
-                TAP never recommends a card
-                <br />
-                because it pays us.
-              </p>
-            </div>
+            <button
+              type="button"
+              onClick={() => showScreen(activeScreen + 1)}
+              disabled={activeScreen === walkthroughScreens.length - 1}
+              aria-label="Next product screen"
+            >
+              <ChevronRight />
+            </button>
           </div>
         </div>
       </section>

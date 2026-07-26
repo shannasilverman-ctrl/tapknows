@@ -39,6 +39,29 @@ test.describe("TAP product system", () => {
     expect(errors).toEqual([]);
   });
 
+  test("turns the landing mockup into an interactive mobile walkthrough", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+
+    const walkthrough = page.getByRole("region", {
+      name: "Swipe through the TAP product experience",
+    });
+
+    await expect(walkthrough).toBeVisible();
+    await expect(page.getByText("Choose the place", { exact: true })).toBeVisible();
+    await expect(page.locator(".tap-device-stage")).toHaveCSS("overflow-x", "hidden");
+
+    const nextScreen = page.getByRole("button", { name: "Next product screen" });
+    await expect(nextScreen).toBeEnabled();
+    await page.waitForTimeout(500);
+    await nextScreen.click();
+    await expect(page.getByText("See your best card", { exact: true })).toBeVisible();
+
+    await page.getByRole("button", { name: "Why this card?" }).click();
+    await expect(page.getByText("Check the math", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Next product screen" })).toBeDisabled();
+  });
+
   test("carries the wallet into the recommendation and exposes proof", async ({ page }) => {
     await page.goto("/decide?merchant=whole_foods&category=groceries&amount=84");
 
