@@ -8,3 +8,4 @@ bun.lock
 routeTree.gen.ts
 test-results
 playwright-report
+docs/customer-experience/tap-customer-experience-report.html

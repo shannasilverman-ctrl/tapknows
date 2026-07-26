@@ -111,7 +111,10 @@ export function RecommendationProof({
         )}
       </div>
 
-      <p className="tap-proof-independence">TAP never recommends a card because it pays us.</p>
+      <div className="tap-proof-independence">
+        <p>TAP never recommends a card because it pays us.</p>
+        <p>If you carry a balance, interest can cost more than the rewards shown here.</p>
+      </div>
     </section>
   );
 }

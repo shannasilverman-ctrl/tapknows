@@ -2,7 +2,8 @@
   "name": "TAP",
   "short_name": "TAP",
   "description": "Know the exact card play before you tap.",
-  "start_url": "/",
+  "id": "/",
+  "start_url": "/home?source=pwa",
   "display": "standalone",
   "background_color": "#fafaf7",
   "theme_color": "#fafaf7",
@@ -16,6 +17,26 @@
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Choose a card",
+      "short_name": "Choose card",
+      "description": "Tell TAP where you are paying and get the card to use.",
+      "url": "/home?source=shortcut"
+    },
+    {
+      "name": "Open my wallet",
+      "short_name": "My wallet",
+      "description": "See the cards in your TAP wallet.",
+      "url": "/cards?source=shortcut"
+    },
+    {
+      "name": "Plan a purchase",
+      "short_name": "Plan",
+      "description": "Compare your cards for an upcoming purchase.",
+      "url": "/plan?source=shortcut"
     }
   ]
 }

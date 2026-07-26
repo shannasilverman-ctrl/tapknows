@@ -1,12 +1,12 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Bell, CreditCard, Home, Sliders, Wand2 } from "lucide-react";
+import { Bell, CreditCard, Home, LogIn, Sliders, Wand2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { getUnreadAlertCount } from "@/lib/alerts.functions";
 import { LegalFooter } from "@/components/legal-footer";
 
-const items = [
+const signedInItems = [
   { to: "/home", label: "Home", icon: Home },
   { to: "/cards", label: "Wallet", icon: CreditCard },
   { to: "/plan", label: "Plan", icon: Wand2 },
@@ -14,11 +14,19 @@ const items = [
   { to: "/settings", label: "Settings", icon: Sliders },
 ] as const;
 
+const guestItems = [
+  { to: "/home", label: "Home", icon: Home },
+  { to: "/cards", label: "Wallet", icon: CreditCard },
+  { to: "/plan", label: "Plan", icon: Wand2 },
+  { to: "/login", label: "Sign in", icon: LogIn },
+] as const;
+
 export function BottomNav() {
   const { pathname } = useLocation();
   const { user } = useAuth();
   const getCount = useServerFn(getUnreadAlertCount);
   const [unread, setUnread] = useState(0);
+  const items = user ? signedInItems : guestItems;
 
   useEffect(() => {
     if (!user) return;

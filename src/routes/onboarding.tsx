@@ -248,6 +248,10 @@ function OnboardingPage() {
   };
 
   const skip = async () => {
+    if (step === 1 && selectedCatalogIds.size === 0) {
+      navigate({ to: "/demo" });
+      return;
+    }
     // Apply the Balanced preset silently so recommendations still work.
     await savePriorities(BALANCED_PRIORITIES);
     finish();
@@ -273,7 +277,7 @@ function OnboardingPage() {
           onClick={skip}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          Skip
+          {step === 1 && selectedCatalogIds.size === 0 ? "Try demo" : "Skip"}
         </button>
       </header>
 

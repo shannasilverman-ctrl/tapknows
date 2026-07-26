@@ -289,15 +289,15 @@ function Landing() {
                       <p>▣&nbsp;&nbsp; Terms checked Jul 18, 2026</p>
                       <p>⚖&nbsp;&nbsp; Assumption: 1 point = 1¢</p>
                       <p>ⓘ&nbsp;&nbsp; Bonus cap status: not provided</p>
-                      <div>
-                        <button>Edit assumptions</button>
-                        <button>Report an issue</button>
-                      </div>
+                      <Link to="/demo" className="tap-proof-demo-link">
+                        Try this decision <ArrowRight size={13} />
+                      </Link>
                     </div>
                     <p className="tap-proof-trust">
                       TAP never recommends a card
                       <br />
                       because it pays us.
+                      <small>Interest can cost more than rewards.</small>
                     </p>
                   </div>
                 </div>
@@ -446,6 +446,10 @@ function Landing() {
           <div>
             <dt>Bank linking is optional</dt>
             <dd>If you connect an account, access is read-only and reversible.</dd>
+          </div>
+          <div>
+            <dt>Debt before rewards</dt>
+            <dd>If you carry a balance, interest usually matters more than points.</dd>
           </div>
         </dl>
       </section>

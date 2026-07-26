@@ -3,7 +3,14 @@ import { Sheet } from "@/components/sheet";
 import { submitFeedback, markFeedbackShown } from "@/lib/feedback";
 import { toast } from "sonner";
 
-const CHIPS = ["Adding cards", "Trusting the picks", "Nothing yet", "Something else"] as const;
+const CHIPS = [
+  "Finding the store",
+  "Adding cards",
+  "Trusting the pick",
+  "Understanding the math",
+  "Nothing — it worked",
+  "Something else",
+] as const;
 
 type Props = {
   open: boolean;
@@ -50,7 +57,7 @@ export function FeedbackSheet({ open, onClose }: Props) {
   return (
     <Sheet open={open} onClose={dismiss} title="Quick feedback" busy={busy}>
       <p className="mt-1 text-[14px] leading-relaxed text-muted-foreground">
-        What almost stopped you from using TAP?
+        What felt hard or uncertain while using TAP?
       </p>
 
       <div className="mt-4 flex flex-wrap gap-2">

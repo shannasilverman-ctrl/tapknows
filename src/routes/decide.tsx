@@ -68,20 +68,13 @@ function DecidePage() {
   const [ready, setReady] = useState(false);
   const [amount, setAmount] = useState<number>(search.amount ?? 50);
   const [bigPurchase, setBigPurchase] = useState<boolean>((search.amount ?? 50) > 200);
+  const [cardFeePct, setCardFeePct] = useState(0);
   const [sheet, setSheet] = useState<null | "amount">(null);
   const [tapped, setTapped] = useState(false);
   const [recorded, setRecorded] = useState(false);
   const [raisedPlayId, setRaisedPlayId] = useState<string | null>(null);
   const [benefitRedeemedId, setBenefitRedeemedId] = useState<string | null>(null);
   const receiptRef = useRef<HTMLDivElement | null>(null);
-
-  const walletLabel = useMemo(() => {
-    if (typeof navigator === "undefined") return "Use this card";
-    const ua = navigator.userAgent || "";
-    if (/iPhone|iPad|iPod/i.test(ua)) return "Open Apple Wallet";
-    if (/Android/i.test(ua)) return "Open Google Wallet";
-    return "Use this card";
-  }, []);
 
   const merchant = useMemo(() => {
     if (search.merchant) {
@@ -213,15 +206,19 @@ function DecidePage() {
     [],
   );
 
-  // Reset raise + tap/record state on new plan (merchant or amount changed)
+  // Reset raise + tap/record state when the recommendation inputs change.
   useEffect(() => {
     setRaisedPlayId(plays[0]?.id ?? null);
     setTapped(false);
     setRecorded(false);
-  }, [plays]);
+  }, [plays, cardFeePct]);
 
   const raisedPlay = plays.find((p) => p.id === raisedPlayId) ?? plays[0] ?? null;
   const raisedIsWinner = raisedPlay?.id === plays[0]?.id;
+  const cardFeeCents = Math.round(amount * cardFeePct);
+  const feeOutweighsReward =
+    cardFeeCents > 0 && !!plays[0] && cardFeeCents >= plays[0].totalValueCents;
+  const netCardValueCents = raisedPlay ? raisedPlay.totalValueCents - cardFeeCents : -cardFeeCents;
   const reasoningLine =
     raisedPlay?.legs[0]?.reasoning ?? "Best value for this charge in your wallet.";
   const raisedHasProtections =
@@ -321,6 +318,7 @@ function DecidePage() {
         >
           <Sliders className="size-3.5" />
           {dollars(Math.round(amount * 100))}
+          {cardFeePct > 0 ? ` · ${cardFeePct}% fee` : ""}
         </button>
       </header>
 
@@ -332,7 +330,9 @@ function DecidePage() {
               {merchantName} · {categoryLabel}
             </p>
             <h1 className="tap-decision-title mt-5 text-foreground">
-              Use {plays[0] ? playFace(plays[0]).name : "your best card"}.
+              {feeOutweighsReward
+                ? "Use cash or debit."
+                : `Use ${plays[0] ? playFace(plays[0]).name : "your best card"}.`}
             </h1>
             <button
               type="button"
@@ -389,7 +389,11 @@ function DecidePage() {
           {raisedPlay ? (
             <div className="mt-5 tap-stage tap-decision-reason">
               <p className="cs-microlabel text-[10px]">
-                {raisedIsWinner ? "Tap this card" : "If you use this card"}
+                {feeOutweighsReward
+                  ? "Best card if a card is required"
+                  : raisedIsWinner
+                    ? "Tap this card"
+                    : "If you use this card"}
               </p>
               <p className="mt-1.5 text-[15px] leading-snug text-foreground">{reasoningLine}</p>
               {!raisedIsWinner && plays[0] && (
@@ -400,6 +404,32 @@ function DecidePage() {
                   Raise the recommended card →
                 </button>
               )}
+            </div>
+          ) : null}
+
+          {cardFeePct > 0 && raisedPlay ? (
+            <div
+              className={`tap-stage mt-4 flex items-start gap-2.5 rounded-xl border px-3.5 py-2.5 ${
+                feeOutweighsReward
+                  ? "bg-destructive/8 border-destructive/30"
+                  : "bg-white border-border"
+              }`}
+              role="status"
+            >
+              <AlertTriangle
+                className={`size-4 shrink-0 mt-0.5 ${
+                  feeOutweighsReward ? "text-destructive" : "text-muted-foreground"
+                }`}
+              />
+              <p className="text-[13px] text-foreground leading-snug">
+                {feeOutweighsReward
+                  ? `The ${cardFeePct}% card fee costs ${dollars(cardFeeCents)}, more than the ${dollars(
+                      raisedPlay.totalValueCents,
+                    )} reward.`
+                  : `After the ${cardFeePct}% card fee, this card still comes out about ${dollars(
+                      Math.max(0, netCardValueCents),
+                    )} ahead.`}
+              </p>
             </div>
           ) : null}
 
@@ -439,13 +469,13 @@ function DecidePage() {
             </div>
           )}
 
-          {/* CTA — platform-aware label. Records exactly once per plan. */}
+          {/* CTA describes the action TAP can actually record. */}
           <button
             onClick={() => {
               if (!recorded) {
-                if (raisedPlay) {
+                if (raisedPlay && !feeOutweighsReward) {
                   const baseline = Math.round(amount * 100 * 0.01);
-                  const delta = Math.max(0, raisedPlay.totalValueCents - baseline);
+                  const delta = Math.max(0, raisedPlay.totalValueCents - baseline - cardFeeCents);
                   if (delta > 0) recordRecovered(delta);
                 }
                 if (merchant) recordDecide(merchant.id, category);
@@ -464,12 +494,12 @@ function DecidePage() {
             {recorded ? (
               <>
                 <Check className="size-5" />
-                Card chosen
+                {feeOutweighsReward ? "Payment choice saved" : "Card chosen"}
               </>
             ) : (
               <>
                 <Wallet className="size-5" />
-                {walletLabel}
+                {feeOutweighsReward ? "I’ll use cash or debit" : "I’m using this card"}
               </>
             )}
           </button>
@@ -483,16 +513,25 @@ function DecidePage() {
           >
             <p className="cs-microlabel text-[10px]">Receipt</p>
             <div className="mt-1 flex items-baseline justify-between gap-3">
-              <p className="text-[14px] text-foreground">This tap earns about</p>
+              <p className="text-[14px] text-foreground">
+                {feeOutweighsReward ? "Estimated card fee avoided" : "This tap earns about"}
+              </p>
               <p className="cs-money text-[18px] font-semibold text-foreground whitespace-nowrap">
-                {dollars(raisedPlay.totalValueCents)}
+                {dollars(feeOutweighsReward ? cardFeeCents : raisedPlay.totalValueCents)}
               </p>
             </div>
             <p className="mt-1 text-[11px] text-muted-foreground">
-              Estimated from your point valuations on a {dollars(Math.round(amount * 100))} charge.
+              {feeOutweighsReward
+                ? `The best card reward was about ${dollars(
+                    raisedPlay.totalValueCents,
+                  )} before the fee.`
+                : `Estimated from your point valuations on a ${dollars(
+                    Math.round(amount * 100),
+                  )} charge.`}
             </p>
             {/* Inline benefit redeem — one tap, honesty rule preserved */}
             {(() => {
+              if (feeOutweighsReward) return null;
               const applied = raisedPlay.legs.find((l) => l.benefitApplied)?.benefitApplied;
               if (!applied) return null;
               const key = `${applied.card_catalog_id}::${applied.benefit_id}`;
@@ -589,6 +628,55 @@ function DecidePage() {
                 className="w-24 text-right bg-transparent text-[17px] text-foreground focus:outline-none cs-money"
               />
             </div>
+          </div>
+
+          <div className="rounded-2xl bg-secondary/60 px-4 py-3">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-[15px] font-medium text-foreground">Card fee or surcharge</p>
+                <p className="text-[12px] text-muted-foreground">
+                  TAP will tell you when cash or debit wins.
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={cardFeePct > 0}
+                onClick={() => setCardFeePct((fee) => (fee > 0 ? 0 : 3))}
+                className={`relative inline-flex h-[31px] w-[51px] shrink-0 items-center rounded-full transition-colors ${
+                  cardFeePct > 0 ? "bg-primary" : "bg-border-strong"
+                }`}
+              >
+                <span
+                  className={`inline-block size-[27px] rounded-full bg-white shadow-sm transition-transform ${
+                    cardFeePct > 0 ? "translate-x-[22px]" : "translate-x-[2px]"
+                  }`}
+                />
+                <span className="sr-only">Merchant charges a card fee</span>
+              </button>
+            </div>
+            {cardFeePct > 0 ? (
+              <label className="mt-3 flex items-center justify-between border-t border-border pt-3">
+                <span className="text-[13px] text-muted-foreground">Fee percentage</span>
+                <span className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    min={0}
+                    max={20}
+                    step={0.1}
+                    value={cardFeePct}
+                    onChange={(event) => {
+                      const value = Number(event.target.value);
+                      setCardFeePct(Number.isFinite(value) ? Math.min(20, Math.max(0, value)) : 0);
+                    }}
+                    className="w-16 bg-transparent text-right text-[15px] text-foreground focus:outline-none cs-money"
+                    aria-label="Card fee percentage"
+                  />
+                  <span className="text-[15px] text-muted-foreground">%</span>
+                </span>
+              </label>
+            ) : null}
           </div>
 
           <div className="flex gap-2">

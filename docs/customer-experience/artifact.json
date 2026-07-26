@@ -1,0 +1,356 @@
+{
+  "surface": "report",
+  "manifest": {
+    "version": 1,
+    "surface": "report",
+    "title": "TAP Should Make the Payment Decision",
+    "description": "Customer evidence, journey audit, and prioritized product direction for TAP.",
+    "generatedAt": "2026-07-26T18:15:00.000Z",
+    "blocks": [
+      {
+        "id": "title",
+        "type": "markdown",
+        "body": "# TAP Should Make the Payment Decision"
+      },
+      {
+        "id": "summary",
+        "type": "markdown",
+        "body": "## Executive Summary\n\n- **TAP's core job is a decision, not a dashboard.** A customer should name the place and immediately understand what to use, why, and what to do next.\n- **Trust must change the answer—not merely decorate it.** TAP should account for fees, interest risk, caps, assumptions, and uncertainty even when that means recommending cash or debit.\n- **The fastest experience begins outside the app.** Home Screen launch, direct task shortcuts, nearby merchants, and respectful reminders reduce the work between intent and checkout.\n- **The product needs a tighter learning loop.** Measure where customers hesitate—finding the merchant, adding cards, trusting the pick, or understanding the math—rather than relying on broad engagement alone."
+      },
+      {
+        "id": "customer_context_intro",
+        "type": "markdown",
+        "body": "## The customer is optimizing under financial pressure\n\n**Rewards are only one part of the payment decision.** Current cardholders frequently carry debt or encounter merchant surcharges. These figures use different survey populations, so they should not be added together; taken together, they show why TAP needs financial guardrails alongside reward optimization.",
+        "sourceId": "jd-power-2025"
+      },
+      {
+        "id": "customer_context_chart",
+        "type": "chart",
+        "chartId": "customer-context"
+      },
+      {
+        "id": "trust",
+        "type": "markdown",
+        "body": "## Trust is the product\n\nThe CFPB reported more than 1,200 credit-card rewards complaints in 2023, over 70% above pre-pandemic levels. Its recurring themes—unexpected conditions, devaluation, redemption problems, and revocation—map directly to TAP's proof experience. The practical implication is that rates, caps, valuation assumptions, terms dates, and correction paths must remain visible and specific.",
+        "sourceId": "cfpb-rewards-2024"
+      },
+      {
+        "id": "moment",
+        "type": "markdown",
+        "body": "## The winning interaction happens at the moment of payment\n\nCardPointers' current product emphasizes location-aware recommendations, lock-screen surfaces, shortcuts, and reminders so customers can get an answer without navigating a full app. MaxRewards similarly centers nearby merchants, a category cheatsheet, offers, credits, and balances. TAP should differentiate through a smaller promise: the clearest independent answer, with less setup and more transparent math."
+      },
+      {
+        "id": "journey_intro",
+        "type": "markdown",
+        "body": "## The journey should always reveal one obvious next step\n\nThe route-by-route audit found that the core home → recommendation → proof path is strong, but several surrounding controls were misleading or surprising. The first implementation pass removes those breaks and establishes the next measurement point for each customer job."
+      },
+      {
+        "id": "journey_table",
+        "type": "table",
+        "tableId": "journey-priorities"
+      },
+      {
+        "id": "next_steps",
+        "type": "markdown",
+        "body": "## Recommended Next Steps\n\n1. **Instrument the decision funnel:** wallet ready → merchant selected → recommendation viewed → proof opened → payment choice recorded → next purchase started.\n2. **Measure decision confidence:** preserve the improved third-use prompt and report responses by journey stage and wallet size.\n3. **Add merchant-level fee memory:** let customers remember that a merchant charges a surcharge so TAP can warn them automatically next time.\n4. **Move the answer closer to checkout:** validate Home Screen shortcuts and web-push reminders before investing in broader dashboards.\n5. **Test the ethical guardrail:** measure whether the interest and surcharge guidance increases trust without reducing comprehension or completion."
+      },
+      {
+        "id": "questions",
+        "type": "markdown",
+        "body": "## Further Questions\n\n- Which entry path produces the fastest completed decision: search, recent merchant, nearby merchant, shortcut, or alert?\n- Where do customers abandon card setup, and is photo import reducing that friction?\n- How often does amount, a benefit, a cap, or a surcharge actually change the answer?\n- Do customers understand estimated reward value without opening proof?\n- Which reminders are useful enough to keep enabled, and which feel intrusive?"
+      },
+      {
+        "id": "caveats",
+        "type": "markdown",
+        "body": "## Caveats and Assumptions\n\nThis report combines a code-and-interface audit with external market evidence; TAP does not yet collect a complete anonymous product funnel, so behavioral priorities are provisional. Competitor capabilities describe their published product claims, not independent performance comparisons. The J.D. Power percentages use different denominators and are presented separately. The recommended direction should be updated as TAP's own journey data and customer interviews become available."
+      }
+    ],
+    "charts": [
+      {
+        "id": "customer-context",
+        "title": "Credit-card customer context",
+        "subtitle": "2025 U.S. cardholders; the alternate-payment figure is among customers who experienced a surcharge",
+        "type": "horizontalBar",
+        "dataset": "customer_context",
+        "sourceId": "jd-power-2025",
+        "encodings": {
+          "x": {
+            "field": "signal",
+            "type": "nominal",
+            "label": "Customer signal"
+          },
+          "y": {
+            "field": "share",
+            "type": "quantitative",
+            "format": "percent",
+            "label": "Share"
+          },
+          "tooltip": [
+            {
+              "field": "population",
+              "type": "text",
+              "label": "Population"
+            },
+            {
+              "field": "study",
+              "type": "text",
+              "label": "Source"
+            }
+          ]
+        },
+        "valueFormat": "percent",
+        "maxRows": 4
+      }
+    ],
+    "tables": [
+      {
+        "id": "journey-priorities",
+        "title": "Customer journey priorities",
+        "subtitle": "Current audit and first implementation pass, ordered by customer impact",
+        "dataset": "journey_priorities",
+        "sourceId": "tap-audit",
+        "density": "spacious",
+        "defaultSort": {
+          "field": "rank",
+          "direction": "asc"
+        },
+        "columns": [
+          {
+            "field": "rank",
+            "label": "Priority",
+            "format": "number"
+          },
+          {
+            "field": "customer_job",
+            "label": "Customer job",
+            "type": "text"
+          },
+          {
+            "field": "friction",
+            "label": "Observed friction",
+            "type": "text"
+          },
+          {
+            "field": "response",
+            "label": "Product response",
+            "type": "text"
+          },
+          {
+            "field": "measure",
+            "label": "What to measure next",
+            "type": "text"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "jd-power-2025",
+        "label": "J.D. Power 2025 U.S. Credit Card Satisfaction Study",
+        "href": "https://www.jdpower.com/business/press-releases/2025-us-credit-card-satisfaction-study",
+        "query": {
+          "engine": "DuckDB",
+          "language": "sql",
+          "description": "Reviewed percentages transcribed from the published 2025 study release and shaped into one comparison table.",
+          "executed_at": "2026-07-26T18:15:00.000Z",
+          "sql": "SELECT * FROM (VALUES ('Used alternate payment after a surcharge', 0.81, 'Cardholders who experienced a surcharge', 1), ('Experienced a credit-card surcharge', 0.65, 'U.S. credit-card customers', 2), ('Classified as financially unhealthy', 0.56, 'U.S. credit-card customers', 3), ('Carrying revolving card debt', 0.53, 'U.S. credit-card customers', 4)) AS evidence(signal, share, population, rank) ORDER BY rank",
+          "filters": [
+            "Study published in 2025",
+            "Percentages reproduced from the J.D. Power press release",
+            "Different denominators retained in the population field"
+          ],
+          "metric_definitions": [
+            "share is the reported percentage divided by 100",
+            "alternate-payment share applies only to cardholders who experienced a surcharge"
+          ]
+        }
+      },
+      {
+        "id": "cfpb-rewards-2024",
+        "label": "CFPB Credit Card Rewards Issue Spotlight",
+        "href": "https://files.consumerfinance.gov/f/documents/cfpb_credit-card-rewards_issue-spotlight_2024-05.pdf"
+      },
+      {
+        "id": "cardpointers-current",
+        "label": "CardPointers current product description",
+        "href": "https://apps.apple.com/us/app/cardpointers-for-credit-cards/id1472875808"
+      },
+      {
+        "id": "maxrewards-current",
+        "label": "MaxRewards current product description",
+        "href": "https://qa.maxrewards.com/"
+      },
+      {
+        "id": "webkit-push",
+        "label": "WebKit: Web Push for Home Screen web apps",
+        "href": "https://webkit.org/blog/13878/web-push-for-web-apps-on-ios-and-ipados/"
+      },
+      {
+        "id": "mdn-shortcuts",
+        "label": "MDN: Web app manifest shortcuts",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/shortcuts"
+      },
+      {
+        "id": "tap-audit",
+        "label": "TAP consumer-route implementation audit, July 26, 2026",
+        "query": {
+          "engine": "DuckDB",
+          "language": "sql",
+          "description": "Prioritized rows from the reviewed TAP consumer-route audit.",
+          "executed_at": "2026-07-26T18:15:00.000Z",
+          "sql": "SELECT * FROM (VALUES (1, 'Make the right payment choice', 'Rewards ignored merchant card fees'), (2, 'Know what the primary button will do', 'CTA claimed an unavailable wallet action'), (3, 'Navigate without surprises', 'Guest destinations unexpectedly opened sign-in'), (4, 'Get to a decision quickly', 'Installed app opened on marketing'), (5, 'Trust the math', 'Interest warning was missing'), (6, 'Tell TAP what went wrong', 'Feedback categories were too broad')) AS audit(rank, customer_job, friction) ORDER BY rank",
+          "filters": [
+            "Consumer-facing routes only",
+            "Mobile-first journey at 390 CSS pixels",
+            "Implementation reviewed July 26, 2026"
+          ]
+        }
+      }
+    ]
+  },
+  "snapshot": {
+    "version": 1,
+    "generatedAt": "2026-07-26T18:15:00.000Z",
+    "status": "ready",
+    "datasets": {
+      "customer_context": [
+        {
+          "signal": "Used alternate payment after a surcharge",
+          "share": 0.81,
+          "population": "Cardholders who experienced a surcharge",
+          "study": "J.D. Power 2025 U.S. Credit Card Satisfaction Study",
+          "rank": 1
+        },
+        {
+          "signal": "Experienced a credit-card surcharge",
+          "share": 0.65,
+          "population": "U.S. credit-card customers",
+          "study": "J.D. Power 2025 U.S. Credit Card Satisfaction Study",
+          "rank": 2
+        },
+        {
+          "signal": "Classified as financially unhealthy",
+          "share": 0.56,
+          "population": "U.S. credit-card customers",
+          "study": "J.D. Power 2025 U.S. Credit Card Satisfaction Study",
+          "rank": 3
+        },
+        {
+          "signal": "Carrying revolving card debt",
+          "share": 0.53,
+          "population": "U.S. credit-card customers",
+          "study": "J.D. Power 2025 U.S. Credit Card Satisfaction Study",
+          "rank": 4
+        }
+      ],
+      "journey_priorities": [
+        {
+          "rank": 1,
+          "customer_job": "Make the right payment choice",
+          "friction": "Rewards ignored merchant card fees",
+          "response": "Compare the surcharge with reward value and recommend cash or debit when it wins",
+          "measure": "Share of decisions changed by fee"
+        },
+        {
+          "rank": 2,
+          "customer_job": "Know what the primary button will do",
+          "friction": "CTA claimed to open Apple or Google Wallet without that capability",
+          "response": "Use an honest confirmation label and receipt",
+          "measure": "Choice completion rate"
+        },
+        {
+          "rank": 3,
+          "customer_job": "Navigate without surprises",
+          "friction": "Guest Alerts and Settings links unexpectedly opened sign-in",
+          "response": "Show an explicit Sign in destination and remove unavailable guest destinations",
+          "measure": "Unexpected login exits"
+        },
+        {
+          "rank": 4,
+          "customer_job": "Get to a decision quickly",
+          "friction": "Installed web app opened on the marketing page",
+          "response": "Open on Home and expose Choose card, Wallet, and Plan shortcuts",
+          "measure": "Time from launch to recommendation"
+        },
+        {
+          "rank": 5,
+          "customer_job": "Trust the math",
+          "friction": "Rewards framing did not explicitly warn about interest",
+          "response": "Add debt-before-rewards guidance to proof and trust surfaces",
+          "measure": "Proof comprehension and trust"
+        },
+        {
+          "rank": 6,
+          "customer_job": "Tell TAP what went wrong",
+          "friction": "Feedback categories did not isolate the broken journey stage",
+          "response": "Ask about merchant search, card setup, trust, and math comprehension",
+          "measure": "Feedback mix by journey stage"
+        }
+      ]
+    }
+  },
+  "sources": [
+    {
+      "id": "jd-power-2025",
+      "label": "J.D. Power 2025 U.S. Credit Card Satisfaction Study",
+      "href": "https://www.jdpower.com/business/press-releases/2025-us-credit-card-satisfaction-study",
+      "query": {
+        "engine": "DuckDB",
+        "language": "sql",
+        "description": "Reviewed percentages transcribed from the published 2025 study release and shaped into one comparison table.",
+        "executed_at": "2026-07-26T18:15:00.000Z",
+        "sql": "SELECT * FROM (VALUES ('Used alternate payment after a surcharge', 0.81, 'Cardholders who experienced a surcharge', 1), ('Experienced a credit-card surcharge', 0.65, 'U.S. credit-card customers', 2), ('Classified as financially unhealthy', 0.56, 'U.S. credit-card customers', 3), ('Carrying revolving card debt', 0.53, 'U.S. credit-card customers', 4)) AS evidence(signal, share, population, rank) ORDER BY rank",
+        "filters": [
+          "Study published in 2025",
+          "Percentages reproduced from the J.D. Power press release",
+          "Different denominators retained in the population field"
+        ],
+        "metric_definitions": [
+          "share is the reported percentage divided by 100",
+          "alternate-payment share applies only to cardholders who experienced a surcharge"
+        ]
+      }
+    },
+    {
+      "id": "cfpb-rewards-2024",
+      "label": "CFPB Credit Card Rewards Issue Spotlight",
+      "href": "https://files.consumerfinance.gov/f/documents/cfpb_credit-card-rewards_issue-spotlight_2024-05.pdf"
+    },
+    {
+      "id": "cardpointers-current",
+      "label": "CardPointers current product description",
+      "href": "https://apps.apple.com/us/app/cardpointers-for-credit-cards/id1472875808"
+    },
+    {
+      "id": "maxrewards-current",
+      "label": "MaxRewards current product description",
+      "href": "https://qa.maxrewards.com/"
+    },
+    {
+      "id": "webkit-push",
+      "label": "WebKit: Web Push for Home Screen web apps",
+      "href": "https://webkit.org/blog/13878/web-push-for-web-apps-on-ios-and-ipados/"
+    },
+    {
+      "id": "mdn-shortcuts",
+      "label": "MDN: Web app manifest shortcuts",
+      "href": "https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/shortcuts"
+    },
+    {
+      "id": "tap-audit",
+      "label": "TAP consumer-route implementation audit, July 26, 2026",
+      "query": {
+        "engine": "DuckDB",
+        "language": "sql",
+        "description": "Prioritized rows from the reviewed TAP consumer-route audit.",
+        "executed_at": "2026-07-26T18:15:00.000Z",
+        "sql": "SELECT * FROM (VALUES (1, 'Make the right payment choice', 'Rewards ignored merchant card fees'), (2, 'Know what the primary button will do', 'CTA claimed an unavailable wallet action'), (3, 'Navigate without surprises', 'Guest destinations unexpectedly opened sign-in'), (4, 'Get to a decision quickly', 'Installed app opened on marketing'), (5, 'Trust the math', 'Interest warning was missing'), (6, 'Tell TAP what went wrong', 'Feedback categories were too broad')) AS audit(rank, customer_job, friction) ORDER BY rank",
+        "filters": [
+          "Consumer-facing routes only",
+          "Mobile-first journey at 390 CSS pixels",
+          "Implementation reviewed July 26, 2026"
+        ]
+      }
+    }
+  ]
+}

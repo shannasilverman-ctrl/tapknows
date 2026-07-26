@@ -823,19 +823,18 @@
   margin: 11px 0;
   font-size: 9px;
 }
-.tap-proof-facts div {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 7px;
+.tap-proof-demo-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 36px;
   margin-top: 19px;
   padding-top: 13px;
   border-top: 1px solid #e3e0dc;
-}
-.tap-proof-facts button {
-  min-height: 34px;
-  border: 1px solid #c1bcb8;
-  border-radius: 10px;
+  color: var(--tap-ink);
   font-size: 8px;
+  font-weight: 700;
 }
 .tap-proof-trust {
   margin-top: 20px;
@@ -843,6 +842,11 @@
   text-align: center;
   font-size: 9px;
   line-height: 1.4;
+}
+.tap-proof-trust small {
+  display: block;
+  margin-top: 4px;
+  font-size: 8px;
 }
 .tap-promise {
   padding: 92px max(24px, calc((100vw - 1180px) / 2));
@@ -2140,6 +2144,9 @@
   text-align: center;
   font-size: 11px;
   line-height: 1.45;
+}
+.tap-recommendation-proof .tap-proof-independence p + p {
+  margin-top: 5px;
 }
 
 @media (max-width: 480px) {

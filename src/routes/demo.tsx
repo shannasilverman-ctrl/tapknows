@@ -469,7 +469,9 @@ function BeatOptimize() {
               <li>Assumption: 1 point = 1¢</li>
               <li>Bonus cap status: not provided</li>
             </ul>
-            <p>TAP never recommends a card because it pays us.</p>
+            <p>
+              TAP never recommends a card because it pays us. Interest can cost more than rewards.
+            </p>
           </div>
         )}
       </div>

@@ -36,6 +36,8 @@ test.describe("TAP product system", () => {
     await expect(page.locator(".tap-physical-wallet")).toBeVisible();
     await expect(page.locator(".tap-leather-pocket")).toBeVisible();
     await expect(page.locator(".cs-face")).toHaveCount(3);
+    await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Alerts" })).toHaveCount(0);
     expect(errors).toEqual([]);
   });
 
@@ -50,6 +52,8 @@ test.describe("TAP product system", () => {
     await expect(walkthrough).toBeVisible();
     await expect(page.getByText("Choose the place", { exact: true })).toBeVisible();
     await expect(page.locator(".tap-device-stage")).toHaveCSS("overflow-x", "hidden");
+    await expect(page.getByRole("link", { name: "Try this decision" })).toHaveCount(1);
+    await expect(page.getByRole("button", { name: "Edit assumptions" })).toHaveCount(0);
 
     const nextScreen = page.getByRole("button", { name: "Next product screen" });
     await expect(nextScreen).toBeEnabled();
@@ -82,7 +86,21 @@ test.describe("TAP product system", () => {
     const proof = page.getByRole("button", { name: /Why .*\\?/i });
     await proof.click();
     await expect(page.getByText("TAP never recommends a card because it pays us.")).toBeVisible();
+    await expect(page.getByText(/interest can cost more than the rewards/i)).toBeVisible();
     await expect(page.getByText(/Rates verified/)).toBeVisible();
+  });
+
+  test("puts a card surcharge ahead of rewards when cash or debit wins", async ({ page }) => {
+    await page.goto("/decide?merchant=whole_foods&category=groceries&amount=84");
+
+    await page.getByRole("button", { name: "$84.00", exact: true }).click();
+    await page.getByRole("switch", { name: "Merchant charges a card fee" }).click();
+    await page.getByRole("spinbutton", { name: "Card fee percentage" }).fill("10");
+    await page.getByRole("button", { name: "Done" }).click();
+
+    await expect(page.getByRole("heading", { name: "Use cash or debit." })).toBeVisible();
+    await expect(page.getByText(/card fee costs \$8\.40/i)).toBeVisible();
+    await expect(page.getByRole("button", { name: "I’ll use cash or debit" })).toBeVisible();
   });
 
   test("uses the editorial system throughout onboarding", async ({ page }) => {
@@ -92,6 +110,22 @@ test.describe("TAP product system", () => {
       "rgb(255, 255, 255)",
     );
     await expect(page.getByRole("heading", { name: "Build your wallet." })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Try demo" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Connect your bank" })).toBeVisible();
+  });
+
+  test("opens the installed app on the core task and exposes useful shortcuts", async ({
+    request,
+  }) => {
+    const response = await request.get("/manifest.webmanifest");
+    expect(response.ok()).toBeTruthy();
+    const manifest = await response.json();
+
+    expect(manifest.start_url).toBe("/home?source=pwa");
+    expect(manifest.shortcuts.map((shortcut: { url: string }) => shortcut.url)).toEqual([
+      "/home?source=shortcut",
+      "/cards?source=shortcut",
+      "/plan?source=shortcut",
+    ]);
   });
 });
