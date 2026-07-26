@@ -8,6 +8,7 @@ import { TapAppShell } from "@/components/tap-primitives";
 import { ContextualPushSheet } from "@/components/contextual-push-sheet";
 import { FeedbackSheet } from "@/components/feedback-sheet";
 import { isFeedbackDue } from "@/lib/feedback";
+import { trackJourneyEvent } from "@/lib/journeyEvents";
 
 import { SaveWalletCard } from "@/components/save-wallet-card";
 import { SaveWalletSheet } from "@/components/save-wallet-sheet";
@@ -521,7 +522,15 @@ function HomePage() {
 
   const displayAlerts = useMemo(() => [...benefitAlerts, ...alerts], [benefitAlerts, alerts]);
 
+  // Decision funnel: the customer arrived with a usable wallet. Emitted once
+  // the wallet has actually loaded, so it measures readiness, not page views.
+  useEffect(() => {
+    if (!ready) return;
+    trackJourneyEvent("wallet_ready", { cards: wallet.length });
+  }, [ready, wallet.length]);
+
   const goDecide = (m: MerchantEntry, opp?: string) => {
+    trackJourneyEvent("merchant_selected", { merchantId: m.id, source: "search" });
     navigate({
       to: "/decide",
       search: opp ? { merchant: m.id, fromStack: 1, opp } : { merchant: m.id, fromStack: 1 },
@@ -529,6 +538,7 @@ function HomePage() {
   };
 
   const goDecideCustom = (name: string, categoryId: string) => {
+    trackJourneyEvent("merchant_selected", { merchantName: name, category: categoryId });
     rememberMerchantCategory(name, categoryId);
     navigate({
       to: "/decide",

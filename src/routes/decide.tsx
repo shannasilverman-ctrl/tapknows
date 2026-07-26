@@ -21,6 +21,8 @@ import { applyPriorities, STRONG_PROTECTION_CARDS } from "@/lib/priorities";
 import { recordRecovered } from "@/lib/recovered";
 import { recordDecide } from "@/lib/quickPicks";
 import { bumpDecideCount } from "@/lib/feedback";
+import { recallMerchantFee, rememberMerchantFee } from "@/lib/feeMemory";
+import { trackJourneyEvent } from "@/lib/journeyEvents";
 import { benefitsForCard, redeem, trackBenefitSurfaced } from "@/lib/benefitState";
 import { BENEFITS_BY_CARD } from "@/lib/benefits";
 import { Check } from "lucide-react";
@@ -89,6 +91,36 @@ function DecidePage() {
       ? "Groceries"
       : category.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
   const isCategoryFallback = !merchant && !!search.merchantName && !!search.category;
+
+  // ── merchant fee memory ──────────────────────────────────────────────────
+  // A surcharge the customer already told us about at this merchant comes back
+  // on its own, as a visible notice — never as a silent adjustment.
+  const merchantKey = merchant?.id ?? search.merchant ?? null;
+  const [feeRemembered, setFeeRemembered] = useState(false);
+
+  useEffect(() => {
+    if (!merchantKey) {
+      setFeeRemembered(false);
+      return;
+    }
+    const remembered = recallMerchantFee(merchantKey);
+    if (remembered) {
+      setCardFeePct(remembered.feePct);
+      setFeeRemembered(true);
+    } else {
+      setFeeRemembered(false);
+    }
+  }, [merchantKey]);
+
+  /** Set the fee and remember it for this merchant. */
+  const updateCardFeePct = (next: number) => {
+    const clean = Number.isFinite(next) ? Math.min(20, Math.max(0, next)) : 0;
+    setCardFeePct(clean);
+    // Typing over a remembered value makes it the customer's current answer,
+    // so the "we remembered" notice stands down.
+    setFeeRemembered(false);
+    if (merchantKey) rememberMerchantFee(merchantKey, clean);
+  };
 
   useEffect(() => {
     if (loading) return;
@@ -212,6 +244,16 @@ function DecidePage() {
     setTapped(false);
     setRecorded(false);
   }, [plays, cardFeePct]);
+
+  // Decision funnel: the recommendation actually reached the customer.
+  useEffect(() => {
+    if (!ready || plays.length === 0) return;
+    trackJourneyEvent("recommendation_viewed", {
+      merchantId: merchantKey,
+      category,
+      plays: plays.length,
+    });
+  }, [ready, merchantKey, category, plays.length]);
 
   const raisedPlay = plays.find((p) => p.id === raisedPlayId) ?? plays[0] ?? null;
   const raisedIsWinner = raisedPlay?.id === plays[0]?.id;
@@ -410,6 +452,19 @@ function DecidePage() {
             </div>
           ) : null}
 
+          {feeRemembered && cardFeePct > 0 ? (
+            <div
+              className="tap-stage mt-4 flex items-start gap-2.5 rounded-xl border border-border bg-white px-3.5 py-2.5"
+              role="status"
+              data-testid="remembered-fee-notice"
+            >
+              <AlertTriangle className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
+              <p className="text-[13px] leading-snug text-foreground">
+                You told TAP {merchantName} charges {cardFeePct}% on cards. Still right?
+              </p>
+            </div>
+          ) : null}
+
           {cardFeePct > 0 && raisedPlay ? (
             <div
               className={`tap-stage mt-4 flex items-start gap-2.5 rounded-xl border px-3.5 py-2.5 ${
@@ -448,6 +503,10 @@ function DecidePage() {
                 }
                 if (merchant) recordDecide(merchant.id, category);
                 bumpDecideCount();
+                trackJourneyEvent("payment_choice_recorded", {
+                  merchantId: merchantKey,
+                  usedCard: !feeOutweighsReward,
+                });
                 setRecorded(true);
               }
               setTapped(true);
@@ -645,7 +704,7 @@ function DecidePage() {
                 type="button"
                 role="switch"
                 aria-checked={cardFeePct > 0}
-                onClick={() => setCardFeePct((fee) => (fee > 0 ? 0 : 3))}
+                onClick={() => updateCardFeePct(cardFeePct > 0 ? 0 : 3)}
                 className={`relative inline-flex h-[31px] w-[51px] shrink-0 items-center rounded-full transition-colors ${
                   cardFeePct > 0 ? "bg-primary" : "bg-border-strong"
                 }`}
@@ -669,10 +728,7 @@ function DecidePage() {
                     max={20}
                     step={0.1}
                     value={cardFeePct}
-                    onChange={(event) => {
-                      const value = Number(event.target.value);
-                      setCardFeePct(Number.isFinite(value) ? Math.min(20, Math.max(0, value)) : 0);
-                    }}
+                    onChange={(event) => updateCardFeePct(Number(event.target.value))}
                     className="w-16 bg-transparent text-right text-[15px] text-foreground focus:outline-none cs-money"
                     aria-label="Card fee percentage"
                   />
