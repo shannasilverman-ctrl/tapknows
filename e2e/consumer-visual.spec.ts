@@ -71,6 +71,9 @@ test.describe("TAP consumer visual system", () => {
         if (route.name === "home") {
           await expect(page.locator('[data-wallet-ready="true"]')).toBeVisible();
         }
+        if (route.name === "cards") {
+          await expect(page.locator('[data-wallet-ready="true"]')).toBeVisible();
+        }
         if (route.name === "onboarding") {
           await expect(page.getByRole("button", { name: /Continue/ })).toBeEnabled();
         }

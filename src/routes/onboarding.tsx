@@ -116,6 +116,8 @@ function OnboardingPage() {
 
   // Step 3 state — "See it work" sample transaction against the real engine.
   const [sampleKey, setSampleKey] = useState<string | null>(null);
+  const [isEvaluating, setIsEvaluating] = useState(false);
+  const [evaluationPhase, setEvaluationPhase] = useState(0);
   const sampleResult = useMemo(() => {
     if (!sampleKey) return null;
     const s = SAMPLE_TRANSACTIONS.find((x) => x.key === sampleKey);
@@ -147,6 +149,35 @@ function OnboardingPage() {
       ];
     });
   }, [sampleResult, selectedCatalogIds]);
+  const evaluationRaisedId =
+    sampleStackCards.length > 0
+      ? sampleStackCards[evaluationPhase % sampleStackCards.length]?.id
+      : null;
+  const evaluationLabels = [
+    "Reading your wallet",
+    `Checking ${sampleResult?.sample.category ?? "category"} rewards`,
+    "Converting points to real value",
+    "Best value found",
+  ];
+
+  useEffect(() => {
+    if (!sampleKey) return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      setEvaluationPhase(3);
+      setIsEvaluating(false);
+      return;
+    }
+
+    setEvaluationPhase(0);
+    setIsEvaluating(true);
+    const timers = [
+      window.setTimeout(() => setEvaluationPhase(1), 280),
+      window.setTimeout(() => setEvaluationPhase(2), 600),
+      window.setTimeout(() => setEvaluationPhase(3), 920),
+      window.setTimeout(() => setIsEvaluating(false), 1220),
+    ];
+    return () => timers.forEach(window.clearTimeout);
+  }, [sampleKey]);
 
   // Load current wallet on mount so returning users pick up where they left off
   useEffect(() => {
@@ -524,12 +555,20 @@ function OnboardingPage() {
                 return (
                   <button
                     key={s.key}
-                    onClick={() => setSampleKey(s.key)}
+                    onClick={() => {
+                      if (sampleKey === s.key) {
+                        setSampleKey(null);
+                        window.requestAnimationFrame(() => setSampleKey(s.key));
+                      } else {
+                        setSampleKey(s.key);
+                      }
+                    }}
+                    disabled={isEvaluating}
                     className={`w-full flex items-center justify-between rounded-2xl border px-4 py-4 text-left transition-all ${
                       active
                         ? "border-foreground bg-secondary/60"
                         : "border-border bg-background hover:border-border-strong"
-                    }`}
+                    } disabled:cursor-wait`}
                   >
                     <span className="text-[15px] font-medium text-foreground">{s.label}</span>
                     <ArrowRight className="size-4 text-muted-foreground" />
@@ -538,7 +577,41 @@ function OnboardingPage() {
               })}
             </div>
 
-            {sampleResult && (
+            {sampleResult && isEvaluating && sampleStackCards.length > 0 && (
+              <div
+                className="tap-onboarding-evaluation mt-6"
+                role="status"
+                aria-live="polite"
+                aria-label="TAP is comparing the cards in your wallet"
+              >
+                <div className="tap-evaluation-copy">
+                  <span className="tap-evaluation-orbit" aria-hidden>
+                    <i />
+                    <i />
+                  </span>
+                  <div>
+                    <p>TAP is comparing your cards</p>
+                    <span key={evaluationPhase}>{evaluationLabels[evaluationPhase]}</span>
+                  </div>
+                </div>
+                <div className="tap-evaluation-wallet">
+                  <WalletStack
+                    cards={sampleStackCards}
+                    raisedCardId={evaluationRaisedId}
+                    pocket
+                    pocketLabel="Your wallet · checking every card"
+                  />
+                  <span className="tap-evaluation-scan" aria-hidden />
+                </div>
+                <div className="tap-evaluation-steps" aria-hidden>
+                  {evaluationLabels.map((_, index) => (
+                    <i key={index} data-active={index <= evaluationPhase ? "true" : "false"} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {sampleResult && !isEvaluating && (
               <div className="mt-6 cs-fade-up">
                 {sampleResult.winner ? (
                   <div className="tap-onboarding-result">

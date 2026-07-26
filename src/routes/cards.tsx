@@ -111,7 +111,10 @@ function CardsPage() {
         )}
       </header>
 
-      <main className="flex-1 px-6 py-2 max-w-md mx-auto w-full pb-8">
+      <main
+        className="flex-1 px-6 py-2 max-w-md mx-auto w-full pb-8"
+        data-wallet-ready={data ? "true" : "false"}
+      >
         {data?.isGuest && mode === "list" && !isEmptyList && (
           <div className="mb-3 rounded-xl bg-secondary/60 px-4 py-2.5">
             <p className="text-[11px] text-muted-foreground leading-relaxed">

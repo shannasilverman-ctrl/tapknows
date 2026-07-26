@@ -117,6 +117,26 @@ test.describe("TAP product system", () => {
     await expect(page.getByRole("button", { name: "Connect your bank" })).toBeVisible();
   });
 
+  test("shows its work before revealing the onboarding recommendation", async ({ page }) => {
+    await page.goto("/onboarding");
+    await expect(page.getByRole("heading", { name: "Build your wallet." })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Continue" })).toBeEnabled();
+    await page.getByRole("button", { name: "Continue" }).click();
+
+    await expect(page.getByRole("heading", { name: "Set your priorities." })).toBeVisible();
+    await page.getByRole("button", { name: "Continue" }).click();
+
+    await expect(page.getByRole("heading", { name: "See it work." })).toBeVisible();
+    const restaurantSample = page.getByRole("button", { name: "$60 at a restaurant" });
+    await restaurantSample.click();
+
+    await expect(page.locator(".tap-onboarding-evaluation")).toBeVisible();
+    await expect(restaurantSample).toBeDisabled();
+    await expect(page.getByText("TAP is comparing your cards")).toBeVisible();
+    await expect(page.locator(".tap-onboarding-result")).toBeVisible();
+    await expect(page.locator(".tap-onboarding-evaluation")).toHaveCount(0);
+  });
+
   test("opens the installed app on the core task and exposes useful shortcuts", async ({
     request,
   }) => {
