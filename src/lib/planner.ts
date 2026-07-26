@@ -1,6 +1,7 @@
-import type { CardCatalog, EarnRule, PointsProgram, UserCard, UserOffer } from "./types";
+import type { CardCatalog, PointsProgram, UserCard, UserOffer } from "./types";
 import { dollars } from "./format";
 import { benefitMatches, type CardBenefit } from "./benefits";
+import { resolveEarnRule, type EarnRule, type EngineCard } from "./recommendationEngine";
 
 export type BenefitApplied = {
   benefit_id: string;
@@ -76,21 +77,18 @@ function programKind(
   return p?.kind === "cashback" ? "cashback" : "points";
 }
 
-function pickRule(rules: EarnRule[], category: string): EarnRule {
-  const direct = rules.find((r) => r.category === category);
-  if (direct) return direct;
-  // A merchant-specific slug may have a bespoke issuer rule while still
-  // belonging to a broad category for the rest of the wallet.
-  const broaderCategory = category === "whole_foods" ? "groceries" : null;
-  if (broaderCategory) {
-    const broader = rules.find((r) => r.category === broaderCategory);
-    if (broader) return broader;
-  }
-  // Base rate can be encoded as either "all" (test fixtures / legacy) or
-  // "everything_else" (the real catalog). Fall through to either.
-  const base =
-    rules.find((r) => r.category === "all") ?? rules.find((r) => r.category === "everything_else");
-  return base ?? { category: "all", multiplier: 1 };
+function pickRule(card: CardCatalog, category: string): EarnRule {
+  const engineCard: EngineCard = {
+    id: card.id,
+    card_catalog_id: card.id,
+    nickname: null,
+    issuer: card.issuer,
+    name: card.name,
+    points_program_id: card.points_program_id,
+    foreign_tx_fee_pct: card.foreign_tx_fee_pct,
+    earn_rules: card.earn_rules,
+  };
+  return resolveEarnRule(engineCard, category);
 }
 
 function evalCard(
@@ -107,7 +105,7 @@ function evalCard(
   const card = ctx.catalog[uc.card_catalog_id];
   if (!card) return null;
   const amountDollars = amountCents / 100;
-  const rule = pickRule(card.earn_rules, category);
+  const rule = pickRule(card, category);
   const kind = programKind(card.points_program_id, ctx.programs);
   const cpp = cppFor(card.points_program_id, ctx.programs, ctx.cppOverrides);
   const multiplier = rule.multiplier;

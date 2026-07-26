@@ -2,16 +2,17 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type {
-  CardCatalog,
-  MerchantCatalog,
-  PointsProgram,
-  Recommendation,
-  UserCard,
-  UserOffer,
-} from "@/lib/types";
+import type { MerchantCatalog, PointsProgram } from "@/lib/types";
 import { dollars, pointsFmt } from "@/lib/format";
-import { recommend } from "@/lib/recommender";
+import {
+  recommend,
+  resolveEarnRule,
+  type EarnRule,
+  type EngineCard,
+  type EngineOffer,
+  type Play,
+  type PlayLeg,
+} from "@/lib/recommendationEngine";
 import { BottomNav } from "@/components/bottom-nav";
 import { ArrowUpRight, Plus, Receipt, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
@@ -32,13 +33,21 @@ type Purchase = {
 };
 
 type Data = {
-  userCards: UserCard[];
-  catalog: Record<string, CardCatalog>;
+  wallet: EngineCard[];
   programs: Record<string, PointsProgram>;
   merchants: MerchantCatalog[];
-  offers: UserOffer[];
-  cppOverrides: Record<string, number>;
+  offers: EngineOffer[];
+  valuations: Record<string, number>;
   purchases: Purchase[];
+};
+
+type CatalogRow = {
+  id: string;
+  issuer: string;
+  name: string;
+  points_program_id: string | null;
+  foreign_tx_fee_pct: number;
+  earn_rules: EarnRule[];
 };
 
 function PurchasesPage() {
@@ -66,19 +75,41 @@ function PurchasesPage() {
         .order("occurred_at", { ascending: false })
         .limit(50),
     ]);
-    const catalog: Record<string, CardCatalog> = {};
-    (cc.data ?? []).forEach((c: any) => (catalog[c.id] = c));
+    const catalog: Record<string, CatalogRow> = {};
+    (cc.data ?? []).forEach((c) => {
+      catalog[c.id] = { ...c, earn_rules: (c.earn_rules as unknown as EarnRule[]) ?? [] };
+    });
     const programs: Record<string, PointsProgram> = {};
-    (pp.data ?? []).forEach((p: any) => (programs[p.id] = p));
-    const cppOverrides: Record<string, number> = {};
-    (ov.data ?? []).forEach((o: any) => (cppOverrides[o.points_program_id] = Number(o.cpp)));
+    const valuations: Record<string, number> = {};
+    (pp.data ?? []).forEach((p) => {
+      programs[p.id] = p as unknown as PointsProgram;
+      valuations[p.id] = Number(p.default_cpp);
+    });
+    (ov.data ?? []).forEach((o) => {
+      valuations[o.points_program_id] = Number(o.cpp);
+    });
     setData({
-      userCards: (uc.data ?? []) as UserCard[],
-      catalog,
+      wallet: (uc.data ?? [])
+        .map((c) => hydrateCard(c.id, c.card_catalog_id, c.nickname, catalog))
+        .filter((c): c is EngineCard => !!c),
       programs,
       merchants: (mc.data ?? []) as MerchantCatalog[],
-      offers: (uo.data ?? []) as UserOffer[],
-      cppOverrides,
+      offers: (uo.data ?? []).map((o) => ({
+        id: o.id,
+        user_card_id: o.user_card_id,
+        merchant: o.merchant_text,
+        offer_type:
+          (o.offer_type as EngineOffer["offer_type"]) ??
+          (o.reward_type === "statement_credit"
+            ? "dollars_off_threshold"
+            : (o.reward_type as EngineOffer["offer_type"])),
+        discount_amount: Number(o.reward_value),
+        spend_threshold: o.min_spend,
+        max_benefit: o.max_benefit != null ? Number(o.max_benefit) : null,
+        expires_on: o.expires_at,
+        is_used: o.is_used ?? false,
+      })),
+      valuations,
       purchases: (up.data ?? []) as Purchase[],
     });
   };
@@ -167,10 +198,9 @@ function Stat({ label, value, accent }: { label: string; value: string; accent?:
 
 function cardLabel(userCardId: string | null, data: Data) {
   if (!userCardId) return "—";
-  const uc = data.userCards.find((c) => c.id === userCardId);
-  if (!uc) return "Removed card";
-  const c = data.catalog[uc.card_catalog_id];
-  return uc.nickname ?? (c ? `${c.issuer} ${c.name}` : uc.card_catalog_id);
+  const card = data.wallet.find((c) => c.id === userCardId);
+  if (!card) return "Removed card";
+  return card.nickname ?? `${card.issuer} ${card.name}`;
 }
 
 function PurchaseRow({
@@ -274,7 +304,7 @@ function LogPurchaseSheet({
   const [merchantText, setMerchantText] = useState("");
   const [merchantCategory, setMerchantCategory] = useState("other");
   const [amountStr, setAmountStr] = useState("");
-  const [userCardId, setUserCardId] = useState(data.userCards[0]?.id ?? "");
+  const [userCardId, setUserCardId] = useState(data.wallet[0]?.id ?? "");
   const [occurredAt, setOccurredAt] = useState(new Date().toISOString().slice(0, 10));
   const [saving, setSaving] = useState(false);
 
@@ -293,28 +323,45 @@ function LogPurchaseSheet({
   }, [amountStr]);
 
   const preview = useMemo<{
-    used: Recommendation | null;
-    winner: Recommendation | null;
+    used: {
+      play: Play;
+      leg: PlayLeg;
+      programId: string | null;
+      rewardKind: "points" | "cashback";
+      pointsEarned: number;
+    } | null;
+    winner: Play | null;
     delta: number;
   }>(() => {
     if (!userCardId || amountCents === 0) return { used: null, winner: null, delta: 0 };
-    const merchantOffers = data.offers.filter(
-      (o) => merchantId && o.merchant_catalog_id === merchantId,
-    );
-    const recs = recommend({
-      userCards: data.userCards,
-      catalog: data.catalog,
-      programs: data.programs,
-      offers: merchantOffers,
-      cppOverrides: data.cppOverrides,
-      merchantCategory,
+    const usedCard = data.wallet.find((card) => card.id === userCardId);
+    if (!usedCard) return { used: null, winner: null, delta: 0 };
+
+    const engineInput = {
       amountCents,
-    });
-    const used = recs.find((r) => r.userCardId === userCardId) ?? null;
-    const winner = recs[0] ?? null;
-    const delta = winner && used ? Math.max(0, winner.valueCents - used.valueCents) : 0;
+      category: merchantCategory,
+      merchant: merchantText.trim() || null,
+      offers: data.offers,
+      valuations: data.valuations,
+    };
+    const winner = recommend({ ...engineInput, wallet: data.wallet }).winner;
+    const usedPlay = recommend({ ...engineInput, wallet: [usedCard] }).winner;
+    const usedLeg = usedPlay?.legs[0] ?? null;
+    const programId = usedCard.points_program_id;
+    const program = programId ? data.programs[programId] : null;
+    const rewardKind: "points" | "cashback" = program?.kind === "cashback" ? "cashback" : "points";
+    const pointsEarned =
+      usedPlay && usedLeg && programId && rewardKind === "points"
+        ? Math.round((amountCents / 100) * resolveEarnRule(usedCard, merchantCategory).multiplier)
+        : 0;
+    const used =
+      usedPlay && usedLeg
+        ? { play: usedPlay, leg: usedLeg, programId, rewardKind, pointsEarned }
+        : null;
+    const delta =
+      winner && used ? Math.max(0, winner.totalValueCents - used.play.totalValueCents) : 0;
     return { used, winner, delta };
-  }, [userCardId, amountCents, merchantId, merchantCategory, data]);
+  }, [userCardId, amountCents, merchantText, merchantCategory, data]);
 
   const submit = async () => {
     if (!userCardId) return toast.error("Pick the card you used");
@@ -332,7 +379,7 @@ function LogPurchaseSheet({
       merchant_catalog_id: merchantId || null,
       amount_cents: amountCents,
       user_card_id_used: userCardId,
-      recommended_user_card_id: preview.winner?.userCardId ?? null,
+      recommended_user_card_id: preview.winner?.legs[0]?.userCardId ?? null,
       delta_value_cents: preview.delta,
     });
 
@@ -347,9 +394,9 @@ function LogPurchaseSheet({
       preview.used &&
       preview.used.rewardKind === "points" &&
       preview.used.pointsEarned > 0 &&
-      preview.used.card.points_program_id
+      preview.used.programId
     ) {
-      const programId = preview.used.card.points_program_id;
+      const programId = preview.used.programId;
       const { data: existing } = await supabase
         .from("user_points_balances")
         .select("id, balance")
@@ -393,7 +440,7 @@ function LogPurchaseSheet({
     onSaved();
   };
 
-  const noCards = data.userCards.length === 0;
+  const noCards = data.wallet.length === 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/30">
@@ -474,11 +521,10 @@ function LogPurchaseSheet({
                   onChange={(e) => setUserCardId(e.target.value)}
                   className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm"
                 >
-                  {data.userCards.map((uc) => {
-                    const c = data.catalog[uc.card_catalog_id];
-                    const label = uc.nickname ?? (c ? `${c.issuer} ${c.name}` : uc.card_catalog_id);
+                  {data.wallet.map((card) => {
+                    const label = card.nickname ?? `${card.issuer} ${card.name}`;
                     return (
-                      <option key={uc.id} value={uc.id}>
+                      <option key={card.id} value={card.id}>
                         {label}
                       </option>
                     );
@@ -488,11 +534,11 @@ function LogPurchaseSheet({
 
               {preview.used && (
                 <div className="rounded-xl border border-border bg-accent/40 p-4 text-xs">
-                  <p className="text-foreground leading-relaxed">{preview.used.reasoning}</p>
+                  <p className="text-foreground leading-relaxed">{preview.used.play.headline}</p>
                   <div className="mt-3 flex items-center justify-between">
                     <span className="text-muted-foreground">You'll earn</span>
                     <span className="font-semibold text-foreground tabular-nums">
-                      {dollars(preview.used.valueCents)}
+                      {dollars(preview.used.play.totalValueCents)}
                       {preview.used.rewardKind === "points" && preview.used.pointsEarned > 0 && (
                         <span className="text-muted-foreground font-normal">
                           {" "}
@@ -501,14 +547,14 @@ function LogPurchaseSheet({
                       )}
                     </span>
                   </div>
-                  {preview.winner &&
-                    preview.winner.userCardId !== preview.used.userCardId &&
-                    preview.delta > 0 && (
-                      <div className="mt-2 pt-2 border-t border-border flex items-center justify-between text-destructive">
-                        <span>Best was {cardLabel(preview.winner.userCardId, data)}</span>
-                        <span className="font-medium tabular-nums">+{dollars(preview.delta)}</span>
-                      </div>
-                    )}
+                  {preview.winner && preview.delta > 0 && (
+                    <div className="mt-2 pt-2 border-t border-border flex items-center justify-between text-destructive">
+                      <span>
+                        Best was {cardLabel(preview.winner.legs[0]?.userCardId ?? null, data)}
+                      </span>
+                      <span className="font-medium tabular-nums">+{dollars(preview.delta)}</span>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -541,6 +587,26 @@ const CATEGORIES = [
   "online",
   "other",
 ];
+
+function hydrateCard(
+  id: string,
+  card_catalog_id: string,
+  nickname: string | null | undefined,
+  catalog: Record<string, CatalogRow>,
+): EngineCard | null {
+  const card = catalog[card_catalog_id];
+  if (!card) return null;
+  return {
+    id,
+    card_catalog_id,
+    nickname: nickname ?? null,
+    issuer: card.issuer,
+    name: card.name,
+    points_program_id: card.points_program_id,
+    foreign_tx_fee_pct: Number(card.foreign_tx_fee_pct),
+    earn_rules: card.earn_rules ?? [],
+  };
+}
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (

@@ -163,6 +163,11 @@ function findMatchingRule(rules: EarnRule[], category: string): EarnRule | null 
   return universal ?? null;
 }
 
+/** Resolve the earn rule the engine applies to a card for a purchase category. */
+export function resolveEarnRule(card: EngineCard, category: string): EarnRule {
+  return findMatchingRule(card.earn_rules, category) ?? findFallback(card.earn_rules);
+}
+
 function earnForPortion(
   card: EngineCard,
   dollarsPortion: number,
