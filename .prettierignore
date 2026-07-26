@@ -9,3 +9,6 @@ routeTree.gen.ts
 test-results
 playwright-report
 docs/customer-experience/tap-customer-experience-report.html
+
+# Kiln pipeline workspace (not product source)
+.kiln
