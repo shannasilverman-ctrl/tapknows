@@ -60,6 +60,16 @@ test.describe("TAP product system", () => {
     await page.getByRole("button", { name: "Why this card?" }).click();
     await expect(page.getByText("Check the math", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Next product screen" })).toBeDisabled();
+
+    const walletFaces = page.locator(".tap-wallet-board .tap-mini-card .cs-face");
+    await expect(walletFaces).toHaveCount(3);
+    await expect(page.locator(".tap-wallet-board .cs-chip")).toHaveCount(3);
+    const aspectRatio = await walletFaces.first().evaluate((face) => {
+      const rect = face.getBoundingClientRect();
+      return rect.width / rect.height;
+    });
+    expect(aspectRatio).toBeGreaterThan(1.5);
+    expect(aspectRatio).toBeLessThan(1.67);
   });
 
   test("carries the wallet into the recommendation and exposes proof", async ({ page }) => {

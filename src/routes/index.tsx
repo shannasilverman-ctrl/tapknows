@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { ArrowRight, Check, ChevronLeft, ChevronRight, LockKeyhole } from "lucide-react";
+import { CardFace } from "@/components/card-face";
 import { useAuth } from "@/hooks/use-auth";
 import { getGuestWallet } from "@/lib/guestWallet";
 
@@ -16,9 +17,30 @@ export const Route = createFileRoute("/")({
 });
 
 const proof = [
-  { label: "Groceries", rate: "4×", card: "Amex Gold", tone: "coral" },
-  { label: "Travel", rate: "3×", card: "Sapphire", tone: "navy" },
-  { label: "Everything else", rate: "2×", card: "Double Cash", tone: "sage" },
+  {
+    label: "Groceries",
+    rate: "4×",
+    card: "Amex Gold",
+    issuer: "American Express",
+    last4: "6474",
+    tone: "coral",
+  },
+  {
+    label: "Travel",
+    rate: "3×",
+    card: "Sapphire",
+    issuer: "Chase",
+    last4: "1882",
+    tone: "navy",
+  },
+  {
+    label: "Everything else",
+    rate: "2×",
+    card: "Double Cash",
+    issuer: "Citi",
+    last4: "2915",
+    tone: "sage",
+  },
 ] as const;
 
 const walkthroughScreens = ["Choose the place", "See your best card", "Check the math"] as const;
@@ -384,8 +406,13 @@ function Landing() {
         <div className="tap-wallet-board">
           {proof.map((item) => (
             <div className={`tap-wallet-row tap-${item.tone}`} key={item.label}>
-              <div className="tap-mini-card">
-                <i />
+              <div className="tap-mini-card" aria-hidden>
+                <CardFace
+                  issuer={item.issuer}
+                  name={item.card}
+                  last4={item.last4}
+                  className="tap-mini-card-face"
+                />
               </div>
               <p>
                 <small>{item.label}</small>
