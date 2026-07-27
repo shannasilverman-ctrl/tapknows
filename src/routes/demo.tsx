@@ -11,6 +11,8 @@ import {
   Check,
   ChevronRight,
   Landmark,
+  Pause,
+  Play,
   ShoppingCart,
   Wallet,
 } from "lucide-react";
@@ -81,15 +83,19 @@ function DemoPage() {
   const navigate = useNavigate();
   const [beat, setBeat] = useState<Beat>(1);
   const [recoveredCents, setRecoveredCents] = useState(1284); // month-to-date starting point
+  // A viewer who misses a beat can stop the clock and step back to it, rather
+  // than sitting through the whole run again.
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
     if (beat === 6) return; // last beat holds
+    if (paused) return; // the viewer holds the clock
     const t = window.setTimeout(
       () => setBeat((b) => Math.min(6, (b + 1) as Beat) as Beat),
       BEAT_MS[beat],
     );
     return () => window.clearTimeout(t);
-  }, [beat]);
+  }, [beat, paused]);
 
   const advance = () => setBeat((b) => Math.min(6, (b + 1) as Beat) as Beat);
   const restart = () => {
@@ -110,12 +116,22 @@ function DemoPage() {
         </button>
         <Wordmark size="sm" />
         {beat < 6 ? (
-          <button
-            onClick={advance}
-            className="text-sm text-muted-foreground hover:text-foreground min-h-11 px-2"
-          >
-            Skip
-          </button>
+          <div className="flex items-center">
+            <button
+              onClick={() => setPaused((p) => !p)}
+              className="inline-flex items-center justify-center text-muted-foreground hover:text-foreground min-h-11 min-w-11"
+              aria-label={paused ? "Resume demo" : "Pause demo"}
+              aria-pressed={paused}
+            >
+              {paused ? <Play className="size-4" /> : <Pause className="size-4" />}
+            </button>
+            <button
+              onClick={advance}
+              className="text-sm text-muted-foreground hover:text-foreground min-h-11 px-2"
+            >
+              Skip
+            </button>
+          </div>
         ) : (
           <div className="w-11" />
         )}
@@ -128,12 +144,23 @@ function DemoPage() {
             const active = beat === b;
             const done = beat > b;
             return (
-              <div
+              // Each segment is a real control: a viewer who missed a beat can
+              // step straight back to it. The negative margin keeps a 24px tap
+              // target without changing the bar's visual height.
+              <button
                 key={b}
-                className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
-                  active ? "bg-foreground" : done ? "bg-foreground/40" : "bg-secondary"
-                }`}
-              />
+                type="button"
+                onClick={() => setBeat(b)}
+                aria-label={`Beat ${b}: ${BEAT_META[b].label}`}
+                aria-current={active ? "step" : undefined}
+                className="flex-1 py-3 -my-3"
+              >
+                <span
+                  className={`block h-1 rounded-full transition-colors duration-300 ${
+                    active ? "bg-foreground" : done ? "bg-foreground/40" : "bg-secondary"
+                  }`}
+                />
+              </button>
             );
           })}
         </div>
@@ -248,11 +275,12 @@ function BeatConnect() {
                       </span>
                       <p className="text-[14px] text-foreground">{b.name}</p>
                     </div>
+                    {/* No chevron on the unselected rows: these are a
+                        simulation, not a list you can tap, and a chevron would
+                        promise an interaction that does not exist. */}
                     {isSel && step === 1 ? (
                       <span className="cs-spinner" aria-label="Connecting" />
-                    ) : (
-                      <ChevronRight className="size-4 text-muted-foreground" />
-                    )}
+                    ) : null}
                   </div>
                 </li>
               );

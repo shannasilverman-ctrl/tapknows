@@ -1672,11 +1672,29 @@
   backdrop-filter: blur(18px);
 }
 @media (max-width: 900px) {
+  /* The section links used to be hidden outright below 900px, which left
+     small screens with no way to reach "How TAP decides" or "Why trust TAP"
+     except by scrolling and hoping. They now take their own centred row under
+     the logo, so the top bar stays clean and nothing becomes unreachable. */
   .tap-nav {
     grid-template-columns: 1fr auto;
+    height: auto;
+    padding-block: 18px;
+    row-gap: 12px;
+  }
+  .tap-logo {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .tap-nav-signin {
+    grid-column: 2;
+    grid-row: 1;
   }
   .tap-nav-links {
-    display: none;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: center;
+    gap: 24px;
   }
   .tap-hero {
     grid-template-columns: 1fr;
