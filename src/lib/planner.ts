@@ -56,6 +56,12 @@ export type PlannerInput = {
   foreign?: boolean;
   merchant?: { id?: string | null; name?: string | null } | null;
   benefitsByCard?: Record<string, PlannerBenefitContext[]>; // key: card_catalog_id
+  /**
+   * Categories whose bonus the customer has flagged as exhausted, keyed by
+   * user-card id — the same shape recommendationEngine takes. Optional, so
+   * every existing caller keeps its exact current behaviour.
+   */
+  capReachedCategoriesByCard?: Record<string, string[]>;
 };
 
 function cppFor(
@@ -75,6 +81,31 @@ function programKind(
   if (!programId) return "cashback";
   const p = programs[programId];
   return p?.kind === "cashback" ? "cashback" : "points";
+}
+
+/**
+ * The card's base rule — what it earns when no bonus matches, and what a bonus
+ * rule degrades to once its cap is spent.
+ *
+ * This mirrors `findFallback` in recommendationEngine.ts, which is private
+ * there. Sharing it would be better, but LAW criterion JP-6 requires
+ * recommendationEngine.ts to stay byte-identical to its law-time baseline, so
+ * exporting it is not this change's call to make. Kept deliberately identical;
+ * engineParity.test.ts now exercises a capped case, so the two drifting apart
+ * fails the build rather than reaching a customer.
+ *
+ * NOTE: resolveEarnRule() is NOT a substitute — it returns universal-match
+ * rules (top_category, rotating quarters) ahead of the base rule, which would
+ * resolve a capped bonus back to itself.
+ */
+function baseRule(rules: EarnRule[]): EarnRule {
+  return (
+    rules.find((r) => r.category === "everything_else") ??
+    rules.find((r) => r.category === "all") ?? {
+      category: "everything_else",
+      multiplier: 1,
+    }
+  );
 }
 
 function pickRule(card: CardCatalog, category: string): EarnRule {
@@ -108,7 +139,16 @@ function evalCard(
   const rule = pickRule(card, category);
   const kind = programKind(card.points_program_id, ctx.programs);
   const cpp = cppFor(card.points_program_id, ctx.programs, ctx.cppOverrides);
-  const multiplier = rule.multiplier;
+  // Mirror recommendationEngine: when the customer has flagged this rule's
+  // bonus as spent, the card earns its post-cap rate — explicit when the
+  // rule declares one, otherwise the card's own base rule. A matched rule
+  // that IS the fallback has no bonus to exhaust, so it is unaffected.
+  const fallbackRule = baseRule(card.earn_rules);
+  const capReached = (ctx.capReachedCategoriesByCard?.[uc.id] ?? []).includes(category);
+  const multiplier =
+    capReached && rule !== fallbackRule
+      ? (rule.post_cap_multiplier ?? fallbackRule.multiplier)
+      : rule.multiplier;
 
   let valueCents: number;
   let pointsEarned = 0;

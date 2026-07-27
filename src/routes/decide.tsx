@@ -8,6 +8,7 @@ import { Sheet } from "@/components/sheet";
 import { LegalFooter } from "@/components/legal-footer";
 import { getGuestWallet } from "@/lib/guestWallet";
 import { CATALOG_BY_ID } from "@/lib/cardCatalog";
+import { capReachedByCardMap, type CapPeriod } from "@/lib/capReached";
 import { MERCHANTS, resolveMerchant } from "@/lib/merchantMap";
 import { POINT_VALUATIONS } from "@/lib/pointValuations";
 import { planPurchase, type Play } from "@/lib/planner";
@@ -233,6 +234,36 @@ function DecidePage() {
     return map;
   }, [userCards, user?.id]);
 
+  // Bonus caps the customer has flagged as spent, for the category in play.
+  // Same helper and same shape /plan uses — /decide previously had no cap
+  // input at all, so it recommended capped cards at their headline rate.
+  const [capTick, setCapTick] = useState(0);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handler = () => setCapTick((t) => t + 1);
+    window.addEventListener("tap:capReached", handler);
+    return () => window.removeEventListener("tap:capReached", handler);
+  }, []);
+
+  const capReachedByCard = useMemo(() => {
+    const entries: Array<{ userCardId: string; category: string; period: CapPeriod }> = [];
+    for (const uc of userCards) {
+      const c = CATALOG_BY_ID[uc.card_catalog_id];
+      for (const r of c?.earn_rules ?? []) {
+        const cap = r.cap_period_spend ?? r.cap_annual_spend ?? null;
+        if (cap == null) continue;
+        if (r.category !== category) continue;
+        entries.push({
+          userCardId: uc.id,
+          category: r.category,
+          period: (r.cap_period ?? "annual") as CapPeriod,
+        });
+      }
+    }
+    return capReachedByCardMap(user?.id ?? null, entries);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userCards, category, user?.id, capTick]);
+
   const rawPlays: Play[] = useMemo(() => {
     if (!ready || userCards.length === 0) return [];
     return planPurchase({
@@ -241,6 +272,7 @@ function DecidePage() {
       programs,
       offers: [] as UserOffer[],
       cppOverrides,
+      capReachedCategoriesByCard: capReachedByCard,
       merchantCategory: category,
       amountCents: Math.round(amount * 100),
       merchant: merchant ? { id: merchant.id, name: merchant.name } : { name: merchantName },
@@ -252,6 +284,7 @@ function DecidePage() {
     catalog,
     programs,
     cppOverrides,
+    capReachedByCard,
     category,
     amount,
     merchant,

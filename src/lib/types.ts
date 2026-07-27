@@ -1,6 +1,18 @@
 export type EarnRule = {
   category: string;
   multiplier: number;
+  // Cap fields. The catalog has always carried these (see CatalogEarnRule in
+  // cardCatalog.ts) and decide.tsx passes `earn_rules` through by reference,
+  // so they were present at runtime the whole time — this type just did not
+  // declare them. That omission is why the planner path was cap-blind while
+  // the engine path was not: the type system hid the data from one consumer
+  // and not the other. Declaring them keeps the two in step.
+  cap_period_spend?: number;
+  cap_annual_spend?: number; // legacy alias — the engine reads either
+  cap_period?: "annual" | "quarterly" | "monthly";
+  // Explicit post-cap rate. When omitted, earning falls back to the card's
+  // everything_else / all base rule.
+  post_cap_multiplier?: number;
   note?: string;
 };
 

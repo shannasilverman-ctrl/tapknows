@@ -48,14 +48,13 @@ export function RecommendationProof({
   amountCents,
   termsDate,
   valuationAssumption = "Point values use your saved assumptions",
-  // This read "Caps and credits are included when TAP has their status" — which
-  // was not true on this surface. /decide plans with planner.ts, which has no
-  // cap logic at all (cap handling lives in recommendationEngine.ts, which only
-  // /plan calls). A customer who had told TAP their 5% quarterly cap was blown
-  // was still shown that card at 5x, under a panel assuring them caps had been
-  // accounted for. Credits ARE applied here; caps are not — so this now says
-  // exactly that, and no more.
-  capStatus = "Credits are included. Spending caps are not — check your cap before you tap",
+  // This claim was briefly false: planner.ts had no cap logic, so a customer
+  // who had told TAP their 5% quarterly cap was blown was still shown that card
+  // at 5x under this exact reassurance. The planner is now cap-aware and
+  // /decide passes the customer's real cap state, so the original wording is
+  // true again — and engineParity.test.ts now exercises a capped case, so it
+  // fails the build if the two surfaces ever drift apart again.
+  capStatus = "Caps and credits are included when TAP has their status",
   onEditAssumptions,
   onReportIssue,
   today,
