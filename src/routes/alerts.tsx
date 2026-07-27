@@ -32,6 +32,7 @@ function AlertsPage() {
   const readAll = useServerFn(markAllAlertsRead);
 
   const [alerts, setAlerts] = useState<Alert[] | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
     if (loading) return;
@@ -39,8 +40,15 @@ function AlertsPage() {
   }, [user, loading, navigate]);
 
   const refresh = async () => {
-    const rows = await list({});
-    setAlerts(rows);
+    // This await sat outside any catch, so one server-function throw stranded
+    // `alerts` at null and the body rendered blank forever, with no way back.
+    try {
+      const rows = await list({});
+      setAlerts(rows);
+      setLoadFailed(false);
+    } catch {
+      setLoadFailed(true);
+    }
   };
 
   useEffect(() => {
@@ -92,7 +100,21 @@ function AlertsPage() {
 
       <main className="flex-1 px-6 py-2 max-w-md mx-auto w-full pb-8">
         {alerts && alerts.length > 0 && <PushPrimer />}
-        {!alerts ? null : alerts.length === 0 ? (
+        {!alerts && loadFailed ? (
+          <div className="mt-6 rounded-2xl border border-dashed border-border-strong bg-surface p-6 text-center">
+            <p className="text-sm font-medium text-foreground">Couldn&apos;t load alerts</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Check your connection and try again.
+            </p>
+            <button
+              type="button"
+              onClick={() => void refresh()}
+              className="mt-3 inline-flex items-center rounded-full bg-foreground text-background text-xs font-medium px-4 py-2"
+            >
+              Try again
+            </button>
+          </div>
+        ) : !alerts ? null : alerts.length === 0 ? (
           <div className="mt-2">
             <div
               aria-hidden

@@ -682,8 +682,15 @@ function CatalogPicker({ data, onAdded }: { data: Data; onAdded: () => void }) {
                 return;
               }
               const { data: u } = await supabase.auth.getUser();
+              // An expired session made u.user null and the ! threw — leaving
+              // the button stuck on "Adding…" with no message, forever.
+              if (!u.user) {
+                setSaving(false);
+                toast.error("Your session expired — sign in again to add cards.");
+                return;
+              }
               const { error } = await supabase.from("user_cards").insert({
-                user_id: u.user!.id,
+                user_id: u.user.id,
                 card_catalog_id: picked.id,
                 nickname: nickname.trim() || null,
               });

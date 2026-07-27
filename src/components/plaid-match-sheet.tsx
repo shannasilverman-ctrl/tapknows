@@ -91,8 +91,8 @@ export function PlaidMatchSheet({ open, onClose, itemId, candidates }: Props) {
             style={{
               width: 72,
               height: 72,
-              background: "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)",
-              boxShadow: "0 12px 28px -10px rgba(59,130,246,0.55)",
+              background: "linear-gradient(135deg, #f06b4f 0%, #d24e33 100%)",
+              boxShadow: "0 12px 28px -10px rgba(240,107,79,0.55)",
             }}
             aria-hidden
           >

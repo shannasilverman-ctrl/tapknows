@@ -5,6 +5,7 @@ import { CardFace } from "@/components/card-face";
 import { PlaidLinkButton } from "@/components/plaid-link-button";
 import { PhotoImportSheet } from "@/components/photo-import-sheet";
 import { Search, Check, ArrowLeft, Plus, Camera } from "lucide-react";
+import { toast } from "sonner";
 
 type Props = {
   open: boolean;
@@ -69,6 +70,9 @@ export function AddCardSheet({
         handleClose();
       }, 780);
     } catch {
+      // Reverting the button with no message read as "nothing happened" — the
+      // customer had no way to know the card was never saved.
+      toast.error("Couldn't add the card — try again.");
       setConfirming(false);
     }
   };
@@ -109,8 +113,8 @@ export function AddCardSheet({
               style={{
                 width: 72,
                 height: 72,
-                background: "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)",
-                boxShadow: "0 12px 28px -10px rgba(59,130,246,0.55)",
+                background: "linear-gradient(135deg, #f06b4f 0%, #d24e33 100%)",
+                boxShadow: "0 12px 28px -10px rgba(240,107,79,0.55)",
               }}
               aria-hidden
             >

@@ -323,7 +323,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
       <Tag className="size-5 text-muted-foreground mx-auto mb-3" />
       <p className="text-sm font-medium text-foreground">No offers yet.</p>
       <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-        Add Amex Offers, Chase Offers, or any targeted promo — we'll surface them when you pay.
+        Add Amex Offers, Chase Offers, or any targeted promo — TAP counts them into your Plan picks.
       </p>
       <button
         onClick={onAdd}

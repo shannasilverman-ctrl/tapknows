@@ -176,6 +176,8 @@ function HomePage() {
   const { firstRun, pushAsk } = Route.useSearch();
   const [wallet, setWallet] = useState<WalletCard[]>([]);
   const [ready, setReady] = useState(false);
+  // A failed read is not an empty wallet — same distinction decide.tsx draws.
+  const [walletLoadFailed, setWalletLoadFailed] = useState(false);
   const [alerts, setAlerts] = useState<AlertRow[]>([]);
   const [query, setQuery] = useState("");
   const [onlineStoresOpen, setOnlineStoresOpen] = useState(false);
@@ -268,23 +270,33 @@ function HomePage() {
 
   const loadWallet = async () => {
     if (user) {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("user_cards")
         .select("id, card_catalog_id, nickname")
         .eq("user_id", user.id)
         .order("created_at", { ascending: true });
+      // postgrest resolves { data: null, error } instead of rejecting. Treating
+      // that as [] painted the first-run empty wallet over a customer's real
+      // cards on any network blip. A failed read keeps whatever was on screen.
+      if (error) {
+        setWalletLoadFailed(true);
+        return;
+      }
       const cards: WalletCard[] = (data ?? [])
         .map((r) => toWalletCard(r.id, r.card_catalog_id, r.nickname ?? null))
         .filter(Boolean) as WalletCard[];
-      const { data: alertRows } = await supabase
+      const { data: alertRows, error: alertsError } = await supabase
         .from("alerts")
         .select("id, kind, title, body, deep_link, severity")
         .eq("user_id", user.id)
         .is("dismissed_at", null)
         .order("created_at", { ascending: false })
         .limit(3);
+      setWalletLoadFailed(false);
       setWallet(cards);
-      setAlerts((alertRows ?? []) as AlertRow[]);
+      // Alerts failing is not worth blocking the wallet over — keep the ones
+      // already shown rather than flashing them away.
+      if (!alertsError) setAlerts((alertRows ?? []) as AlertRow[]);
     } else {
       const g = getGuestWallet();
       const cards: WalletCard[] = g.cards
@@ -596,7 +608,13 @@ function HomePage() {
 
   const handleRemove = async (id: string) => {
     if (user) {
-      await supabase.from("user_cards").delete().eq("id", id);
+      const { error } = await supabase.from("user_cards").delete().eq("id", id);
+      // The card is still there on a failed delete — saying "removed" and then
+      // re-rendering it is the worst of both worlds.
+      if (error) {
+        toast.error("Couldn't remove the card — try again.");
+        return;
+      }
     } else {
       removeGuestCard(id);
     }
@@ -919,6 +937,22 @@ function HomePage() {
                   <span className="tap-sample-card tap-sample-card-three" />
                   <span className="tap-wallet-pocket" />
                 </div>
+              </div>
+            ) : walletLoadFailed && wallet.length === 0 ? (
+              <div className="text-center tap-demo-wallet-state">
+                <p className="text-[15px] font-medium text-foreground">
+                  Couldn&apos;t load your wallet
+                </p>
+                <p className="mt-1 text-[13px] text-muted-foreground">
+                  Your cards are safe — TAP just couldn&apos;t reach them. Check your connection.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => void loadWallet()}
+                  className="mt-4 inline-flex items-center justify-center rounded-full bg-foreground text-background px-5 h-11 text-sm font-medium"
+                >
+                  Try again
+                </button>
               </div>
             ) : wallet.length === 0 ? (
               <div className="text-center tap-demo-wallet-state">

@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Wordmark } from "@/components/wordmark";
@@ -217,11 +218,17 @@ function OnboardingPage() {
     if (next.has(c.id)) {
       next.delete(c.id);
       if (user) {
-        await supabase
+        const { error } = await supabase
           .from("user_cards")
           .delete()
           .eq("user_id", user.id)
           .eq("card_catalog_id", c.id);
+        // The checkmark must not lie: a failed write leaves the selection as
+        // it really is on the server.
+        if (error) {
+          toast.error(`Couldn't remove ${c.name} — try again.`);
+          return;
+        }
       } else {
         const g = getGuestWallet();
         const guestCard = g.cards.find((x) => x.card_catalog_id === c.id);
@@ -230,7 +237,13 @@ function OnboardingPage() {
     } else {
       next.add(c.id);
       if (user) {
-        await supabase.from("user_cards").insert({ user_id: user.id, card_catalog_id: c.id });
+        const { error } = await supabase
+          .from("user_cards")
+          .insert({ user_id: user.id, card_catalog_id: c.id });
+        if (error) {
+          toast.error(`Couldn't add ${c.name} — try again.`);
+          return;
+        }
       } else {
         addGuestCard(c.id);
       }
