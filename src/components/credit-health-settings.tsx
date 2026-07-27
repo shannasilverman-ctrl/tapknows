@@ -205,6 +205,10 @@ export function CreditHealthSettings() {
             min={1}
             max={30}
             step={1}
+            // Announced as a bare "slider" without this — the visible label sits
+            // in a sibling span the control has no association with.
+            aria-label="Utilization cap, percent"
+            aria-valuetext={`${prefs.utilization_threshold_pct} percent`}
             value={prefs.utilization_threshold_pct}
             onChange={(e) => savePrefs({ utilization_threshold_pct: Number(e.target.value) })}
             className="w-full accent-foreground"

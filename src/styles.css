@@ -4692,7 +4692,10 @@ body {
   background-image:
     linear-gradient(180deg, rgba(7, 3, 10, 0.48), transparent 30%),
     linear-gradient(120deg, rgba(87, 56, 90, 0.22), transparent 48%),
-    url("/tap-leather-weave-v1.png") !important;
+    /* v2 is the same texture at 256x256 instead of 768x768. It is drawn
+       into a 128px tile, so the original shipped ~36x more pixels than
+       were ever displayed — 1.08 MB on first paint. v2 is 105 KB. */
+    url("/tap-leather-weave-v2.png") !important;
   background-size:
     auto,
     auto,

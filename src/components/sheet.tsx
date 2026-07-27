@@ -55,13 +55,44 @@ export function Sheet({ open, onClose, title, children, busy = false }: Props) {
     if (!mounted) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape" && !busy) onClose();
+      // aria-modal promises assistive tech that focus stays inside; nothing
+      // enforced it, so Tab walked straight out into the dimmed page behind.
+      if (e.key === "Tab" && panelRef.current) {
+        const focusables = panelRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        );
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        const active = document.activeElement;
+        if (e.shiftKey && (active === first || !panelRef.current.contains(active))) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && (active === last || !panelRef.current.contains(active))) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     };
     document.addEventListener("keydown", onKey);
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+
+    // Move focus in on open, and put it back where the customer was on close —
+    // a keyboard user should never be left focused on a hidden page.
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const panel = panelRef.current;
+    if (panel) {
+      const target = panel.querySelector<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      (target ?? panel).focus();
+    }
+
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prevOverflow;
+      previouslyFocused?.focus?.();
     };
   }, [mounted, onClose, busy]);
 
@@ -134,6 +165,9 @@ export function Sheet({ open, onClose, title, children, busy = false }: Props) {
         role="dialog"
         aria-modal="true"
         aria-label={title}
+        // Focusable as a last resort, so opening a sheet with no interactive
+        // children still moves focus inside the dialog.
+        tabIndex={-1}
         style={panelStyle}
       >
         <div

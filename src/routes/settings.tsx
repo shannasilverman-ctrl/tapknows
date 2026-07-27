@@ -227,6 +227,9 @@ function ProgramRow({
           <div className="relative">
             <input
               inputMode="decimal"
+              // The program name is in a sibling heading with no association,
+              // so this control had no name at all in a screen reader.
+              aria-label={`${row.program.name} value, cents per point`}
               value={value}
               onChange={(e) => setValue(e.target.value)}
               className="w-20 rounded-lg border border-border bg-background pl-2 pr-6 py-1.5 text-sm text-right tabular-nums"

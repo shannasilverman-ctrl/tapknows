@@ -7,6 +7,7 @@ import { dollars, pointsFmt } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 import { Plus, Trash2, Trophy, X, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { useModalA11y } from "@/hooks/use-modal-a11y";
 
 export const Route = createFileRoute("/bonuses")({
   component: BonusesPage,
@@ -253,11 +254,21 @@ function BonusCard({
           </p>
         </div>
         <div className="flex items-center gap-1 shrink-0">
-          <button onClick={onEdit} className="text-muted-foreground hover:text-foreground p-1.5">
-            <Pencil className="size-3.5" />
+          <button
+            type="button"
+            onClick={onEdit}
+            aria-label={`Edit ${cardLabel} bonus`}
+            className="text-muted-foreground hover:text-foreground p-1.5"
+          >
+            <Pencil className="size-3.5" aria-hidden />
           </button>
-          <button onClick={remove} className="text-muted-foreground hover:text-destructive p-1.5">
-            <Trash2 className="size-3.5" />
+          <button
+            type="button"
+            onClick={remove}
+            aria-label={`Delete ${cardLabel} bonus`}
+            className="text-muted-foreground hover:text-destructive p-1.5"
+          >
+            <Trash2 className="size-3.5" aria-hidden />
           </button>
         </div>
       </div>
@@ -382,15 +393,25 @@ function BonusSheet({
     }
   };
 
+  const { modalProps } = useModalA11y(onClose, existing ? "Edit bonus" : "Add signup bonus");
+
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/30">
-      <div className="w-full sm:max-w-md bg-background rounded-t-3xl sm:rounded-2xl border border-border max-h-[90vh] overflow-y-auto">
+      <div
+        {...modalProps}
+        className="w-full sm:max-w-md bg-background rounded-t-3xl sm:rounded-2xl border border-border max-h-[90vh] overflow-y-auto"
+      >
         <div className="sticky top-0 bg-background px-6 pt-5 pb-3 flex items-center justify-between border-b border-border">
           <h3 className="text-base font-semibold">
             {existing ? "Edit bonus" : "Add signup bonus"}
           </h3>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
-            <X className="size-4" />
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <X className="size-4" aria-hidden />
           </button>
         </div>
 

@@ -860,8 +860,10 @@ function DecidePage() {
               <p className="text-[12px] text-muted-foreground">Over $200 changes some recs</p>
             </div>
             <button
+              type="button"
               role="switch"
               aria-checked={bigPurchase}
+              aria-label="Big purchase, over $200"
               onClick={() => setBigPurchase((b) => !b)}
               className={`relative inline-flex h-[31px] w-[51px] items-center rounded-full transition-colors ${
                 bigPurchase ? "bg-primary" : "bg-border-strong"
