@@ -81,7 +81,7 @@ test.describe("TAP consumer visual system", () => {
           animations: "disabled",
           caret: "hide",
           fullPage: false,
-          maxDiffPixelRatio: 0.02,
+          maxDiffPixelRatio: 0.005,
         });
       });
     }

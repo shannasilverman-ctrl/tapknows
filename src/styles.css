@@ -2582,9 +2582,12 @@
   .cs-grad-text {
     color: #1e3a8a;
   }
+  /* Also named "gold" and also blue. This is the "THE PLAY" badge on /plan
+     (plan.tsx:944) — it sat directly above the gold cardstock, so the two
+     template blues reinforced each other. */
   .cs-gold-surface {
-    background: linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%);
-    color: #ffffff;
+    background: linear-gradient(135deg, #e9cd93 0%, #b8904a 100%);
+    color: hsl(30 50% 14%);
   }
 
   /* Soft warm background wash — allowed sparingly */
@@ -2653,28 +2656,33 @@
     color: #9a3412;
   }
 
-  /* Primary blue button */
+  /* The primary button. Was #3b82f6 — a generic template blue that never
+     belonged to TAP. The decision screens overrode it to the brand coral, so
+     the blue only ever showed on the surfaces nobody re-skinned: the sheets,
+     the pinned card detail, photo import, and the "Add a card first" empty
+     state. It now takes the brand token by default, and the decision-screen
+     gradient stays a refinement rather than a correction. */
   .cs-btn-primary {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    background: #3b82f6;
+    background: var(--tap-coral);
     color: #ffffff;
     border-radius: 12px;
     padding: 14px 28px;
     min-height: 52px;
     font-weight: 600;
-    box-shadow: 0 6px 16px -6px rgba(59, 130, 246, 0.55);
+    box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--tap-coral) 55%, transparent);
     transition:
       transform 180ms ease,
       box-shadow 180ms ease,
       background 180ms ease;
   }
   .cs-btn-primary:hover {
-    background: #2563eb;
+    background: color-mix(in srgb, var(--tap-coral) 88%, #000);
     transform: translateY(-1px);
-    box-shadow: 0 10px 22px -8px rgba(37, 99, 235, 0.55);
+    box-shadow: 0 10px 22px -8px color-mix(in srgb, var(--tap-coral) 55%, transparent);
   }
   .cs-btn-secondary {
     display: inline-flex;
@@ -2756,16 +2764,22 @@
   }
 
   /* Recommendation surface — blue gradient card face */
+  /* The "gold" cardstock was a blue gradient with white text — template
+     debris. card-play.tsx already sets DARK text for this variant
+     (text-[hsl(30_50%_14%)]), which is the tell: the component always expected
+     a light metallic card and the stylesheet never caught up. On /plan this
+     rendered the winning Amex Gold as a bright blue card with the word "Gold"
+     printed on it. */
   .cs-cardstock--gold {
-    color: #ffffff;
+    color: hsl(30 50% 14%);
     background:
-      radial-gradient(120% 90% at 10% 0%, #60a5fa 0%, transparent 55%),
-      linear-gradient(135deg, #3b82f6 0%, #1d4ed8 60%, #1e3a8a 100%);
+      radial-gradient(120% 90% at 10% 0%, #f8e7bd 0%, transparent 55%),
+      linear-gradient(135deg, #e9cd93 0%, #d0aa64 58%, #b8904a 100%);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.25),
-      0 0 0 1px rgba(59, 130, 246, 0.35),
-      0 20px 40px -14px rgba(30, 58, 138, 0.45),
-      0 10px 24px -12px rgba(30, 58, 138, 0.35);
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      0 0 0 1px rgba(184, 144, 74, 0.38),
+      0 20px 40px -14px rgba(122, 92, 40, 0.38),
+      0 10px 24px -12px rgba(122, 92, 40, 0.3);
   }
 
   /* EMV chip — warm metallic gold with contact-pad grid.
@@ -3155,7 +3169,7 @@
     transform-origin: 50% 100%;
   }
   .cs-stack-card:focus-visible {
-    outline: 2px solid #3b82f6;
+    outline: 2px solid var(--tap-coral);
     outline-offset: 4px;
   }
   @media (hover: hover) {
@@ -3725,7 +3739,7 @@
     width: 44px;
     height: 44px;
     border-radius: 999px;
-    border: 2px solid rgba(59, 130, 246, 0.55);
+    border: 2px solid color-mix(in srgb, var(--tap-coral) 55%, transparent);
     animation: cs-tap-ring 1200ms ease-out 400ms 1 both;
     opacity: 0;
   }
@@ -3743,8 +3757,8 @@
     width: 16px;
     height: 16px;
     border-radius: 999px;
-    border: 2px solid rgba(59, 130, 246, 0.25);
-    border-top-color: #3b82f6;
+    border: 2px solid color-mix(in srgb, var(--tap-coral) 25%, transparent);
+    border-top-color: var(--tap-coral);
     animation: cs-spin 700ms linear infinite;
   }
   @keyframes cs-spin {

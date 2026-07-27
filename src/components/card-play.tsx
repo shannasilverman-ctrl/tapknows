@@ -71,7 +71,10 @@ function CardFaceView({
               strong,
             )}
           >
-            cs
+            {/* The product's own mark. This read "cs" — the Card Savvy
+                monogram the template shipped with — which meant the old brand
+                was printed on a card face on tapknows.com. */}
+            tap
           </span>
         </div>
 
