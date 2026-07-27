@@ -3,6 +3,8 @@ import { CalendarDays, Info, Scale } from "lucide-react";
 import { CardFace } from "@/components/card-face";
 import { dollars } from "@/lib/format";
 import type { Play } from "@/lib/planner";
+import { describeRateAge } from "@/lib/rateAge";
+import { isRateStale } from "@/lib/rateFreshness";
 
 export type RecommendationProofProps = {
   winner: Play;
@@ -13,6 +15,11 @@ export type RecommendationProofProps = {
   capStatus?: string;
   onEditAssumptions?: () => void;
   onReportIssue?: () => void;
+  /**
+   * Clock for the staleness consequence. Defaults to real time; tests pin it so
+   * the stale branch is provable without waiting 90 days.
+   */
+  today?: Date;
 };
 
 function recommendationLabel(play: Play): string {
@@ -44,9 +51,14 @@ export function RecommendationProof({
   capStatus = "Caps and credits are included when TAP has their status",
   onEditAssumptions,
   onReportIssue,
+  today,
 }: RecommendationProofProps) {
   const hasRunnerUp = !!runnerUp && runnerUp.id !== winner.id;
   const delta = hasRunnerUp ? winner.totalValueCents - runnerUp!.totalValueCents : 0;
+  // One clock for both reads, so the branch and the label can never disagree.
+  const now = today ?? new Date();
+  const ratesAreStale = isRateStale(termsDate, now);
+  const rateAge = describeRateAge(termsDate, now);
 
   return (
     <section className="tap-recommendation-proof" aria-label="Recommendation proof">
@@ -76,7 +88,9 @@ export function RecommendationProof({
             <CalendarDays aria-hidden />
             Rates verified
           </dt>
-          <dd>{termsDate}</dd>
+          <dd>
+            {ratesAreStale ? <span className="text-muted-foreground">{rateAge}</span> : rateAge}
+          </dd>
         </div>
         <div>
           <dt>

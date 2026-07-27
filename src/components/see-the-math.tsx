@@ -5,11 +5,15 @@ import { dollars } from "@/lib/format";
 import { RATES_VERIFIED_ON } from "@/lib/cardCatalog";
 import { Sheet } from "@/components/sheet";
 import { RecommendationProof } from "@/components/recommendation-proof";
+import { trackJourneyEvent } from "@/lib/journeyEvents";
 
 type Props = {
   winner: Play;
   runnerUp?: Play | null;
   amountCents: number;
+  /** Allowlisted funnel context — slugs only, never amounts. */
+  merchant?: string | null;
+  category?: string | null;
   onEditAssumptions?: () => void;
   onReportIssue?: () => void;
 };
@@ -28,6 +32,8 @@ export function SeeTheMath({
   winner,
   runnerUp,
   amountCents,
+  merchant,
+  category,
   onEditAssumptions,
   onReportIssue,
 }: Props) {
@@ -39,7 +45,14 @@ export function SeeTheMath({
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          // Decision funnel step 4: the customer actually opened the proof.
+          trackJourneyEvent("proof_opened", {
+            ...(merchant ? { merchant } : {}),
+            ...(category ? { category } : {}),
+          });
+          setOpen(true);
+        }}
         aria-haspopup="dialog"
         className="tap-proof-trigger tap-stage tap-decision-proof"
       >

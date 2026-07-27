@@ -536,6 +536,8 @@ function DecidePage() {
               winner={raisedPlay}
               runnerUp={plays.find((p) => p.id !== raisedPlay.id) ?? null}
               amountCents={Math.round(amount * 100)}
+              merchant={merchantKey}
+              category={category}
               onEditAssumptions={() => navigate({ to: "/settings" })}
             />
           ) : null}

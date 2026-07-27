@@ -9,43 +9,30 @@
 // Emission is observable, not assumed: every tracked event lands in a sink a
 // test can read back, in-process for unit tests and on `window` for e2e.
 
+import { isJourneyEvent, type JourneyEvent } from "./journeyEventNames";
+import { enqueueJourneyEvent } from "./journeyQueue";
+
+// The canonical vocabulary itself lives in the dependency-free
+// `./journeyEventNames` leaf so that the modules downstream of this sink can
+// ask "is this name canonical?" without importing back into this file and
+// closing a cycle. It is re-exported here unchanged: `JOURNEY_EVENTS` and
+// friends remain exports of `src/lib/journeyEvents.ts`, with exactly the same
+// contents, for every existing caller and for JP-3's canonical-list contract.
+export {
+  DECISION_FUNNEL_EVENTS,
+  LEARNING_LOOP_EVENTS,
+  JOURNEY_EVENTS,
+  isJourneyEvent,
+} from "./journeyEventNames";
+export type { DecisionFunnelEvent, LearningLoopEvent, JourneyEvent } from "./journeyEventNames";
+
 const SINK_KEY = "__tapJourneyEvents";
-
-/** The decision funnel: merchant → recommendation → proof → choice. */
-export const DECISION_FUNNEL_EVENTS = [
-  "wallet_ready",
-  "merchant_selected",
-  "recommendation_viewed",
-  "proof_opened",
-  "payment_choice_recorded",
-] as const;
-
-/** The learning loop: coming back to understand the wallet itself. */
-export const LEARNING_LOOP_EVENTS = [
-  "wallet_opened",
-  "situation_tried",
-  "card_guide_opened",
-  "benefit_detail_opened",
-] as const;
-
-export const JOURNEY_EVENTS = [...DECISION_FUNNEL_EVENTS, ...LEARNING_LOOP_EVENTS] as const;
-
-export type DecisionFunnelEvent = (typeof DECISION_FUNNEL_EVENTS)[number];
-export type LearningLoopEvent = (typeof LEARNING_LOOP_EVENTS)[number];
-export type JourneyEvent = (typeof JOURNEY_EVENTS)[number];
 
 export type JourneyRecord = {
   name: JourneyEvent;
   props?: Record<string, unknown>;
   at: string;
 };
-
-const KNOWN = new Set<string>(JOURNEY_EVENTS);
-
-/** Whether a string is one of the canonical journey event names. */
-export function isJourneyEvent(name: string): name is JourneyEvent {
-  return KNOWN.has(name);
-}
 
 // In-process sink. On the client the same array is also hung off `window` so
 // a Playwright test can read it back after driving a real surface.
@@ -84,7 +71,9 @@ export function trackJourneyEvent(
     return false;
   }
   bindWindowSink();
-  sink.push({ name, ...(props ? { props } : {}), at: now.toISOString() });
+  const at = now.toISOString();
+  sink.push({ name, ...(props ? { props } : {}), at });
+  enqueueJourneyEvent({ name, at, ...(props ? { props } : {}) });
   return true;
 }
 

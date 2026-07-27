@@ -1,5 +1,20 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { computeJourneyFunnel } from "./journeyFunnel";
+
+type JourneyFunnelClient = {
+  from(table: "journey_events"): {
+    select(columns: string): PromiseLike<{
+      data: { client_id: string; name: string }[] | null;
+      error: unknown;
+    }>;
+  };
+};
+
+export async function queryJourneyFunnelCore(client: JourneyFunnelClient) {
+  const { data } = await client.from("journey_events").select("client_id, name");
+  return computeJourneyFunnel(data ?? []);
+}
 
 export const startSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -103,4 +118,16 @@ export const getAdminStats = createServerFn({ method: "GET" })
       cohortReturnRate: cohort.length ? returned / cohort.length : 0,
       engagement,
     };
+  });
+
+export const getJourneyFunnel = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin" as never,
+    });
+    if (!isAdmin) throw new Response("Forbidden", { status: 403 });
+
+    return queryJourneyFunnelCore(context.supabase as unknown as JourneyFunnelClient);
   });

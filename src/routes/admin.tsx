@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/hooks/use-auth";
-import { getAdminStats } from "@/lib/analytics.functions";
+import { getAdminStats, getJourneyFunnel } from "@/lib/analytics.functions";
 import { BottomNav } from "@/components/bottom-nav";
 
 export const Route = createFileRoute("/admin")({
@@ -10,12 +10,24 @@ export const Route = createFileRoute("/admin")({
 });
 
 type Stats = Awaited<ReturnType<typeof getAdminStats>>;
+type Funnel = Awaited<ReturnType<typeof getJourneyFunnel>>;
+
+/** Human labels for the five canonical decision-funnel steps. */
+const FUNNEL_STEP_LABELS: Record<string, string> = {
+  wallet_ready: "Wallet ready",
+  merchant_selected: "Merchant selected",
+  recommendation_viewed: "Recommendation viewed",
+  proof_opened: "Proof opened",
+  payment_choice_recorded: "Payment choice recorded",
+};
 
 function AdminPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const fetchStats = useServerFn(getAdminStats);
+  const fetchFunnel = useServerFn(getJourneyFunnel);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [funnel, setFunnel] = useState<Funnel | null>(null);
   const [forbidden, setForbidden] = useState(false);
 
   useEffect(() => {
@@ -24,14 +36,16 @@ function AdminPage() {
       navigate({ to: "/login" });
       return;
     }
-    fetchStats({})
-      .then(setStats)
-      .catch((e) => {
-        if (String(e?.message ?? e).includes("403") || String(e).includes("Forbidden")) {
-          setForbidden(true);
-        }
-      });
-  }, [user, loading, navigate, fetchStats]);
+    const denied = (e: unknown) => {
+      const message = String((e as { message?: unknown })?.message ?? e);
+      if (message.includes("403") || String(e).includes("Forbidden")) {
+        setForbidden(true);
+      }
+    };
+    fetchStats({}).then(setStats).catch(denied);
+    // The decision funnel reads back through the same admin gate.
+    fetchFunnel({}).then(setFunnel).catch(denied);
+  }, [user, loading, navigate, fetchStats, fetchFunnel]);
 
   if (loading || !user) return <div className="min-h-screen bg-background" />;
   if (forbidden) {
@@ -90,6 +104,32 @@ function AdminPage() {
             </div>
           </>
         )}
+
+        <div className="rounded-xl border border-border bg-surface p-4">
+          <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+            Decision funnel
+          </p>
+          {!funnel ? (
+            <p className="text-xs text-muted-foreground">Loading…</p>
+          ) : (
+            <ul className="space-y-2 text-xs">
+              {funnel.map((row) => (
+                <li key={row.step} className="flex items-center justify-between">
+                  <span className="font-medium text-foreground">
+                    {FUNNEL_STEP_LABELS[row.step] ?? row.step}
+                  </span>
+                  <span className="tabular-nums text-muted-foreground">
+                    {row.count}
+                    {row.dropOff === null ? "" : ` · ${Math.round(row.dropOff * 100)}% drop-off`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="mt-2 text-[11px] text-muted-foreground">
+            Distinct clients per step; drop-off is measured against the previous step.
+          </p>
+        </div>
       </main>
       <BottomNav />
     </div>

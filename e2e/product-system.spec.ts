@@ -297,6 +297,10 @@ test.describe("TAP product system", () => {
     await expect(page.locator(".tap-decision-core")).toBeVisible();
     await expect.poll(readSink).toContain("recommendation_viewed");
 
+    // Decide — opening the proof sheet is the funnel's fourth step.
+    await page.locator(".tap-proof-trigger").first().click();
+    await expect.poll(readSink).toContain("proof_opened");
+
     // Wallet playbook — the learning loop.
     await page.goto("/cards?card=guest_chase");
     await expect(page.getByText("Travel ready", { exact: true })).toBeVisible();
