@@ -48,7 +48,14 @@ export function RecommendationProof({
   amountCents,
   termsDate,
   valuationAssumption = "Point values use your saved assumptions",
-  capStatus = "Caps and credits are included when TAP has their status",
+  // This read "Caps and credits are included when TAP has their status" — which
+  // was not true on this surface. /decide plans with planner.ts, which has no
+  // cap logic at all (cap handling lives in recommendationEngine.ts, which only
+  // /plan calls). A customer who had told TAP their 5% quarterly cap was blown
+  // was still shown that card at 5x, under a panel assuring them caps had been
+  // accounted for. Credits ARE applied here; caps are not — so this now says
+  // exactly that, and no more.
+  capStatus = "Credits are included. Spending caps are not — check your cap before you tap",
   onEditAssumptions,
   onReportIssue,
   today,

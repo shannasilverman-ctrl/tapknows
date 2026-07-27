@@ -10,13 +10,19 @@ export const Route = createFileRoute("/privacy")({
       { title: "TAP — Privacy" },
       {
         name: "description",
+        // These claimed "no bank linking, no transaction sync" while the body
+        // of this same page documents Plaid linking, the access token TAP
+        // stores, and its retention. On a privacy page that is the worst place
+        // to be inconsistent, and the meta description is exactly what search
+        // results and link previews quote.
         content:
-          "How TAP handles your data. v1 is manual and private — no bank linking, no transaction sync.",
+          "How TAP handles your data. Bank linking is optional via Plaid — TAP reads your merchants, never your login, and you can disconnect and delete anytime.",
       },
       { property: "og:title", content: "TAP — Privacy" },
       {
         property: "og:description",
-        content: "How TAP handles your data. v1 is manual and private — no bank linking.",
+        content:
+          "How TAP handles your data. Bank linking is optional via Plaid — your merchants, never your login.",
       },
       { property: "og:url", content: "https://tapknows.com/privacy" },
       { name: "twitter:url", content: "https://tapknows.com/privacy" },

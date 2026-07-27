@@ -68,6 +68,16 @@ function DecidePage() {
 
   const [userCards, setUserCards] = useState<UserCard[]>([]);
   const [ready, setReady] = useState(false);
+  // A failed load is NOT an empty wallet. postgrest-js resolves
+  // { data: null, error } rather than rejecting, so swallowing `error` made a
+  // network drop render "Add a card first" to a signed-in customer who owns
+  // cards — on the app's primary route, standing at a checkout.
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+  // The customer's own point valuations. /plan honours these; /decide passed a
+  // literal {} and valued everything at catalog defaults, while Settings
+  // promised "every recommendation" uses them.
+  const [cppOverrides, setCppOverrides] = useState<Record<string, number>>({});
   const [amount, setAmount] = useState<number>(search.amount ?? 50);
   const [bigPurchase, setBigPurchase] = useState<boolean>((search.amount ?? 50) > 200);
   const [cardFeePct, setCardFeePct] = useState(0);
@@ -127,16 +137,40 @@ function DecidePage() {
     let cancelled = false;
     (async () => {
       if (user) {
-        const { data } = await supabase
-          .from("user_cards")
-          .select(
-            "id, user_id, card_catalog_id, nickname, opened_at, annual_fee_paid_at, created_at",
-          )
-          .eq("user_id", user.id);
-        if (!cancelled) {
-          setUserCards((data ?? []) as UserCard[]);
+        const [cardsRes, cppRes] = await Promise.all([
+          supabase
+            .from("user_cards")
+            .select(
+              "id, user_id, card_catalog_id, nickname, opened_at, annual_fee_paid_at, created_at",
+            )
+            .eq("user_id", user.id),
+          supabase.from("user_cpp_overrides").select("*"),
+        ]);
+        if (cancelled) return;
+
+        // Branch on the error. An unreadable wallet is a failure to report,
+        // never an empty wallet to act on.
+        if (cardsRes.error) {
+          setLoadFailed(true);
           setReady(true);
+          return;
         }
+
+        const overrides: Record<string, number> = {};
+        // A failed override read is not fatal — the recommendation is still
+        // correct at catalog defaults — so it degrades quietly rather than
+        // blocking the customer's checkout.
+        for (const row of (cppRes.data ?? []) as { points_program_id: string; cpp: number }[]) {
+          const cpp = Number(row?.cpp);
+          if (row?.points_program_id != null && Number.isFinite(cpp)) {
+            overrides[row.points_program_id] = cpp;
+          }
+        }
+
+        setCppOverrides(overrides);
+        setLoadFailed(false);
+        setUserCards((cardsRes.data ?? []) as UserCard[]);
+        setReady(true);
       } else {
         const g = getGuestWallet();
         const cards: UserCard[] = g.cards.map((c) => ({
@@ -157,7 +191,7 @@ function DecidePage() {
     return () => {
       cancelled = true;
     };
-  }, [user, loading]);
+  }, [user, loading, reloadKey]);
 
   useEffect(() => {
     if (bigPurchase && amount <= 200) setAmount(250);
@@ -206,7 +240,7 @@ function DecidePage() {
       catalog,
       programs,
       offers: [] as UserOffer[],
-      cppOverrides: {},
+      cppOverrides,
       merchantCategory: category,
       amountCents: Math.round(amount * 100),
       merchant: merchant ? { id: merchant.id, name: merchant.name } : { name: merchantName },
@@ -217,6 +251,7 @@ function DecidePage() {
     userCards,
     catalog,
     programs,
+    cppOverrides,
     category,
     amount,
     merchant,
@@ -300,6 +335,32 @@ function DecidePage() {
           />
           <span className="sr-only">Loading recommendation…</span>
         </main>
+      </div>
+    );
+  }
+
+  // Ahead of the empty-wallet branch on purpose: "we could not read your
+  // wallet" and "you have no cards" are different facts, and only one of them
+  // should ever tell a customer to go and add cards.
+  if (loadFailed) {
+    return (
+      <div className="cs-app-body min-h-screen flex flex-col items-center justify-center px-6 text-center">
+        <h1 className="cs-title-lg text-foreground">Couldn't load your wallet</h1>
+        <p className="mt-2 text-[15px] text-muted-foreground max-w-sm">
+          Your cards are safe — TAP just couldn't reach them right now. Check your connection and
+          try again.
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            setLoadFailed(false);
+            setReady(false);
+            setReloadKey((k) => k + 1);
+          }}
+          className="mt-6 cs-btn-primary"
+        >
+          Try again
+        </button>
       </div>
     );
   }
