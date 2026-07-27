@@ -23,15 +23,19 @@ test.describe("TAP product system", () => {
     }, guestWallet);
   });
 
-  test("keeps the white canvas and physical wallet on home", async ({ page }) => {
+  test("keeps the warm paper canvas and physical wallet on home", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(String(error)));
     await page.goto("/home");
 
     await expect(page.getByRole("heading", { name: "Where are you paying?" })).toBeVisible();
+    // 2026-07-27, operator decision: the light/dark split stays, but the seams
+    // become deliberate. Home opens with the landing's warm cream washing into
+    // #fffdf8 paper, so the canvas assertion moves from pure white to the
+    // paper tone. The physical wallet and the rest of the canvas law stand.
     await expect(page.locator(".tap-app-shell")).toHaveCSS(
       "background-color",
-      "rgb(255, 255, 255)",
+      "rgb(255, 253, 248)",
     );
     await expect(page.locator(".tap-physical-wallet")).toBeVisible();
     await expect(page.locator(".tap-leather-pocket")).toBeVisible();

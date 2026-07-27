@@ -5092,6 +5092,18 @@ body {
   animation: tap-header-enter 480ms var(--tap-ease-out) both;
 }
 
+/* Seam treatment. Home and Decide are light tool pages carrying a dark
+   decision surface, and their headers used to sit on bare white directly
+   against that dark slab — which read as two apps stacked, not one design.
+   The landing page already solves this exact transition with a warm cream
+   that eases into the page, so the two dark-surface screens open with the
+   same wash. The split between light tools and dark decision surfaces is
+   deliberate; this makes the seam look deliberate too. */
+.tap-app-shell.tap-consumer-screen,
+.cs-app-body.tap-decision-screen {
+  background: linear-gradient(180deg, #f7f3eb 0%, rgba(247, 243, 235, 0) 340px), #fffdf8;
+}
+
 .tap-home-summary,
 .tap-onboarding-progress {
   animation: tap-stage-enter 520ms var(--tap-ease-out) 80ms both;

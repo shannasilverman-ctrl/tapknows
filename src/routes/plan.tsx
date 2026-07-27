@@ -541,7 +541,7 @@ function PlanPage() {
                 value={amountStr}
                 onChange={(e) => setAmountStr(e.target.value)}
                 placeholder="400.00"
-                className="cs-money w-full rounded-2xl border border-border bg-surface pl-8 pr-4 py-3.5 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
+                className="cs-money w-full rounded-2xl border border-border bg-surface pl-8 pr-4 py-3.5 text-base text-foreground placeholder:text-muted-foreground/45 focus:outline-none focus:ring-2 focus:ring-ring/40"
               />
             </div>
           </div>
