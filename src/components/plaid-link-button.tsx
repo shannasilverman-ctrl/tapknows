@@ -53,7 +53,7 @@ export function PlaidLinkButton({
   if (!user) {
     const base =
       variant === "primary"
-        ? "w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl bg-primary text-primary-foreground text-[15px] font-semibold hover:opacity-90 transition-opacity"
+        ? "tap-plaid-primary w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl bg-primary text-primary-foreground text-[15px] font-semibold hover:opacity-90 transition-opacity"
         : "w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl border border-border bg-white text-[15px] font-medium text-foreground hover:border-primary/40 transition-colors";
 
     return (
@@ -231,7 +231,7 @@ function AuthenticatedPlaidLinkButton({
 
   const base =
     variant === "primary"
-      ? "w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl bg-primary text-primary-foreground text-[15px] font-semibold hover:opacity-90 transition-opacity disabled:opacity-60"
+      ? "tap-plaid-primary w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl bg-primary text-primary-foreground text-[15px] font-semibold hover:opacity-90 transition-opacity disabled:opacity-60"
       : "w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl border border-border bg-white text-[15px] font-medium text-foreground hover:border-primary/40 transition-colors disabled:opacity-60";
 
   return (

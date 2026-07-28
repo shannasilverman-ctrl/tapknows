@@ -152,8 +152,14 @@
   align-items: center;
   gap: 7px;
   margin-top: 20px;
-  color: rgba(255, 255, 255, 0.48);
+  color: #625663;
   font-size: 12px;
+}
+.tap-plaid-primary {
+  background: #c04732;
+}
+.tap-plaid-primary:hover {
+  background: #aa3f2d;
 }
 .tap-phone-stage {
   position: relative;
@@ -399,7 +405,7 @@
 }
 .tap-showcase-copy .tap-no-login {
   justify-content: center;
-  color: #8d838d;
+  color: #625663;
 }
 .tap-device-stage {
   position: relative;
@@ -946,7 +952,7 @@
 .tap-steps li > span {
   display: block;
   margin-top: 32px;
-  color: #8a7f89;
+  color: #665b65;
   font: 500 11px/1.5 var(--font-mono);
 }
 .tap-steps .tap-step-answer h3 {
@@ -1041,7 +1047,7 @@
   display: grid;
 }
 .tap-wallet-row small {
-  color: #80737e;
+  color: #655a64;
   font-size: 10px;
 }
 .tap-wallet-row b {
@@ -1050,7 +1056,7 @@
 }
 .tap-wallet-row > strong {
   font: 800 28px var(--font-display);
-  color: var(--tap-coral);
+  color: #b94732;
 }
 .tap-trust {
   display: grid;

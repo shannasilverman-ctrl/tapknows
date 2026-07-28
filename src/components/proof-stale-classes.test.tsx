@@ -19,8 +19,10 @@ import { extractNotice, renderStaleProof } from "./proof-stale-fixture";
 
 const CLASS_ALLOWLIST = ["text-muted-foreground"] as const;
 const STYLESHEET = resolve(process.cwd(), "src/styles.css");
+// Refreshed after the audited 2026-07-28 WCAG contrast corrections. The
+// stale-state vocabulary itself remains unchanged and is still allowlisted.
 const LAW_TIME_STYLESHEET_SHA256 =
-  "d7c5e486ff034ed5733a8b679c79e709e14dcecb5ad3139a59d761e6f28faeb3";
+  "e6dd4cae49a9cb672224fa4ae2d8e0c1499b462830b500febc9a529597af70a6";
 
 describe("P-4 stale-state styling rides existing class vocabulary", () => {
   it("(a) every class token on the notice subtree is allowlisted and real CSS", () => {
