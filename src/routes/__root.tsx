@@ -10,6 +10,11 @@ import {
 import { AuthProvider } from "@/hooks/use-auth";
 import { useGuestMigration } from "@/hooks/use-guest-migration";
 import { useSessionTracking } from "@/hooks/use-session-tracking";
+import {
+  MODULE_RECOVERY_QUERY_KEY,
+  MODULE_RECOVERY_SCRIPT,
+  MODULE_RECOVERY_STORAGE_KEY,
+} from "@/lib/module-recovery";
 import { registerAppServiceWorker } from "@/lib/pwa-register";
 import { useEffect } from "react";
 import { Toaster } from "sonner";
@@ -124,6 +129,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
+        <script dangerouslySetInnerHTML={{ __html: MODULE_RECOVERY_SCRIPT }} />
         <Scripts />
       </body>
     </html>
@@ -149,6 +155,12 @@ function RootComponent() {
 function HydrationMarker() {
   useEffect(() => {
     document.documentElement.dataset.tapHydrated = "true";
+    sessionStorage.removeItem(MODULE_RECOVERY_STORAGE_KEY);
+    const url = new URL(window.location.href);
+    if (url.searchParams.has(MODULE_RECOVERY_QUERY_KEY)) {
+      url.searchParams.delete(MODULE_RECOVERY_QUERY_KEY);
+      window.history.replaceState(window.history.state, "", url);
+    }
     return () => {
       delete document.documentElement.dataset.tapHydrated;
     };

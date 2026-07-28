@@ -90,6 +90,28 @@ test.describe("TAP product system", () => {
     expect(hydrationProblems).toEqual([]);
   });
 
+  test("recovers once when the browser drops an application module", async ({ page }) => {
+    let droppedModules = 0;
+    await page.route("**/*", async (route) => {
+      const request = route.request();
+      if (droppedModules === 0 && request.resourceType() === "script") {
+        droppedModules += 1;
+        await route.abort("failed");
+        return;
+      }
+      await route.continue();
+    });
+
+    await page.goto("/onboarding");
+
+    await expect(page.locator("html")).toHaveAttribute("data-tap-hydrated", "true", {
+      timeout: 20_000,
+    });
+    await expect(page.getByRole("button", { name: /Continue/ })).toBeEnabled();
+    await expect(page).not.toHaveURL(/_tap_retry=/);
+    expect(droppedModules).toBe(1);
+  });
+
   test("turns Wallet into a briefing and opens the same sourced card guide", async ({ page }) => {
     await page.goto("/cards");
 
