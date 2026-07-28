@@ -584,9 +584,7 @@
 }
 .tap-wallet-card-gold {
   top: 35px;
-  background:
-    linear-gradient(128deg, transparent 55%, rgba(255, 255, 255, 0.5) 55.5%, transparent 56%),
-    linear-gradient(135deg, #ddbf83, #aa7646);
+  background: var(--tap-card-sheen), var(--tap-gold);
 }
 .tap-wallet-mouth {
   position: absolute;
@@ -675,9 +673,7 @@
 .tap-choice-card-gold {
   z-index: 2;
   top: 1px;
-  background:
-    linear-gradient(128deg, transparent 55%, rgba(255, 255, 255, 0.48) 55.5%, transparent 56%),
-    linear-gradient(145deg, #e1c58d, #b68654);
+  background: var(--tap-card-sheen), var(--tap-gold);
 }
 .tap-card-line {
   position: absolute;
@@ -784,9 +780,7 @@
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 .tap-proof-mini-gold {
-  background:
-    linear-gradient(130deg, transparent 58%, rgba(255, 255, 255, 0.55) 58.5%, transparent 59%),
-    linear-gradient(135deg, #dab97d, #a97948);
+  background: var(--tap-card-sheen), var(--tap-gold);
 }
 .tap-proof-mini-blue {
   background:
@@ -1497,7 +1491,7 @@
   border-radius: 10px;
 }
 .tap-proof-swatch-gold {
-  background: linear-gradient(135deg, #e0c995, #aa8142);
+  background: var(--tap-gold);
 }
 .tap-proof-swatch-blue {
   background: linear-gradient(135deg, #263e70, #0b1427);
@@ -2472,6 +2466,27 @@
    reserved for CTAs and the recommendation moment.
    ============================================================ */
 :root {
+  /* Card metals. Defined once because they were not: six separate gold
+     treatments had drifted to five different gradients, three sheen opacities
+     and three angles, and fixing two of them still left four wrong. */
+  --tap-gold-hi: #e9cd93;
+  --tap-gold-mid: #d0aa64;
+  --tap-gold-lo: #b8904a;
+  --tap-gold: linear-gradient(
+    135deg,
+    var(--tap-gold-hi),
+    var(--tap-gold-mid) 58%,
+    var(--tap-gold-lo)
+  );
+  /* A highlight, not a scratch. The old version was a 0.5%-wide hard-stopped
+     band at 50% white, which rendered as a hairline defect across the card. */
+  --tap-card-sheen: linear-gradient(
+    128deg,
+    transparent 46%,
+    rgba(255, 255, 255, 0.16) 55%,
+    transparent 64%
+  );
+
   --radius: 0.875rem;
 
   /* Slate-900 ink on the light canvas */
@@ -2586,7 +2601,7 @@
      (plan.tsx:944) — it sat directly above the gold cardstock, so the two
      template blues reinforced each other. */
   .cs-gold-surface {
-    background: linear-gradient(135deg, #e9cd93 0%, #b8904a 100%);
+    background: var(--tap-gold);
     color: hsl(30 50% 14%);
   }
 
@@ -2773,8 +2788,8 @@
   .cs-cardstock--gold {
     color: hsl(30 50% 14%);
     background:
-      radial-gradient(120% 90% at 10% 0%, #f8e7bd 0%, transparent 55%),
-      linear-gradient(135deg, #e9cd93 0%, #d0aa64 58%, #b8904a 100%);
+      radial-gradient(120% 90% at 10% 0%, rgba(255, 255, 255, 0.55) 0%, transparent 55%),
+      var(--tap-gold);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.55),
       0 0 0 1px rgba(184, 144, 74, 0.38),
@@ -4913,9 +4928,7 @@ body {
 
 .tap-onboarding-mini-win {
   top: 2px;
-  background:
-    linear-gradient(128deg, transparent 55%, rgba(255, 255, 255, 0.5) 55.5%, transparent 56%),
-    linear-gradient(145deg, #e1c58d, #b68654);
+  background: var(--tap-card-sheen), var(--tap-gold);
 }
 
 .tap-onboarding-mini-pocket {

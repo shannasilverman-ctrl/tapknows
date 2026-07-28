@@ -78,3 +78,13 @@ either inside the layer delimiters). P-4's other two proofs — the rendered
 class allowlist and the source-absence checks — are untouched. The pin exists
 to make stylesheet changes visible and deliberate; this entry is that
 visibility.
+
+## ADR · Card metals unified into tokens (2026-07-27)
+
+Seven separate gold treatments had drifted to five gradients, three sheen
+opacities and three angles. All now reference --tap-gold / --tap-card-sheen.
+The sheen changed from a 0.5%-wide hard-stopped band at 50% white (which
+rendered as a scratch across the card on the landing mockup) to an ~18% band
+at 16%. Locked by src/lib/cardSurfaces.test.ts; documented in the
+tap-card-surface skill. P-4 unaffected — no rule here touches
+.text-muted-foreground or .tap-proof-disclosure.
