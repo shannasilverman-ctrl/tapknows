@@ -4740,6 +4740,13 @@ body {
     box-shadow: 18px 0 50px rgba(36, 21, 43, 0.09);
   }
 
+  /* Onboarding is a focused, finite setup flow. Keep the workspace rail out
+     until the customer reaches the product so the first task has one clear
+     way forward and retains its intentionally centered composition. */
+  .tap-onboarding .tap-desktop-rail {
+    display: none;
+  }
+
   .tap-desktop-brand {
     display: grid;
     width: max-content;
