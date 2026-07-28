@@ -77,6 +77,10 @@ test.describe("TAP consumer visual system", () => {
         if (route.name === "onboarding") {
           await expect(page.getByRole("button", { name: /Continue/ })).toBeEnabled();
         }
+        // Playwright temporarily adds inline styles to freeze animation/caret
+        // state. Wait for React first so those test-only mutations cannot be
+        // misreported as an application hydration mismatch.
+        await expect(page.locator("html")).toHaveAttribute("data-tap-hydrated", "true");
         await expect(page).toHaveScreenshot(`${route.name}-${viewport.name}.png`, {
           animations: "disabled",
           caret: "hide",

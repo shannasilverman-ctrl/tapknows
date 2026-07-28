@@ -183,16 +183,10 @@ function HomePage() {
   const [onlineStoresOpen, setOnlineStoresOpen] = useState(false);
   const [openedId, setOpenedId] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
-  // Read persisted recovered value on first render so the money line never
-  // flashes "$0" then jumps to the real number.
-  const [recovered, setRecovered] = useState<number>(() => {
-    if (typeof window === "undefined") return 0;
-    try {
-      return recoveredThisMonthCents();
-    } catch {
-      return 0;
-    }
-  });
+  // Keep the server and first client render identical, then hydrate the
+  // device-local total. Reading localStorage during initial render causes
+  // React to retain stale server markup when a returning customer has data.
+  const [recovered, setRecovered] = useState(0);
   const [hasLinkedItems, setHasLinkedItems] = useState<boolean | null>(null);
   const [benefitsTick, setBenefitsTick] = useState(0);
   const [newlyAddedId, setNewlyAddedId] = useState<string | null>(null);

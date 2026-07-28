@@ -26,7 +26,9 @@ import {
 
 import { toast } from "sonner";
 import { Bookmark, ChevronDown, Globe, Loader2, MapPin, Search } from "lucide-react";
-import { searchMerchants } from "@/lib/merchantMap";
+import { MERCHANTS, searchMerchants } from "@/lib/merchantMap";
+import { CARD_CATALOG } from "@/lib/cardCatalog";
+import { POINT_VALUATIONS } from "@/lib/pointValuations";
 import {
   browserGetPosition,
   requestNearby,
@@ -158,13 +160,34 @@ function PlanPage() {
   useEffect(() => {
     if (loading) return;
     (async () => {
-      const [cc, pp, mc] = await Promise.all([
-        supabase.from("cards_catalog").select("*"),
-        supabase.from("points_programs").select("*"),
-        supabase.from("merchants_catalog").select("*"),
-      ]);
+      // A guest's wallet, catalog, valuations, and merchant directory all ship
+      // locally. Keep planning usable instantly at checkout and fully offline.
+      const [cc, pp, mc] = user
+        ? await Promise.all([
+            supabase.from("cards_catalog").select("*"),
+            supabase.from("points_programs").select("*"),
+            supabase.from("merchants_catalog").select("*"),
+          ])
+        : ([{ data: null }, { data: null }, { data: null }] as const);
       const catalog: Record<string, CatalogRow> = {};
+      CARD_CATALOG.forEach((card) => {
+        catalog[card.id] = {
+          id: card.id,
+          issuer: card.issuer,
+          name: card.name,
+          points_program_id: card.points_program_id,
+          foreign_tx_fee_pct: card.foreign_tx_fee_pct,
+          earn_rules: card.earn_rules,
+          annual_fee: card.annual_fee,
+          notes: card.notes ?? null,
+          rates_as_of: card.rates_verified_on,
+        };
+      });
+      // Remote rows supplement the checked-in verified catalog with custom
+      // cards. Known issuer products stay pinned to their source-dated local
+      // definitions, including when the network is unavailable.
       (cc.data ?? []).forEach((c) => {
+        if (catalog[c.id]) return;
         catalog[c.id] = { ...c, earn_rules: (c.earn_rules as unknown as EarnRule[]) ?? [] };
       });
       const programs: Record<string, PointsProgram> = {};
@@ -172,6 +195,15 @@ function PlanPage() {
       (pp.data ?? []).forEach((p) => {
         programs[p.id] = p as unknown as PointsProgram;
         valuations[p.id] = Number(p.default_cpp);
+      });
+      Object.values(POINT_VALUATIONS).forEach((valuation) => {
+        programs[valuation.programId] ??= {
+          id: valuation.programId,
+          name: valuation.displayName,
+          kind: valuation.programId === "cashback" ? "cashback" : "transferable",
+          default_cpp: valuation.cpp,
+        };
+        valuations[valuation.programId] ??= valuation.cpp;
       });
 
       let wallet: EngineCard[] = [];
@@ -264,7 +296,15 @@ function PlanPage() {
       setData({
         wallet,
         offers,
-        merchants: (mc.data ?? []) as MerchantCatalog[],
+        merchants:
+          mc.data && mc.data.length > 0
+            ? (mc.data as MerchantCatalog[])
+            : MERCHANTS.map(({ id, name, category, aliases }) => ({
+                id,
+                name,
+                category,
+                aliases,
+              })),
         programs,
         valuations,
         catalog,

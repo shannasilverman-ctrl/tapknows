@@ -19,7 +19,11 @@ export default tseslint.config(
       "react-refresh": reactRefresh,
     },
     rules: {
-      ...reactHooks.configs.recommended.rules,
+      // Keep the established Hooks correctness contract while using a plugin
+      // release that supports the current lint toolchain. Compiler migration
+      // rules are intentionally adopted separately from dependency updates.
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
       "no-restricted-imports": [
         "error",
         {

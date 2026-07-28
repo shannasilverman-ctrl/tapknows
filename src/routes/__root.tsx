@@ -136,6 +136,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <HydrationMarker />
         <GuestMigrationMount />
         <SessionTrackingMount />
         <Outlet />
@@ -143,6 +144,16 @@ function RootComponent() {
       </AuthProvider>
     </QueryClientProvider>
   );
+}
+
+function HydrationMarker() {
+  useEffect(() => {
+    document.documentElement.dataset.tapHydrated = "true";
+    return () => {
+      delete document.documentElement.dataset.tapHydrated;
+    };
+  }, []);
+  return null;
 }
 
 function GuestMigrationMount() {

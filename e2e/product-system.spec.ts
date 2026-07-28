@@ -45,6 +45,51 @@ test.describe("TAP product system", () => {
     expect(errors).toEqual([]);
   });
 
+  test("hydrates returning-customer totals without loading Plaid before consent", async ({
+    page,
+  }) => {
+    const browserProblems: string[] = [];
+    page.on("pageerror", (error) => browserProblems.push(String(error)));
+    page.on("console", (message) => {
+      const text = message.text();
+      if (
+        message.type() === "error" ||
+        text.includes("hydrated but some attributes") ||
+        text.includes("Plaid link-initialize.js script was embedded more than once")
+      ) {
+        browserProblems.push(text);
+      }
+    });
+    await page.addInitScript(() => {
+      window.localStorage.setItem(
+        "tap_recovered_v1",
+        JSON.stringify({
+          entries: [{ at: new Date().toISOString(), cents: 1234 }],
+        }),
+      );
+    });
+
+    await page.goto("/home");
+
+    await expect(page.getByText("$12.34", { exact: true })).toBeVisible();
+    await expect(page.locator('script[src*="cdn.plaid.com/link/"]')).toHaveCount(0);
+    expect(browserProblems).toEqual([]);
+  });
+
+  test("hydrates the sign-in form without mismatched markup", async ({ page }) => {
+    const hydrationProblems: string[] = [];
+    page.on("console", (message) => {
+      if (message.text().includes("hydrated but some attributes")) {
+        hydrationProblems.push(message.text());
+      }
+    });
+
+    await page.goto("/login");
+
+    await expect(page.getByText("Continue with Apple")).toBeVisible();
+    expect(hydrationProblems).toEqual([]);
+  });
+
   test("turns Wallet into a briefing and opens the same sourced card guide", async ({ page }) => {
     await page.goto("/cards");
 

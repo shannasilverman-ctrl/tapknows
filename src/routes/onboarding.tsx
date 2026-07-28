@@ -100,6 +100,12 @@ function OnboardingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>(1);
+  const [interactive, setInteractive] = useState(false);
+
+  // The route is server-rendered. Keep controls honestly disabled until React
+  // has attached their handlers so a fast tap—especially with reduced motion,
+  // where the page settles immediately—cannot disappear into inert SSR markup.
+  useEffect(() => setInteractive(true), []);
 
   // Step 1 state
   const [selectedCatalogIds, setSelectedCatalogIds] = useState<Set<string>>(new Set());
@@ -382,6 +388,7 @@ function OnboardingPage() {
                         key={chip.id}
                         type="button"
                         onClick={() => toggleCard(cat)}
+                        disabled={!interactive}
                         className="cs-quick-add-chip"
                         data-selected={on ? "true" : "false"}
                         aria-pressed={on}
@@ -398,6 +405,7 @@ function OnboardingPage() {
               <button
                 type="button"
                 onClick={() => photoInputRef.current?.click()}
+                disabled={!interactive}
                 className="mt-3 w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl border border-border bg-white text-[14px] font-medium text-foreground hover:border-primary/40 transition-colors"
               >
                 <Camera className="size-4" strokeWidth={2} />
@@ -438,6 +446,7 @@ function OnboardingPage() {
                 ref={searchInputRef}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
+                disabled={!interactive}
                 placeholder="Search cards — Sapphire, Gold, Freedom…"
                 className="w-full h-12 rounded-2xl border border-border bg-background pl-11 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
               />
@@ -453,6 +462,7 @@ function OnboardingPage() {
                   <button
                     key={c.id}
                     onClick={() => toggleCard(c)}
+                    disabled={!interactive}
                     className={`w-full flex items-center justify-between rounded-2xl border px-4 py-3 text-left transition-all ${
                       on
                         ? "border-foreground bg-secondary/60"
@@ -685,7 +695,7 @@ function OnboardingPage() {
             <>
               <button
                 onClick={() => setStep(2)}
-                disabled={selectedCatalogIds.size === 0}
+                disabled={!interactive || selectedCatalogIds.size === 0}
                 className="w-full inline-flex items-center justify-center gap-2 h-[52px] rounded-xl bg-foreground text-background text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30"
               >
                 Continue

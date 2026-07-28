@@ -40,15 +40,51 @@ type Props = {
  * selection enabled and runs card detection on the newly selected accounts.
  */
 export function PlaidLinkButton({
-  onComplete,
   onNeedAuth,
+  variant = "primary",
+  label = "Connect your bank",
+  ...props
+}: Props) {
+  const { user } = useAuth();
+
+  // Guests only need the account gate. Mounting Plaid's hook here would load
+  // its third-party SDK before consent and, when several dormant entry points
+  // exist on a page, can inject the SDK repeatedly.
+  if (!user) {
+    const base =
+      variant === "primary"
+        ? "w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl bg-primary text-primary-foreground text-[15px] font-semibold hover:opacity-90 transition-opacity"
+        : "w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl border border-border bg-white text-[15px] font-medium text-foreground hover:border-primary/40 transition-colors";
+
+    return (
+      <>
+        <button type="button" onClick={onNeedAuth} className={base}>
+          <Landmark className="size-4" strokeWidth={2} />
+          {label}
+        </button>
+        <PlaidPrivacyCopy />
+      </>
+    );
+  }
+
+  return (
+    <AuthenticatedPlaidLinkButton
+      {...props}
+      onNeedAuth={onNeedAuth}
+      variant={variant}
+      label={label}
+    />
+  );
+}
+
+function AuthenticatedPlaidLinkButton({
+  onComplete,
   onAtCapacity,
   variant = "primary",
   label = "Connect your bank",
   updateForItemId,
   addAccountsForItemId,
 }: Props) {
-  const { user } = useAuth();
   const createToken = useServerFn(createPlaidLinkToken);
   const createUpdate = useServerFn(createPlaidUpdateLinkToken);
   const markHealthy = useServerFn(markPlaidItemHealthy);
@@ -66,7 +102,7 @@ export function PlaidLinkButton({
   const router = useRouter();
 
   useEffect(() => {
-    if (!user || linkToken) return;
+    if (linkToken) return;
     let load: Promise<{ link_token: string; env: string }>;
     if (addAccountsForItemId) {
       load = createUpdate({
@@ -100,7 +136,6 @@ export function PlaidLinkButton({
         toast.error(`Plaid: ${msg}`);
       });
   }, [
-    user,
     linkToken,
     createToken,
     createUpdate,
@@ -175,10 +210,6 @@ export function PlaidLinkButton({
   });
 
   const handleClick = () => {
-    if (!user) {
-      onNeedAuth?.();
-      return;
-    }
     if (tokenError) {
       // Retry token creation instead of silently doing nothing.
       setTokenError(null);
@@ -196,7 +227,7 @@ export function PlaidLinkButton({
   // Never fully disable the button — a dead click is invisible failure.
   // Only disable during an in-flight exchange.
   const disabled = busy;
-  const preparing = !!user && !tokenError && (!linkToken || !ready);
+  const preparing = !tokenError && (!linkToken || !ready);
 
   const base =
     variant === "primary"
@@ -218,14 +249,7 @@ export function PlaidLinkButton({
       {tokenError && (
         <p className="mt-2 text-center text-[12px] leading-snug text-destructive">{tokenError}</p>
       )}
-      <p className="mt-2 text-center text-[12px] leading-snug text-muted-foreground">
-        TAP uses Plaid to link your bank. We see transactions to learn your merchants, never your
-        login, and you can{" "}
-        <a href="/privacy" className="underline underline-offset-2">
-          disconnect and delete anytime
-        </a>
-        .
-      </p>
+      <PlaidPrivacyCopy />
       {env === "sandbox" && !tokenError && (
         <p className="mt-1 text-center text-[11px] text-muted-foreground">
           Sandbox mode — test institutions only.
@@ -253,5 +277,18 @@ export function PlaidLinkButton({
         />
       )}
     </>
+  );
+}
+
+function PlaidPrivacyCopy() {
+  return (
+    <p className="mt-2 text-center text-[12px] leading-snug text-muted-foreground">
+      TAP uses Plaid to link your bank. We see transactions to learn your merchants, never your
+      login, and you can{" "}
+      <a href="/privacy" className="underline underline-offset-2">
+        disconnect and delete anytime
+      </a>
+      .
+    </p>
   );
 }

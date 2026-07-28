@@ -16,7 +16,8 @@ import {
 import { ArrowLeft, ArrowRight, BookOpen, CreditCard, Plus, Search, Trash2, X } from "lucide-react";
 import { Sheet } from "@/components/sheet";
 import { toast } from "sonner";
-import { CATALOG_BY_ID } from "@/lib/cardCatalog";
+import { CARD_CATALOG, CATALOG_BY_ID } from "@/lib/cardCatalog";
+import { POINT_VALUATIONS } from "@/lib/pointValuations";
 import { computeWalletGuide, type WalletRole } from "@/lib/walletRoles";
 import { WalletCardBriefing } from "@/components/wallet-card-briefing";
 
@@ -46,19 +47,26 @@ function CardsPage() {
   const [mode, setMode] = useState<"list" | "choose" | "catalog" | "manual">("list");
 
   const load = async () => {
-    const [cc, pp] = await Promise.all([
-      supabase.from("cards_catalog").select("*").order("issuer").order("name"),
-      supabase.from("points_programs").select("*").order("name"),
-    ]);
+    // Guest checkout decisions are entirely device-local. Do not hold their
+    // wallet behind a catalog network request: the verified catalog ships
+    // with the app and is enough to render every guest card immediately.
+    const [cc, pp] = user
+      ? await Promise.all([
+          supabase.from("cards_catalog").select("*").order("issuer").order("name"),
+          supabase.from("points_programs").select("*").order("name"),
+        ])
+      : ([{ data: null }, { data: null }] as const);
     const catalog: Record<string, CardCatalog & { is_custom?: boolean }> = {};
     const remoteCatalog = (cc.data ?? []) as unknown as (CardCatalog & {
       is_custom?: boolean;
     })[];
-    const catalogList = remoteCatalog.map((card) => {
-      const verified = CATALOG_BY_ID[card.id];
-      if (!verified || card.is_custom) return card;
+    const remoteById = new Map(remoteCatalog.map((card) => [card.id, card]));
+    const canonicalIds = new Set(CARD_CATALOG.map((card) => card.id));
+    const verifiedCatalog = CARD_CATALOG.map((verified) => {
+      const remote = remoteById.get(verified.id);
       return {
-        ...card,
+        ...remote,
+        id: verified.id,
         issuer: verified.issuer,
         name: verified.name,
         annual_fee: verified.annual_fee,
@@ -68,6 +76,13 @@ function CardsPage() {
         notes: verified.notes ?? null,
       };
     });
+    // The checked-in, source-dated catalog is TAP's offline trust baseline.
+    // Keep remote custom cards, but never let a failed catalog request turn a
+    // customer's saved wallet into a stack of "Unknown card" placeholders.
+    const catalogList = [
+      ...verifiedCatalog,
+      ...remoteCatalog.filter((card) => !canonicalIds.has(card.id)),
+    ].sort((a, b) => a.issuer.localeCompare(b.issuer) || a.name.localeCompare(b.name));
     catalogList.forEach((c) => (catalog[c.id] = c));
 
     let userCards: UserCard[] = [];
@@ -94,7 +109,15 @@ function CardsPage() {
       userCards,
       catalog,
       catalogList,
-      programs: (pp.data ?? []) as PointsProgram[],
+      programs:
+        pp.data && pp.data.length > 0
+          ? (pp.data as PointsProgram[])
+          : Object.values(POINT_VALUATIONS).map((valuation) => ({
+              id: valuation.programId,
+              name: valuation.displayName,
+              kind: valuation.programId === "cashback" ? "cashback" : "transferable",
+              default_cpp: valuation.cpp,
+            })),
       isGuest: !user,
     });
   };
