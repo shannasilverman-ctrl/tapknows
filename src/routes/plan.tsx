@@ -13,6 +13,7 @@ import {
 import type { MerchantCatalog, PointsProgram } from "@/lib/types";
 import { dollars } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
+import { TapAppShell } from "@/components/tap-primitives";
 import { AssumptionNote } from "@/components/assumption-note";
 import { CardPlay, type CardFace } from "@/components/card-play";
 import { getGuestWallet } from "@/lib/guestWallet";
@@ -535,7 +536,7 @@ function PlanPage() {
   };
 
   return (
-    <div className="cs-app-body tap-consumer-screen min-h-screen bg-background flex flex-col">
+    <TapAppShell className="tap-plan-screen">
       <header className="px-6 pt-12 pb-4 flex items-center justify-between max-w-md mx-auto w-full">
         <h1 className="text-base font-semibold text-foreground">Plan</h1>
         {!user && (
@@ -898,7 +899,7 @@ function PlanPage() {
       </main>
 
       <BottomNav />
-    </div>
+    </TapAppShell>
   );
 }
 

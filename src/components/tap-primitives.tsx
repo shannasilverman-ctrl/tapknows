@@ -1,4 +1,6 @@
 import type { HTMLAttributes, ReactNode } from "react";
+import { Link, useRouterState } from "@tanstack/react-router";
+import { CreditCard, Home, ShieldCheck, Sparkles, Wand2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type TapAppShellProps = HTMLAttributes<HTMLDivElement> & {
@@ -6,6 +8,8 @@ export type TapAppShellProps = HTMLAttributes<HTMLDivElement> & {
 };
 
 export function TapAppShell({ surface = "canvas", className, ...props }: TapAppShellProps) {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+
   return (
     <div
       className={cn(
@@ -15,7 +19,55 @@ export function TapAppShell({ surface = "canvas", className, ...props }: TapAppS
       )}
       data-tap-surface={surface}
       {...props}
-    />
+    >
+      <aside className="tap-desktop-rail" aria-label="TAP workspace">
+        <Link to="/home" className="tap-desktop-brand" aria-label="TAP home">
+          <span className="tap-desktop-wordmark">
+            TAP
+            <i aria-hidden />
+          </span>
+          <span>Your card copilot</span>
+        </Link>
+
+        <nav aria-label="Desktop primary">
+          {[
+            { to: "/home", label: "Decide", icon: Home },
+            { to: "/cards", label: "Wallet", icon: CreditCard },
+            { to: "/plan", label: "Plan ahead", icon: Wand2 },
+          ].map((item) => {
+            const Icon = item.icon;
+            const active = pathname === item.to || (item.to === "/home" && pathname === "/decide");
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                aria-current={active ? "page" : undefined}
+                className="tap-desktop-nav-item"
+                data-active={active ? "true" : "false"}
+              >
+                <Icon aria-hidden />
+                <span>{item.label}</span>
+                {active ? <i aria-hidden /> : null}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="tap-desktop-rail-note">
+          <span>
+            <ShieldCheck aria-hidden />
+            Independent recommendation
+          </span>
+          <p>TAP compares only the cards in your wallet. No card number required.</p>
+        </div>
+
+        <Link to="/demo" className="tap-desktop-demo-link">
+          <Sparkles aria-hidden />
+          See a 30-second TAP
+        </Link>
+      </aside>
+      {props.children}
+    </div>
   );
 }
 

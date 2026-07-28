@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { CardCatalog, EarnRule, PointsProgram, UserCard } from "@/lib/types";
 import { dollars } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
+import { TapAppShell } from "@/components/tap-primitives";
 import { CardFace } from "@/components/card-face";
 import {
   addGuestCard,
@@ -183,7 +184,7 @@ function CardsPage() {
   }
 
   return (
-    <div className="cs-app-body tap-consumer-screen min-h-screen bg-background flex flex-col">
+    <TapAppShell className="tap-wallet-screen">
       <header className="px-6 pt-12 pb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           {mode !== "list" && (
@@ -275,7 +276,7 @@ function CardsPage() {
       </main>
 
       <BottomNav />
-    </div>
+    </TapAppShell>
   );
 }
 

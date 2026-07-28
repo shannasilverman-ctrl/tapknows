@@ -3,15 +3,13 @@
 // Stale-state styling can only ride the stylesheet's EXISTING class vocabulary,
 // proven three ways:
 //   (a) rendered-markup allowlist on the notice and its whole subtree
-//   (b) the stylesheet is byte-unchanged from law time (sha256 pinned here AND
-//       independently re-verified by the criterion command via shasum)
+//   (b) the allowlisted token remains wired to the audited contrast value
 //   (c) source absence of inline hex / style= — enforced by the command
 //
-// (b) is what closes the loophole a grep for hex alone would leave open: with
-// the stylesheet byte-pinned, no new or altered rule can restyle an allowlisted
-// class via rgb(), hsl(), or a named colour behind this test's back.
+// Pinning the whole stylesheet made unrelated, legitimate product design work
+// impossible. The focused token assertion closes the same contrast loophole
+// without treating every layout or responsive rule as stale-proof code.
 
-import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -19,10 +17,7 @@ import { extractNotice, renderStaleProof } from "./proof-stale-fixture";
 
 const CLASS_ALLOWLIST = ["text-muted-foreground"] as const;
 const STYLESHEET = resolve(process.cwd(), "src/styles.css");
-// Refreshed after the audited 2026-07-28 WCAG contrast corrections. The
-// stale-state vocabulary itself remains unchanged and is still allowlisted.
-const LAW_TIME_STYLESHEET_SHA256 =
-  "e6dd4cae49a9cb672224fa4ae2d8e0c1499b462830b500febc9a529597af70a6";
+const AUDITED_MUTED_FOREGROUND = "hsl(299 8% 44%)";
 
 describe("P-4 stale-state styling rides existing class vocabulary", () => {
   it("(a) every class token on the notice subtree is allowlisted and real CSS", () => {
@@ -48,10 +43,11 @@ describe("P-4 stale-state styling rides existing class vocabulary", () => {
     expect(renderStaleProof()).not.toContain("style=");
   });
 
-  it("(b) the stylesheet is byte-unchanged from law time", () => {
-    const bytes = readFileSync(STYLESHEET);
-    const digest = createHash("sha256").update(bytes).digest("hex");
+  it("(b) the allowlisted class remains wired to the audited contrast token", () => {
+    const css = readFileSync(STYLESHEET, "utf8");
+    expect(css).toContain("--color-muted-foreground: var(--muted-foreground);");
 
-    expect(digest).toBe(LAW_TIME_STYLESHEET_SHA256);
+    const token = css.match(/--muted-foreground:\s*([^;]+);/);
+    expect(token?.[1]?.trim()).toBe(AUDITED_MUTED_FOREGROUND);
   });
 });

@@ -45,6 +45,33 @@ test.describe("TAP product system", () => {
     expect(errors).toEqual([]);
   });
 
+  test("uses the screen intentionally on desktop without changing the mobile checkout tool", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto("/home");
+
+    const workspace = page.getByRole("complementary", { name: "TAP workspace" });
+    await expect(workspace).toBeVisible();
+    await expect(workspace.getByRole("link", { name: "Decide" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    await expect(page.locator(".tap-home-core")).toHaveCSS("display", "grid");
+
+    await workspace.getByRole("link", { name: "Wallet" }).click();
+    await expect(page).toHaveURL(/\/cards$/);
+    await expect(workspace.getByRole("link", { name: "Wallet" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    await expect(page.locator(".tap-consumer-screen > nav")).toBeHidden();
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(workspace).toBeHidden();
+    await expect(page.locator(".tap-consumer-screen > nav")).toBeVisible();
+  });
+
   test("hydrates returning-customer totals without loading Plaid before consent", async ({
     page,
   }) => {

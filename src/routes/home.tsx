@@ -915,7 +915,7 @@ function HomePage() {
           </div>
 
           {/* The wallet supports the answer; it is no longer the opening task. */}
-          <div className={`mt-6 ${newlyAddedId ? "cs-card-drop-in" : ""}`}>
+          <div className={`tap-home-wallet-zone mt-6 ${newlyAddedId ? "cs-card-drop-in" : ""}`}>
             {!ready ? (
               // The first paint already tells the product story. This keeps
               // the wallet's real silhouette in place while local state loads.
