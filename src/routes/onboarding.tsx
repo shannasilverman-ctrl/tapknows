@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { fireConfetti } from "@/lib/confetti";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Wordmark } from "@/components/wordmark";
@@ -288,6 +289,10 @@ function OnboardingPage() {
   };
 
   const finish = () => {
+    // The one genuine milestone in TAP: the wallet exists, so the product can
+    // actually answer questions now. Fired here and nowhere else — a tool that
+    // throws confetti at every card tap stops reading as a serious one.
+    if (selectedCatalogIds.size > 0) fireConfetti();
     navigate({ to: "/home", search: { firstRun: 1 } });
   };
 

@@ -65,3 +65,16 @@ the file forever; this entry is that visibility.
 
 Verified after the change: `npm run check` exit 0, `.kiln/law/check.sh` exit 0,
 full Playwright suite green including re-baselined mobile landing snapshots.
+
+## ADR · Stylesheet re-pin, press feedback layer (2026-07-27)
+
+Pin moved for the shared press-feedback layer — one `:active` rule covering
+every interactive element, replacing six per-element `active:scale` utilities
+that had already drifted apart (two at 0.98, four at 0.96).
+
+Why P-4 is not weakened: the layer adds no rule matching `.text-muted-foreground`
+and no rule affecting `.tap-proof-disclosure` (verified: zero references to
+either inside the layer delimiters). P-4's other two proofs — the rendered
+class allowlist and the source-absence checks — are untouched. The pin exists
+to make stylesheet changes visible and deliberate; this entry is that
+visibility.

@@ -5550,3 +5550,75 @@ body {
     transition: none !important;
   }
 }
+
+/* === press feedback layer === */
+/*
+ * TAP is an app about tapping. Before this layer, 6 of 213 interactive
+ * elements answered a press — and those six disagreed with each other (two at
+ * 0.98, four at 0.96). This is the single source of press behaviour.
+ *
+ * Why CSS and not a React primitive: a component would mean editing 213 call
+ * sites, and any element someone forgets drifts silently. A rule keyed on
+ * :active reaches all of them at once, cannot be forgotten by a new component,
+ * costs no JavaScript on the interaction path, and cancels on drag-off for
+ * free because that is what :active already means. The trade is that there is
+ * no pointer-coordinate ripple; that needs a listener per element, and the
+ * brief treats ripple as optional.
+ *
+ * Opt out with data-no-press on anything that must not move (a whole card
+ * surface, a drag handle).
+ */
+button:active,
+a[href]:active,
+[role="button"]:active,
+[role="switch"]:active,
+[role="tab"]:active,
+summary:active {
+  transform: scale(0.965);
+}
+
+button,
+a[href],
+[role="button"],
+[role="switch"],
+[role="tab"],
+summary {
+  /* Springs back rather than easing linearly. Down is near-instant so the
+     first frame lands inside the ~100ms perceived-response budget; the return
+     overshoots slightly, which is what reads as physical. */
+  transition: transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:active[data-no-press],
+a[href]:active[data-no-press],
+[role="button"]:active[data-no-press],
+[role="switch"]:active[data-no-press],
+[role="tab"]:active[data-no-press],
+summary:active[data-no-press] {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Feedback still happens — it just stops moving. Removing the response
+     entirely would leave these users with no answer to their own tap. */
+  button,
+  a[href],
+  [role="button"],
+  [role="switch"],
+  [role="tab"],
+  summary {
+    transition: opacity 60ms linear;
+  }
+
+  button:active,
+  a[href]:active,
+  [role="button"]:active,
+  [role="switch"]:active,
+  [role="tab"]:active,
+  summary:active {
+    transform: none;
+    opacity: 0.72;
+  }
+}
+/* === end press feedback layer === */

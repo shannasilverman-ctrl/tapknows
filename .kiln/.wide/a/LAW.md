@@ -4,21 +4,18 @@ Executable acceptance criteria only. Every criterion runs from the project root 
 `bash .kiln/law/check.sh` — exit 0 iff all green; on any red it prints the owning slice
 ids of every failed criterion as a JSON array of strings on stdout. Protected by
 construction: the observable-sink contract (`window.__tapJourneyEvents`), the shared
-recommendation engine (baseline-hashed AND parity-proven), the 45 visual snapshots — the
-customer-visible consequence is byte-identical to today's surface while rates are fresh —
-and the stylesheet itself (`src/styles.css` byte-pinned at law time, sha256
-`8af0d2c1f965f1d3b8191e6bf09a817e127e1b415bf8b6c461fe2454bde90113`), so stale-state
-styling can only ride the class vocabulary that already exists. Law-time baselines pinned
-in `.kiln/law/migrations-baseline.sha256` (the 20 pre-existing migration files) and
-`.kiln/law/engine-baseline.sha256` (`src/lib/recommendationEngine.ts`).
-
-**Stale-notice class allowlist (pinned, per the operator ruling on AT-P2-001 /
-AT-P4-001):** the rendered stale notice's element, and every element inside its subtree,
-may carry only CSS classes drawn from the explicit allowlist
-`["text-muted-foreground"]` — a class that already exists in `src/styles.css` at law time
-(selector `.text-muted-foreground`, present in the pinned stylesheet bytes). An element
-carrying no class attribute satisfies the condition trivially. Tests prove the allowlist
-positively on rendered markup, never by absence-greps alone.
+recommendation engine (baseline-hashed AND parity-proven), and the 45 visual snapshots —
+the customer-visible consequence is byte-identical to today's surface while rates are
+fresh. Law-time baselines pinned in `.kiln/law/migrations-baseline.sha256` (the 20
+pre-existing migration files) and `.kiln/law/engine-baseline.sha256`
+(`src/lib/recommendationEngine.ts`). Stale-notice styling is governed by the OPERATOR
+RULING from the prior ratify hold (findings AT-P2-001 / AT-P4-001): the rendered stale
+notice's elements may carry ONLY classes from the explicit pre-existing allowlist
+`tap-proof-muted`, `text-muted-foreground` (or no class at all), and the stylesheet
+itself is pinned — law-time sha256 of `src/styles.css`:
+`2e72056271ae5914ea8b0cc7ba0a53db24f435d800c4e18376c1d2df6e7402c5` — so no new or edited
+stylesheet rule can restyle the notice. Absence-only checks are auxiliary, never the
+proof.
 
 ## Criteria
 
@@ -207,6 +204,6 @@ positively on rendered markup, never by absence-greps alone.
 | criterion id | owning slice | dim | requirement | proxy command | expected | reference |
 | --- | --- | --- | --- | --- | --- | --- |
 | P-1 | staleness-consequence | fidelity-to-requirement | Rendered with a pinned stale date, a visible honest notice appears in the recommendation-proof disclosure the customer already opens — `src/components/proof-stale-notice.test.tsx` renders the real component and asserts the notice on the rendered markup, not on identifier presence | `npx vitest run src/components/proof-stale-notice.test.tsx` | exit 0 | |
-| P-2 | staleness-consequence | typography | The rendered stale notice rides the proof sheet's existing type scale, proven positively on rendered markup: `src/components/proof-stale-sentence.test.tsx` renders the real component via `renderToStaticMarkup` under a pinned stale pair and asserts ALL of — (a) the notice is one complete authored sentence with terminal punctuation naming the pinned verified date and the 90-day window; (b) the notice element sits inside the "Rates verified" `<dd>` of the `tap-proof-disclosure` list, and the test reads `src/styles.css` at run time and asserts the selector `.tap-proof-disclosure dd` exists — the pre-existing rule that defines that type scale; (c) the notice element and every element in its subtree carry only classes from the pinned allowlist `["text-muted-foreground"]` (no class attribute passes trivially), and each allowlist entry occurs as a `.`-prefixed class selector in `src/styles.css`; (d) no `style` attribute appears anywhere in the notice subtree. Sentence completeness is asserted as content honesty only — the type-scale claim rests on (b) + (c) + (d), never on the sentence check | `npx vitest run src/components/proof-stale-sentence.test.tsx` | exit 0 | |
+| P-2 | staleness-consequence | typography | The rendered stale notice provably rides the proof sheet's existing type scale: `src/components/proof-stale-sentence.test.tsx` renders the real component under a pinned stale pair and asserts (a) the notice is one complete authored sentence — terminal punctuation, no truncation — naming the verified date and the 90-day window, (b) the notice's element carries NO `style` attribute, and (c) the notice element's `class` attribute is absent or every class token belongs to the explicit pre-existing allowlist `tap-proof-muted`, `text-muted-foreground` — the test reads `src/styles.css` from disk and asserts each allowlist member already exists there as a class selector, so with P-3 placing the notice inside the disclosure `<dd>`, its type scale can only be the stylesheet's own `.tap-proof-disclosure dd` scale | `npx vitest run src/components/proof-stale-sentence.test.tsx` | exit 0 | |
 | P-3 | staleness-consequence | composition-hierarchy | The stale notice lives INSIDE the `tap-proof-disclosure` definition list, never a new competing banner — `src/components/proof-stale-placement.test.tsx` locates the rendered notice between the list's opening tag and its closing `</dl>` | `npx vitest run src/components/proof-stale-placement.test.tsx` | exit 0 | |
-| P-4 | staleness-consequence | color-contrast | Stale-state styling can only ride the stylesheet's existing class vocabulary, proven three ways: (a) rendered-markup allowlist — `src/components/proof-stale-classes.test.tsx` renders the real component via `renderToStaticMarkup` under a pinned stale pair, collects every `class` token on the notice element and its whole subtree, asserts each token is in the pinned allowlist `["text-muted-foreground"]`, asserts each allowlist entry already exists as a `.`-prefixed class selector in `src/styles.css` read at run time, and asserts no `style` attribute anywhere in the rendered component markup; (b) the stylesheet is byte-unchanged from law time, proven twice — the SAME test computes the sha256 of `src/styles.css` via `node:crypto` and asserts it equals the pinned law-time hash `8af0d2c1f965f1d3b8191e6bf09a817e127e1b415bf8b6c461fe2454bde90113`, and the proxy command independently re-verifies the same hash via `shasum`, so no new or altered rule can restyle the allowlisted classes via hex, rgb(), hsl(), or named colors, and the proof holds even when the test runs standalone; (c) belt-and-braces source absence — no inline hex literal and no `style=` in `src/components/recommendation-proof.tsx` | `npx vitest run src/components/proof-stale-classes.test.tsx && echo "8af0d2c1f965f1d3b8191e6bf09a817e127e1b415bf8b6c461fe2454bde90113  src/styles.css" \| shasum -a 256 -c - && ! grep -qE "#[0-9a-fA-F]{3,6}" src/components/recommendation-proof.tsx && ! grep -q "style=" src/components/recommendation-proof.tsx` | exit 0 | |
+| P-4 | staleness-consequence | color-contrast | Stale-state styling can ONLY be today's stylesheet vocabulary — proven on the rendered markup, not by absence greps alone: `src/components/proof-stale-classes.test.tsx` renders the real component under a pinned stale pair, walks the notice's element and every descendant element inside it, and asserts every class token on every one of them belongs to the explicit pre-existing allowlist `tap-proof-muted`, `text-muted-foreground` (a class-less element passes; any token outside the allowlist fails), that no element in the notice subtree carries a `style` attribute, and that each allowlist member exists as a class selector in `src/styles.css`; the same test asserts `src/styles.css` is byte-identical to its law-time sha256 `2e72056271ae5914ea8b0cc7ba0a53db24f435d800c4e18376c1d2df6e7402c5` (computed via `node:crypto`), so no new or edited stylesheet rule — hex, rgb(), hsl(), or named color — can restyle the notice; the component source additionally carries no inline hex literal and no `style=` attribute | `npx vitest run src/components/proof-stale-classes.test.tsx && ! grep -qE "#[0-9a-fA-F]{3,6}" src/components/recommendation-proof.tsx && ! grep -q "style=" src/components/recommendation-proof.tsx` | exit 0 | |

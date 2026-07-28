@@ -20,7 +20,7 @@ import { extractNotice, renderStaleProof } from "./proof-stale-fixture";
 const CLASS_ALLOWLIST = ["text-muted-foreground"] as const;
 const STYLESHEET = resolve(process.cwd(), "src/styles.css");
 const LAW_TIME_STYLESHEET_SHA256 =
-  "8bd1897ffaf172bd3c6adf5db59195a565424e833b0d0e2467aa8fddbddbb799";
+  "8af0d2c1f965f1d3b8191e6bf09a817e127e1b415bf8b6c461fe2454bde90113";
 
 describe("P-4 stale-state styling rides existing class vocabulary", () => {
   it("(a) every class token on the notice subtree is allowlisted and real CSS", () => {

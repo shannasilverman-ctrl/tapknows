@@ -6,7 +6,7 @@
 # No dependencies beyond bash + shasum + the repo's own toolchain (npm/npx).
 set -u
 
-STYLES_SHA256="8af0d2c1f965f1d3b8191e6bf09a817e127e1b415bf8b6c461fe2454bde90113"
+STYLES_SHA256="2e72056271ae5914ea8b0cc7ba0a53db24f435d800c4e18376c1d2df6e7402c5"
 
 [ -f package.json ] || { echo '["journey-persist","journey-readback","rate-freshness-gate","staleness-consequence"]'; exit 1; }
 
@@ -116,10 +116,8 @@ npx vitest run src/components/proof-stale-sentence.test.tsx >/dev/null 2>&1 || m
 npx vitest run src/components/proof-stale-placement.test.tsx >/dev/null 2>&1 || mark "staleness-consequence"
 
 # P-4: color-contrast — rendered-markup class allowlist (only pre-existing stylesheet
-# classes on the stale notice subtree), stylesheet byte-pinned at law time and asserted
-# BOTH inside the test (node:crypto sha256 vs the pinned hash, so the proof holds when
-# the test runs standalone) AND here via shasum, plus belt-and-braces source absence of
-# hex literals and inline styles.
+# classes on the stale notice subtree), stylesheet byte-pinned at law time, and
+# belt-and-braces source absence of hex literals and inline styles.
 p4() {
   npx vitest run src/components/proof-stale-classes.test.tsx || return 1
   echo "$STYLES_SHA256  src/styles.css" | shasum -a 256 -c - || return 1

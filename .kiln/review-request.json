@@ -1,0 +1,18 @@
+{
+  "reviewer_model": "gpt-5.6-sol",
+  "reviewer_effort": "high",
+  "law_hash": "396fdc250a27fb6adf5c1a0b6ee116003c9a9a18e4dc93df95db40a73f55419b",
+  "criteria": "### RF-1\n- **Owning slice:** `rate-freshness-gate`\n- **Requirement:** A deterministic freshness core exists: `src/lib/rateFreshness.ts`\n  exports `RATE_FRESHNESS_WINDOW_DAYS = 90` and a pure staleness predicate taking an\n  injected \"today\"; pinned-clock tests prove both sides of the boundary deterministically\n  \u2014 fresh at exactly 90 days, stale at 91.\n- **Command:** `npx vitest run src/lib/rateFreshness.test.ts`\n- **Expected:** exit 0 \u2014 the predicate is pure and both boundary sides are asserted.\n\n### RF-2\n- **Owning slice:** `rate-freshness-gate`\n- **Requirement:** The tripwire actually trips the repository gate: a vitest gate file\n  (`src/lib/rateFreshness.gate.test.ts`, which runs inside `npm test` and therefore inside\n  `npm run check`) validates `RATES_VERIFIED_ON` and every `verified_on` row in\n  `src/lib/benefits.ts` against the current date, pinnable via `TAP_TODAY` for CI\n  determinism. Under a far-future clock the gate MUST go red.\n- **Command:** `[ -f src/lib/rateFreshness.gate.test.ts ] && ! TAP_TODAY=2099-01-01 npx vitest run src/lib/rateFreshness.gate.test.ts`\n- **Expected:** exit 0 \u2014 the gate file exists and FAILS under `TAP_TODAY=2099-01-01`; staleness cannot ship unnoticed.\n\n### RF-3\n- **Owning slice:** `rate-freshness-gate`\n- **Requirement:** The gate is honest in both directions: with today's real clock and the\n  currently verified dates the same gate file passes, and it demonstrably covers the\n  `benefits.ts` rows \u2014 the \"same treatment\" the brief requires, one shared window\n  constant, not scattered.\n- **Command:** `grep -q \"benefits\" src/lib/rateFreshness.gate.test.ts && npx vitest run src/lib/rateFreshness.gate.test.ts`\n- **Expected:** exit 0 \u2014 benefits rows are covered and the gate is green while rates are fresh.",
+  "paths": [
+    "src/lib/rateFreshness.ts",
+    "src/lib/rateFreshness.test.ts",
+    "src/lib/rateFreshness.gate.test.ts"
+  ],
+  "failures": [],
+  "commands": [
+    "bash .kiln/law/check.sh",
+    "npx vitest run src/lib/rateFreshness.test.ts",
+    "[ -f src/lib/rateFreshness.gate.test.ts ] && ! TAP_TODAY=2099-01-01 npx vitest run src/lib/rateFreshness.gate.test.ts",
+    "grep -q \"benefits\" src/lib/rateFreshness.gate.test.ts && npx vitest run src/lib/rateFreshness.gate.test.ts"
+  ]
+}

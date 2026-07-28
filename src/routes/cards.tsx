@@ -185,7 +185,7 @@ function CardsPage() {
         {showHeaderAdd && (
           <button
             onClick={() => setMode(data!.isGuest ? "catalog" : "choose")}
-            className="inline-flex items-center gap-1 rounded-full bg-foreground text-background text-[13px] font-medium h-11 px-4 hover:opacity-90 transition-opacity active:scale-[0.96]"
+            className="inline-flex items-center gap-1 rounded-full bg-foreground text-background text-[13px] font-medium h-11 px-4 hover:opacity-90 transition-opacity"
             aria-label="Add a card"
           >
             <Plus className="size-4" strokeWidth={2.25} />
@@ -301,7 +301,7 @@ function CardList({
         </p>
         <button
           onClick={onAdd}
-          className="mt-6 inline-flex items-center justify-center gap-1.5 rounded-full bg-foreground text-background text-[14px] font-medium h-12 px-6 hover:opacity-90 transition-opacity active:scale-[0.96]"
+          className="mt-6 inline-flex items-center justify-center gap-1.5 rounded-full bg-foreground text-background text-[14px] font-medium h-12 px-6 hover:opacity-90 transition-opacity"
         >
           <Plus className="size-4" strokeWidth={2.25} />
           Add a card
@@ -491,7 +491,7 @@ function UserCardRow({
         </button>
         <button
           onClick={() => setConfirmOpen(true)}
-          className="inline-flex items-center justify-center shrink-0 rounded-full min-h-11 min-w-11 text-muted-foreground hover:text-destructive hover:bg-secondary/60 transition-colors active:scale-[0.96]"
+          className="inline-flex items-center justify-center shrink-0 rounded-full min-h-11 min-w-11 text-muted-foreground hover:text-destructive hover:bg-secondary/60 transition-colors"
           aria-label={`Remove ${label}`}
         >
           <Trash2 className="size-4" />
@@ -521,7 +521,7 @@ function UserCardRow({
             type="button"
             disabled={removing}
             onClick={performRemove}
-            className="flex-1 inline-flex items-center justify-center h-12 rounded-xl bg-destructive text-destructive-foreground font-medium hover:opacity-90 transition-opacity active:scale-[0.96] disabled:opacity-70"
+            className="flex-1 inline-flex items-center justify-center h-12 rounded-xl bg-destructive text-destructive-foreground font-medium hover:opacity-90 transition-opacity disabled:opacity-70"
           >
             {removing ? "Removing…" : "Remove card"}
           </button>

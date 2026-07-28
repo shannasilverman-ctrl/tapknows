@@ -1097,7 +1097,7 @@ function HomePage() {
                   <button
                     type="button"
                     onClick={() => goDecideCustom(r.merchantLabel, r.category)}
-                    className="w-full text-left px-4 py-3 flex items-center gap-3 min-h-11 hover:bg-secondary/40 active:scale-[0.98] transition-transform"
+                    className="w-full text-left px-4 py-3 flex items-center gap-3 min-h-11 hover:bg-secondary/40 transition-transform"
                     aria-label={`${r.label} — ${r.nickname ?? `${r.cardIssuer} ${r.cardName}`}`}
                   >
                     <div className="w-20 shrink-0">

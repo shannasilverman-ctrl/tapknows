@@ -321,7 +321,7 @@ export function WalletCardBriefing({
                           });
                           setOpenBenefit(benefit);
                         }}
-                        className="w-full text-left px-4 py-3 flex items-center gap-3 min-h-11 hover:bg-secondary/40 active:scale-[0.98] transition-transform"
+                        className="w-full text-left px-4 py-3 flex items-center gap-3 min-h-11 hover:bg-secondary/40 transition-transform"
                         aria-label={`${title} — details`}
                       >
                         <ShieldCheck className="size-4 text-primary shrink-0" aria-hidden />

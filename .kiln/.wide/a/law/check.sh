@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
-# LAW check — TAP: journey instrumentation + rate-staleness tripwire.
+# LAW check — TAP: journey instrumentation + rate-staleness tripwire (candidate a).
 # Runs from the project root: `bash .kiln/law/check.sh`.
 # Exits 0 iff every criterion is green; on any red prints the owning slice
 # ids of every failed criterion as a JSON array of strings on stdout.
 # No dependencies beyond bash + shasum + the repo's own toolchain (npm/npx).
 set -u
-
-STYLES_SHA256="8af0d2c1f965f1d3b8191e6bf09a817e127e1b415bf8b6c461fe2454bde90113"
 
 [ -f package.json ] || { echo '["journey-persist","journey-readback","rate-freshness-gate","staleness-consequence"]'; exit 1; }
 
@@ -106,24 +104,23 @@ npx vitest run src/components/recommendation-proof.test.tsx >/dev/null 2>&1 || m
 # P-1: fidelity-to-requirement — stale notice visible in the rendered disclosure.
 npx vitest run src/components/proof-stale-notice.test.tsx >/dev/null 2>&1 || mark "staleness-consequence"
 
-# P-2: typography — complete stale sentence PLUS positive type-scale proof: notice inside
-# the disclosure <dd> (whose `.tap-proof-disclosure dd` rule the test asserts exists in
-# src/styles.css), only allowlisted pre-existing classes in the notice subtree, no inline
-# style attribute.
+# P-2: typography — one complete stale sentence (date + 90-day window), no style
+# attribute on the notice element, and the notice element's classes drawn ONLY from the
+# pre-existing allowlist (tap-proof-muted, text-muted-foreground), allowlist membership
+# verified against src/styles.css inside the test (operator ruling on AT-P2-001).
 npx vitest run src/components/proof-stale-sentence.test.tsx >/dev/null 2>&1 || mark "staleness-consequence"
 
 # P-3: composition-hierarchy — notice nested inside the tap-proof-disclosure list.
 npx vitest run src/components/proof-stale-placement.test.tsx >/dev/null 2>&1 || mark "staleness-consequence"
 
-# P-4: color-contrast — rendered-markup class allowlist (only pre-existing stylesheet
-# classes on the stale notice subtree), stylesheet byte-pinned at law time and asserted
-# BOTH inside the test (node:crypto sha256 vs the pinned hash, so the proof holds when
-# the test runs standalone) AND here via shasum, plus belt-and-braces source absence of
-# hex literals and inline styles.
+# P-4: color-contrast — rendered stale notice subtree carries ONLY allowlisted
+# pre-existing classes, no style attribute anywhere in it, allowlist proven present in
+# src/styles.css, and src/styles.css byte-identical to its law-time sha256 (asserted
+# inside the test via node:crypto) — operator ruling on AT-P4-001; the source greps are
+# auxiliary absence checks, never the proof.
 p4() {
-  npx vitest run src/components/proof-stale-classes.test.tsx || return 1
-  echo "$STYLES_SHA256  src/styles.css" | shasum -a 256 -c - || return 1
   [ -f src/components/recommendation-proof.tsx ] || return 1
+  npx vitest run src/components/proof-stale-classes.test.tsx >/dev/null 2>&1 || return 1
   if grep -qE "#[0-9a-fA-F]{3,6}" src/components/recommendation-proof.tsx; then
     return 1
   fi

@@ -1,0 +1,6 @@
+[
+  { "id": "journey-persist", "surface": "logic", "milestone": "journey-instrumentation" },
+  { "id": "journey-readback", "surface": "logic", "milestone": "journey-instrumentation" },
+  { "id": "rate-freshness-gate", "surface": "logic", "milestone": "rate-staleness" },
+  { "id": "staleness-consequence", "surface": "mixed", "milestone": "rate-staleness" }
+]

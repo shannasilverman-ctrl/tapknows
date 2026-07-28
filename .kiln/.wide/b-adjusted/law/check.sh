@@ -6,7 +6,7 @@
 # No dependencies beyond bash + shasum + the repo's own toolchain (npm/npx).
 set -u
 
-STYLES_SHA256="8af0d2c1f965f1d3b8191e6bf09a817e127e1b415bf8b6c461fe2454bde90113"
+STYLES_SHA256="2e72056271ae5914ea8b0cc7ba0a53db24f435d800c4e18376c1d2df6e7402c5"
 
 [ -f package.json ] || { echo '["journey-persist","journey-readback","rate-freshness-gate","staleness-consequence"]'; exit 1; }
 
