@@ -5,6 +5,12 @@ const root = process.cwd();
 const dist = resolve(root, "dist");
 const server = resolve(dist, "server");
 
+if (!process.env.VITE_SUPABASE_URL || !process.env.VITE_SUPABASE_PUBLISHABLE_KEY) {
+  throw new Error(
+    "Sites builds require VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY so the client can hydrate.",
+  );
+}
+
 await rm(dist, { recursive: true, force: true });
 await mkdir(server, { recursive: true });
 await cp(resolve(root, ".output/server"), server, { recursive: true });
