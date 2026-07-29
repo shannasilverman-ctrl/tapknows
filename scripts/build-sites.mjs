@@ -8,7 +8,10 @@ const server = resolve(dist, "server");
 await rm(dist, { recursive: true, force: true });
 await mkdir(server, { recursive: true });
 await cp(resolve(root, ".output/server"), server, { recursive: true });
-await cp(resolve(root, ".output/public"), resolve(dist, "static"), { recursive: true });
+// Sites mounts static output from dist/client. Nitro calls the same directory
+// "public", so adapt only the staging layout and leave the production build
+// untouched.
+await cp(resolve(root, ".output/public"), resolve(dist, "client"), { recursive: true });
 
 // Sites recognizes this stable server entrypoint. The Nitro worker remains
 // intact beside it, so its relative chunks and manifest resolve unchanged.
