@@ -50,7 +50,10 @@ function Landing() {
   const navigate = useNavigate();
   const [returning, setReturning] = useState(false);
   const [activeScreen, setActiveScreen] = useState(0);
+  const [interactive, setInteractive] = useState(false);
   const swipeStartX = useRef<number | null>(null);
+
+  useEffect(() => setInteractive(true), []);
 
   useEffect(() => {
     if (!loading && user) navigate({ to: "/home" });
@@ -88,12 +91,12 @@ function Landing() {
       <section className="tap-showcase-hero">
         <div className="tap-showcase-copy">
           <h1>
-            Know before
-            <br /> you tap.
+            Know which card
+            <br /> to tap—before you pay.
           </h1>
           <p className="tap-deck">
-            Tell TAP where you’re paying. It compares the cards you already carry and shows which
-            one earns the most, with the math attached.
+            Tell TAP what you’re buying. It checks the cards you already carry and gives you one
+            clear answer—before checkout.
           </p>
           <div className="tap-hero-actions">
             <Link to={startTo} className="tap-primary">
@@ -309,7 +312,7 @@ function Landing() {
             <button
               type="button"
               onClick={() => showScreen(activeScreen - 1)}
-              disabled={activeScreen === 0}
+              disabled={!interactive || activeScreen === 0}
               aria-label="Previous product screen"
             >
               <ChevronLeft />
@@ -334,7 +337,7 @@ function Landing() {
             <button
               type="button"
               onClick={() => showScreen(activeScreen + 1)}
-              disabled={activeScreen === walkthroughScreens.length - 1}
+              disabled={!interactive || activeScreen === walkthroughScreens.length - 1}
               aria-label="Next product screen"
             >
               <ChevronRight />
@@ -421,6 +424,30 @@ function Landing() {
               <strong>{item.rate}</strong>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="tap-cheat-story">
+        <div className="tap-cheat-story-copy">
+          <p>YOUR ONE-GLANCE PLAN</p>
+          <h2>Use the app less. Know your wallet better.</h2>
+          <span>
+            TAP turns your wallet into a personal cheat sheet you can search, print, or save as a
+            PDF.
+          </span>
+          <Link to="/cheat-sheet" className="tap-text-link tap-text-link-dark">
+            Build my cheat sheet <ArrowRight size={17} />
+          </Link>
+        </div>
+        <div className="tap-cheat-story-sheet" aria-label="Example card cheat sheet">
+          {proof.map((item) => (
+            <div key={item.label}>
+              <span>{item.label}</span>
+              <strong>{item.card}</strong>
+              <b>{item.rate}</b>
+            </div>
+          ))}
+          <small>Updated from your wallet · exceptions stay visible</small>
         </div>
       </section>
 

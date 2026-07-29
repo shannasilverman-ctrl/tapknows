@@ -77,8 +77,8 @@ function buildEngineWallet(catalogIds: string[]): EngineCard[] {
 }
 
 function buildValuations(): Record<string, number> {
-  const v: Record<string, number> = { cashback: 0.01 };
-  for (const [k, val] of Object.entries(POINT_VALUATIONS)) v[k] = val.cpp;
+  const v: Record<string, number> = { cashback: 1 };
+  for (const [k, val] of Object.entries(POINT_VALUATIONS)) v[k] = val.cpp * 100;
   return v;
 }
 

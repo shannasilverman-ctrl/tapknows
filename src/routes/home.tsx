@@ -66,6 +66,7 @@ import {
   MapPin,
   ChevronRight,
   ShoppingBag,
+  Sliders,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -670,18 +671,27 @@ function HomePage() {
             <Plus className="size-5" strokeWidth={2.25} />
           </button>
           {user ? (
-            <Link
-              to="/alerts"
-              className="relative inline-flex items-center justify-center h-11 w-11 rounded-full hover:bg-secondary transition-colors"
-              aria-label="Alerts"
-            >
-              <Bell className="size-5 text-foreground" strokeWidth={1.75} />
-              {displayAlerts.length > 0 && (
-                <span className="absolute top-1.5 right-1.5 min-w-[16px] h-[16px] px-1 rounded-full bg-primary text-[10px] font-semibold text-primary-foreground flex items-center justify-center leading-none">
-                  {displayAlerts.length > 9 ? "9+" : displayAlerts.length}
-                </span>
-              )}
-            </Link>
+            <>
+              <Link
+                to="/alerts"
+                className="relative inline-flex items-center justify-center h-11 w-11 rounded-full hover:bg-secondary transition-colors"
+                aria-label="Alerts"
+              >
+                <Bell className="size-5 text-foreground" strokeWidth={1.75} />
+                {displayAlerts.length > 0 && (
+                  <span className="absolute top-1.5 right-1.5 min-w-[16px] h-[16px] px-1 rounded-full bg-primary text-[10px] font-semibold text-primary-foreground flex items-center justify-center leading-none">
+                    {displayAlerts.length > 9 ? "9+" : displayAlerts.length}
+                  </span>
+                )}
+              </Link>
+              <Link
+                to="/settings"
+                className="inline-flex items-center justify-center h-11 w-11 rounded-full hover:bg-secondary transition-colors"
+                aria-label="Settings"
+              >
+                <Sliders className="size-5 text-foreground" strokeWidth={1.75} />
+              </Link>
+            </>
           ) : null}
           {!user && firstDecideDone && saveDismissed && (
             <button

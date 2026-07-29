@@ -68,6 +68,8 @@ function DecidePage() {
   const navigate = useNavigate();
 
   const [userCards, setUserCards] = useState<UserCard[]>([]);
+  const [remoteCatalog, setRemoteCatalog] = useState<Record<string, CardCatalog>>({});
+  const [remotePrograms, setRemotePrograms] = useState<Record<string, PointsProgram>>({});
   const [ready, setReady] = useState(false);
   // A failed load is NOT an empty wallet. postgrest-js resolves
   // { data: null, error } rather than rejecting, so swallowing `error` made a
@@ -138,7 +140,7 @@ function DecidePage() {
     let cancelled = false;
     (async () => {
       if (user) {
-        const [cardsRes, cppRes] = await Promise.all([
+        const [cardsRes, cppRes, catalogRes, programRes] = await Promise.all([
           supabase
             .from("user_cards")
             .select(
@@ -146,12 +148,14 @@ function DecidePage() {
             )
             .eq("user_id", user.id),
           supabase.from("user_cpp_overrides").select("*"),
+          supabase.from("cards_catalog").select("*"),
+          supabase.from("points_programs").select("*"),
         ]);
         if (cancelled) return;
 
         // Branch on the error. An unreadable wallet is a failure to report,
         // never an empty wallet to act on.
-        if (cardsRes.error) {
+        if (cardsRes.error || catalogRes.error || programRes.error) {
           setLoadFailed(true);
           setReady(true);
           return;
@@ -169,6 +173,31 @@ function DecidePage() {
         }
 
         setCppOverrides(overrides);
+        setRemoteCatalog(
+          Object.fromEntries(
+            (catalogRes.data ?? []).map((card) => [
+              card.id,
+              {
+                id: card.id,
+                issuer: card.issuer,
+                name: card.name,
+                annual_fee: Number(card.annual_fee),
+                points_program_id: card.points_program_id,
+                foreign_tx_fee_pct: Number(card.foreign_tx_fee_pct),
+                earn_rules: (card.earn_rules as unknown as CardCatalog["earn_rules"]) ?? [],
+                notes: card.notes ?? null,
+              },
+            ]),
+          ),
+        );
+        setRemotePrograms(
+          Object.fromEntries(
+            (programRes.data ?? []).map((program) => [
+              program.id,
+              program as unknown as PointsProgram,
+            ]),
+          ),
+        );
         setLoadFailed(false);
         setUserCards((cardsRes.data ?? []) as UserCard[]);
         setReady(true);
@@ -184,6 +213,8 @@ function DecidePage() {
           created_at: "",
         }));
         if (!cancelled) {
+          setRemoteCatalog({});
+          setRemotePrograms({});
           setUserCards(cards);
           setReady(true);
         }
@@ -203,7 +234,7 @@ function DecidePage() {
   const catalog = useMemo(() => {
     const out: Record<string, CardCatalog> = {};
     for (const uc of userCards) {
-      const c = CATALOG_BY_ID[uc.card_catalog_id];
+      const c = CATALOG_BY_ID[uc.card_catalog_id] ?? remoteCatalog[uc.card_catalog_id];
       if (!c) continue;
       out[c.id] = {
         id: c.id,
@@ -217,9 +248,12 @@ function DecidePage() {
       };
     }
     return out;
-  }, [userCards]);
+  }, [remoteCatalog, userCards]);
 
-  const programs = useMemo(() => programsFromCatalog(Object.values(catalog)), [catalog]);
+  const programs = useMemo(
+    () => ({ ...programsFromCatalog(Object.values(catalog)), ...remotePrograms }),
+    [catalog, remotePrograms],
+  );
 
   const benefitsByCard = useMemo(() => {
     const map: Record<string, ReturnType<typeof benefitsForCard>> = {};
@@ -248,7 +282,7 @@ function DecidePage() {
   const capReachedByCard = useMemo(() => {
     const entries: Array<{ userCardId: string; category: string; period: CapPeriod }> = [];
     for (const uc of userCards) {
-      const c = CATALOG_BY_ID[uc.card_catalog_id];
+      const c = catalog[uc.card_catalog_id];
       for (const r of c?.earn_rules ?? []) {
         const cap = r.cap_period_spend ?? r.cap_annual_spend ?? null;
         if (cap == null) continue;
@@ -262,7 +296,7 @@ function DecidePage() {
     }
     return capReachedByCardMap(user?.id ?? null, entries);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userCards, category, user?.id, capTick]);
+  }, [userCards, catalog, category, user?.id, capTick]);
 
   const rawPlays: Play[] = useMemo(() => {
     if (!ready || userCards.length === 0) return [];

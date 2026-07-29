@@ -26,7 +26,7 @@ import {
 } from "@/lib/utilizationFilter";
 
 import { toast } from "sonner";
-import { Bookmark, ChevronDown, Globe, Loader2, MapPin, Search } from "lucide-react";
+import { Bookmark, ChevronDown, Globe, Loader2, MapPin, Search, ShieldAlert } from "lucide-react";
 import { MERCHANTS, searchMerchants } from "@/lib/merchantMap";
 import { CARD_CATALOG } from "@/lib/cardCatalog";
 import { POINT_VALUATIONS } from "@/lib/pointValuations";
@@ -100,6 +100,7 @@ const CATEGORIES = [
 function PlanPage() {
   const { user, loading } = useAuth();
   const [data, setData] = useState<Loaded | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [amountStr, setAmountStr] = useState("");
   const [merchantQuery, setMerchantQuery] = useState("");
   const [merchant, setMerchant] = useState<MerchantCatalog | null>(null);
@@ -161,6 +162,8 @@ function PlanPage() {
   useEffect(() => {
     if (loading) return;
     (async () => {
+      setData(null);
+      setLoadFailed(false);
       // A guest's wallet, catalog, valuations, and merchant directory all ship
       // locally. Keep planning usable instantly at checkout and fully offline.
       const [cc, pp, mc] = user
@@ -170,6 +173,13 @@ function PlanPage() {
             supabase.from("merchants_catalog").select("*"),
           ])
         : ([{ data: null }, { data: null }, { data: null }] as const);
+      if (
+        user &&
+        (("error" in cc && cc.error) || ("error" in pp && pp.error) || ("error" in mc && mc.error))
+      ) {
+        setLoadFailed(true);
+        return;
+      }
       const catalog: Record<string, CatalogRow> = {};
       CARD_CATALOG.forEach((card) => {
         catalog[card.id] = {
@@ -195,7 +205,7 @@ function PlanPage() {
       const valuations: Record<string, number> = {};
       (pp.data ?? []).forEach((p) => {
         programs[p.id] = p as unknown as PointsProgram;
-        valuations[p.id] = Number(p.default_cpp);
+        valuations[p.id] = Number(p.default_cpp) * 100;
       });
       Object.values(POINT_VALUATIONS).forEach((valuation) => {
         programs[valuation.programId] ??= {
@@ -204,7 +214,7 @@ function PlanPage() {
           kind: valuation.programId === "cashback" ? "cashback" : "transferable",
           default_cpp: valuation.cpp,
         };
-        valuations[valuation.programId] ??= valuation.cpp;
+        valuations[valuation.programId] ??= valuation.cpp * 100;
       });
 
       let wallet: EngineCard[] = [];
@@ -224,6 +234,10 @@ function PlanPage() {
           supabase.from("user_card_accounts").select("*"),
           supabase.from("user_prefs").select("*").maybeSingle(),
         ]);
+        if (uc.error || uo.error || ov.error || ua.error || up.error) {
+          setLoadFailed(true);
+          return;
+        }
         wallet = (uc.data ?? [])
           .map((c) => hydrateCard(c.id, c.card_catalog_id, c.nickname, catalog))
           .filter((c): c is EngineCard => !!c);
@@ -248,7 +262,7 @@ function PlanPage() {
           is_used: o.is_used ?? false,
         }));
         (ov.data ?? []).forEach((o) => {
-          valuations[o.points_program_id] = Number(o.cpp);
+          valuations[o.points_program_id] = Number(o.cpp) * 100;
         });
         (ua.data ?? []).forEach((a: any) => {
           if (!a.user_card_id) return;
@@ -282,7 +296,7 @@ function PlanPage() {
           expires_on: o.expires_at ?? null,
         }));
         g.overrides.forEach((ov) => {
-          valuations[ov.points_program_id] = ov.cpp;
+          valuations[ov.points_program_id] = ov.cpp * 100;
         });
         g.accounts.forEach((a) => {
           if (a.credit_limit_cents == null) return;
@@ -500,6 +514,30 @@ function PlanPage() {
   }, [result, data]);
 
   if (loading) return <div className="min-h-screen bg-background" />;
+
+  if (loadFailed) {
+    return (
+      <TapAppShell className="tap-plan-screen">
+        <main className="flex-1 px-6 py-16 max-w-md mx-auto w-full">
+          <section className="tap-empty-state" role="alert">
+            <div className="tap-empty-state-icon">
+              <ShieldAlert aria-hidden />
+            </div>
+            <h1>We couldn't load your plan.</h1>
+            <p>Your wallet is still saved. Check your connection and try again.</p>
+            <button
+              type="button"
+              className="mt-5 rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background"
+              onClick={() => setReloadTick((tick) => tick + 1)}
+            >
+              Try again
+            </button>
+          </section>
+        </main>
+        <BottomNav />
+      </TapAppShell>
+    );
+  }
 
   const canPlan = amountCents > 0;
   const rerankApplied = utilization?.behaviorApplied === "reranked";
@@ -1033,8 +1071,8 @@ function WinnerCard({
           {Array.from(programs).map((pid) => {
             const prog = data.programs[pid];
             if (!prog || prog.kind === "cashback") return null;
-            const cpp = data.valuations[pid] ?? Number(prog.default_cpp);
-            return <AssumptionNote key={pid} program={prog} cpp={cpp} />;
+            const cpp = data.valuations[pid] ?? Number(prog.default_cpp) * 100;
+            return <AssumptionNote key={pid} program={prog} cppCents={cpp} />;
           })}
         </div>
       )}

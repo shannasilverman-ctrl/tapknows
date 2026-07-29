@@ -1,7 +1,17 @@
 import type { HTMLAttributes, ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { CreditCard, Home, ShieldCheck, Sparkles, Wand2 } from "lucide-react";
+import {
+  Bell,
+  BookOpenText,
+  CreditCard,
+  History,
+  Home,
+  ShieldCheck,
+  Sparkles,
+  Wand2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
 
 export type TapAppShellProps = HTMLAttributes<HTMLDivElement> & {
   surface?: "canvas" | "decision";
@@ -9,6 +19,19 @@ export type TapAppShellProps = HTMLAttributes<HTMLDivElement> & {
 
 export function TapAppShell({ surface = "canvas", className, ...props }: TapAppShellProps) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const { user } = useAuth();
+  const railItems = [
+    { to: "/home", label: "Decide", icon: Home },
+    { to: "/cards", label: "Wallet", icon: CreditCard },
+    { to: "/plan", label: "Plan ahead", icon: Wand2 },
+    { to: "/cheat-sheet", label: "Cheat sheet", icon: BookOpenText },
+    ...(user
+      ? [
+          { to: "/purchases", label: "Review", icon: History },
+          { to: "/alerts", label: "Alerts", icon: Bell },
+        ]
+      : []),
+  ];
 
   return (
     <div
@@ -30,11 +53,7 @@ export function TapAppShell({ surface = "canvas", className, ...props }: TapAppS
         </Link>
 
         <nav aria-label="Desktop primary">
-          {[
-            { to: "/home", label: "Decide", icon: Home },
-            { to: "/cards", label: "Wallet", icon: CreditCard },
-            { to: "/plan", label: "Plan ahead", icon: Wand2 },
-          ].map((item) => {
+          {railItems.map((item) => {
             const Icon = item.icon;
             const active = pathname === item.to || (item.to === "/home" && pathname === "/decide");
             return (

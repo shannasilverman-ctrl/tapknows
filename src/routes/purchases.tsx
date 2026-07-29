@@ -14,7 +14,7 @@ import {
   type PlayLeg,
 } from "@/lib/recommendationEngine";
 import { BottomNav } from "@/components/bottom-nav";
-import { ArrowUpRight, Plus, Receipt, Trash2, X } from "lucide-react";
+import { ArrowUpRight, Plus, Receipt, ShieldAlert, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { useModalA11y } from "@/hooks/use-modal-a11y";
 
@@ -55,6 +55,8 @@ function PurchasesPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [data, setData] = useState<Data | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [showAdd, setShowAdd] = useState(false);
 
   useEffect(() => {
@@ -63,6 +65,8 @@ function PurchasesPage() {
   }, [user, loading, navigate]);
 
   const load = async () => {
+    setData(null);
+    setLoadFailed(false);
     const [uc, cc, pp, mc, uo, ov, up] = await Promise.all([
       supabase.from("user_cards").select("*"),
       supabase.from("cards_catalog").select("*"),
@@ -76,6 +80,10 @@ function PurchasesPage() {
         .order("occurred_at", { ascending: false })
         .limit(50),
     ]);
+    if ([uc, cc, pp, mc, uo, ov, up].some((result) => Boolean(result.error))) {
+      setLoadFailed(true);
+      return;
+    }
     const catalog: Record<string, CatalogRow> = {};
     (cc.data ?? []).forEach((c) => {
       catalog[c.id] = { ...c, earn_rules: (c.earn_rules as unknown as EarnRule[]) ?? [] };
@@ -84,10 +92,10 @@ function PurchasesPage() {
     const valuations: Record<string, number> = {};
     (pp.data ?? []).forEach((p) => {
       programs[p.id] = p as unknown as PointsProgram;
-      valuations[p.id] = Number(p.default_cpp);
+      valuations[p.id] = Number(p.default_cpp) * 100;
     });
     (ov.data ?? []).forEach((o) => {
-      valuations[o.points_program_id] = Number(o.cpp);
+      valuations[o.points_program_id] = Number(o.cpp) * 100;
     });
     setData({
       wallet: (uc.data ?? [])
@@ -117,7 +125,7 @@ function PurchasesPage() {
 
   useEffect(() => {
     if (user) void load();
-  }, [user]);
+  }, [user, reloadKey]);
 
   const totals = useMemo(() => {
     const earned = data?.purchases.reduce((s, _p) => s, 0) ?? 0; // placeholder
@@ -128,10 +136,41 @@ function PurchasesPage() {
 
   if (loading || !user) return <div className="min-h-screen bg-background" />;
 
+  if (loadFailed) {
+    return (
+      <div className="cs-app-body tap-consumer-screen min-h-screen bg-background flex flex-col">
+        <main className="flex-1 px-6 py-16 max-w-md mx-auto w-full">
+          <section className="tap-empty-state" role="alert">
+            <div className="tap-empty-state-icon">
+              <ShieldAlert aria-hidden />
+            </div>
+            <h1>We couldn't load your review.</h1>
+            <p>Your purchase history is still saved. Check your connection and try again.</p>
+            <button
+              type="button"
+              className="mt-5 rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background"
+              onClick={() => setReloadKey((key) => key + 1)}
+            >
+              Try again
+            </button>
+          </section>
+        </main>
+        <BottomNav />
+      </div>
+    );
+  }
+
   return (
     <div className="cs-app-body tap-consumer-screen min-h-screen bg-background flex flex-col">
       <header className="px-6 pt-12 pb-4 flex items-center justify-between">
-        <h1 className="text-base font-semibold text-foreground">Purchase log</h1>
+        <div>
+          <p className="text-[10px] font-medium tracking-[0.14em] text-muted-foreground uppercase">
+            Next time
+          </p>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
+            How your taps worked out
+          </h1>
+        </div>
         <button
           onClick={() => setShowAdd(true)}
           className="inline-flex items-center gap-1 rounded-full bg-foreground text-background text-xs font-medium px-3 py-1.5 hover:opacity-90 transition-opacity"
@@ -145,7 +184,7 @@ function PurchasesPage() {
         <div className="grid grid-cols-2 gap-3 mb-6">
           <Stat label="Logged spend" value={dollars(totals.spent)} />
           <Stat
-            label="Left on the table"
+            label="Next-time upside"
             value={dollars(totals.missed)}
             accent={totals.missed > 0}
           />
@@ -182,12 +221,12 @@ function Stat({ label, value, accent }: { label: string; value: string; accent?:
   return (
     <div
       className={`rounded-2xl border bg-surface px-4 py-3 ${
-        accent ? "border-destructive/40" : "border-border"
+        accent ? "border-success/35" : "border-border"
       }`}
     >
       <p
         className={`text-xl font-semibold tabular-nums ${
-          accent ? "text-destructive" : "text-foreground"
+          accent ? "text-success" : "text-foreground"
         }`}
       >
         {value}
@@ -259,12 +298,12 @@ function PurchaseRow({
       </div>
 
       {wasBest ? (
-        <p className="mt-2 text-[11px] text-success">Best card used.</p>
+        <p className="mt-2 text-[11px] text-success">Best card used for this purchase.</p>
       ) : (
-        <div className="mt-2 flex items-center gap-1.5 text-[11px] text-destructive">
+        <div className="mt-2 flex items-center gap-1.5 text-[11px] text-amber-700">
           <ArrowUpRight className="size-3" />
           <span>
-            {dollars(purchase.delta_value_cents)} more with {best}
+            Next time, use {best} for about {dollars(purchase.delta_value_cents)} more.
           </span>
         </div>
       )}
@@ -276,10 +315,10 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (
     <div className="mt-6 rounded-2xl border border-dashed border-border-strong bg-surface p-8 text-center">
       <Receipt className="size-5 text-muted-foreground mx-auto mb-3" />
-      <p className="text-sm font-medium text-foreground">No purchases yet.</p>
+      <p className="text-sm font-medium text-foreground">Your next-time coach starts here.</p>
       <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-        Log a past transaction to track what you earned and what you would've earned with your best
-        card.
+        Tell TAP what you used. You’ll get one calm, forward-looking tip for a similar purchase next
+        time.
       </p>
       <button
         onClick={onAdd}

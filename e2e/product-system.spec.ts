@@ -163,6 +163,53 @@ test.describe("TAP product system", () => {
     await expect(page.getByRole("heading", { name: "Know what every card is for." })).toBeVisible();
   });
 
+  test("turns the wallet into a searchable, printable card cheat sheet", async ({ page }) => {
+    const browserProblems: string[] = [];
+    page.on("pageerror", (error) => browserProblems.push(String(error)));
+    await page.goto("/cheat-sheet");
+
+    await expect(page.getByRole("heading", { name: "Your one-glance card plan." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Your everyday answers" })).toBeVisible();
+    await expect(page.locator(".tap-cheat-row")).toHaveCount(10);
+    await expect(page.getByText("Rules checked", { exact: false })).toHaveCount(0);
+    await expect(page.getByText("Card terms checked", { exact: false })).toBeVisible();
+
+    const search = page.getByRole("textbox", { name: "Search your card plan" });
+    await search.fill("Dining");
+    await expect(page.locator(".tap-cheat-row")).toHaveCount(1);
+    const diningAnswer = page.getByRole("article");
+    await expect(diningAnswer.getByRole("heading", { name: "Dining" })).toBeVisible();
+    await expect(diningAnswer.getByText("Gold", { exact: true })).toBeVisible();
+    await expect(diningAnswer.getByText("4× points", { exact: true })).toBeVisible();
+
+    await search.fill("not in my plan");
+    await expect(page.getByText("No card-plan matches for “not in my plan”.")).toBeVisible();
+
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await expect(page.getByRole("heading", { name: "Your front-of-wallet cards" })).toBeVisible();
+    const workspace = page.getByRole("complementary", { name: "TAP workspace" });
+    await expect(workspace.getByRole("link", { name: "Cheat sheet" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    await expect(page.getByRole("button", { name: "Print or save as PDF" })).toBeVisible();
+
+    await page.emulateMedia({ media: "print" });
+    await expect(page.getByRole("button", { name: "Print or save as PDF" })).toBeHidden();
+    await expect(page.getByRole("navigation", { name: "Primary" })).toBeHidden();
+    await expect(page.locator(".tap-cheat-carry")).toBeHidden();
+    expect(browserProblems).toEqual([]);
+  });
+
+  test("shows point assumptions in cents without multiplying them twice", async ({ page }) => {
+    await page.goto("/plan");
+    await page.getByPlaceholder("400.00").fill("100");
+    await page.getByRole("button", { name: "dining", exact: true }).click();
+
+    await expect(page.getByText(/at 2.00¢ per point/)).toBeVisible();
+    await expect(page.getByText(/200.00¢ per point/)).toHaveCount(0);
+  });
+
   test("expands online shopping into merchant choices without losing search", async ({ page }) => {
     await page.goto("/home");
     const search = page.getByRole("textbox");

@@ -84,15 +84,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "theme-color", content: "#F7F3EB" },
-      { title: "TAP — know before you tap." },
-      { name: "description", content: "TAP tells you which card to tap, before you pay." },
-      { property: "og:title", content: "TAP — know before you tap." },
-      { property: "og:description", content: "TAP tells you which card to tap, before you pay." },
+      { title: "TAP — know which card to tap before you pay." },
+      {
+        name: "description",
+        content:
+          "TAP gives you one clear card recommendation before checkout, with the math attached.",
+      },
+      { property: "og:title", content: "TAP — know which card to tap before you pay." },
+      {
+        property: "og:description",
+        content: "One clear card recommendation before checkout, with the math attached.",
+      },
       { property: "og:site_name", content: "TAP" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "TAP — know before you tap." },
-      { name: "twitter:description", content: "TAP tells you which card to tap, before you pay." },
+      { name: "twitter:title", content: "TAP — know which card to tap before you pay." },
+      {
+        name: "twitter:description",
+        content: "One clear card recommendation before checkout, with the math attached.",
+      },
       { property: "og:url", content: "https://tapknows.com/" },
       { name: "twitter:url", content: "https://tapknows.com/" },
       {

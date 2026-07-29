@@ -10,6 +10,8 @@ type Props = {
   value?: React.ReactNode;
   /** Last four of the card. If omitted, derived deterministically from name+issuer. */
   last4?: string;
+  /** Hide the illustrative number line when the surface only needs card identity. */
+  showNumber?: boolean;
   /** Cardholder line (spaced caps). Defaults to "TAP MEMBER". */
   holder?: string;
   className?: string;
@@ -31,6 +33,7 @@ export function CardFace({
   trailing,
   value,
   last4,
+  showNumber = true,
   holder,
   className,
 }: Props) {
@@ -59,10 +62,12 @@ export function CardFace({
 
         {/* Row 3 — masked number line */}
         <div className="mt-auto">
-          <p className="cs-face-number">
-            <span aria-hidden>•••• •••• •••• </span>
-            <span className="cs-face-last4">{digits}</span>
-          </p>
+          {showNumber ? (
+            <p className="cs-face-number">
+              <span aria-hidden>•••• •••• •••• </span>
+              <span className="cs-face-last4">{digits}</span>
+            </p>
+          ) : null}
 
           {/* Row 4 — holder + product */}
           <div className="mt-[3%] flex items-end justify-between gap-3">

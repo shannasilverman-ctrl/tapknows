@@ -21,6 +21,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as DecideRouteImport } from './routes/decide'
+import { Route as CheatSheetRouteImport } from './routes/cheat-sheet'
 import { Route as CardsRouteImport } from './routes/cards'
 import { Route as BonusesRouteImport } from './routes/bonuses'
 import { Route as AlertsRouteImport } from './routes/alerts'
@@ -88,6 +89,11 @@ const DecideRoute = DecideRouteImport.update({
   path: '/decide',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CheatSheetRoute = CheatSheetRouteImport.update({
+  id: '/cheat-sheet',
+  path: '/cheat-sheet',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CardsRoute = CardsRouteImport.update({
   id: '/cards',
   path: '/cards',
@@ -125,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/alerts': typeof AlertsRoute
   '/bonuses': typeof BonusesRoute
   '/cards': typeof CardsRoute
+  '/cheat-sheet': typeof CheatSheetRoute
   '/decide': typeof DecideRoute
   '/demo': typeof DemoRoute
   '/home': typeof HomeRoute
@@ -145,6 +152,7 @@ export interface FileRoutesByTo {
   '/alerts': typeof AlertsRoute
   '/bonuses': typeof BonusesRoute
   '/cards': typeof CardsRoute
+  '/cheat-sheet': typeof CheatSheetRoute
   '/decide': typeof DecideRoute
   '/demo': typeof DemoRoute
   '/home': typeof HomeRoute
@@ -166,6 +174,7 @@ export interface FileRoutesById {
   '/alerts': typeof AlertsRoute
   '/bonuses': typeof BonusesRoute
   '/cards': typeof CardsRoute
+  '/cheat-sheet': typeof CheatSheetRoute
   '/decide': typeof DecideRoute
   '/demo': typeof DemoRoute
   '/home': typeof HomeRoute
@@ -188,6 +197,7 @@ export interface FileRouteTypes {
     | '/alerts'
     | '/bonuses'
     | '/cards'
+    | '/cheat-sheet'
     | '/decide'
     | '/demo'
     | '/home'
@@ -208,6 +218,7 @@ export interface FileRouteTypes {
     | '/alerts'
     | '/bonuses'
     | '/cards'
+    | '/cheat-sheet'
     | '/decide'
     | '/demo'
     | '/home'
@@ -228,6 +239,7 @@ export interface FileRouteTypes {
     | '/alerts'
     | '/bonuses'
     | '/cards'
+    | '/cheat-sheet'
     | '/decide'
     | '/demo'
     | '/home'
@@ -249,6 +261,7 @@ export interface RootRouteChildren {
   AlertsRoute: typeof AlertsRoute
   BonusesRoute: typeof BonusesRoute
   CardsRoute: typeof CardsRoute
+  CheatSheetRoute: typeof CheatSheetRoute
   DecideRoute: typeof DecideRoute
   DemoRoute: typeof DemoRoute
   HomeRoute: typeof HomeRoute
@@ -350,6 +363,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DecideRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cheat-sheet': {
+      id: '/cheat-sheet'
+      path: '/cheat-sheet'
+      fullPath: '/cheat-sheet'
+      preLoaderRoute: typeof CheatSheetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cards': {
       id: '/cards'
       path: '/cards'
@@ -401,6 +421,7 @@ const rootRouteChildren: RootRouteChildren = {
   AlertsRoute: AlertsRoute,
   BonusesRoute: BonusesRoute,
   CardsRoute: CardsRoute,
+  CheatSheetRoute: CheatSheetRoute,
   DecideRoute: DecideRoute,
   DemoRoute: DemoRoute,
   HomeRoute: HomeRoute,

@@ -1,48 +1,28 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { Bell, CreditCard, Home, LogIn, Sliders, Wand2 } from "lucide-react";
+import { BookOpenText, CreditCard, History, Home, LogIn, Wand2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { getUnreadAlertCount } from "@/lib/alerts.functions";
 import { LegalFooter } from "@/components/legal-footer";
 
 const signedInItems = [
-  { to: "/home", label: "Home", icon: Home },
+  { to: "/home", label: "Decide", icon: Home },
   { to: "/cards", label: "Wallet", icon: CreditCard },
   { to: "/plan", label: "Plan", icon: Wand2 },
-  { to: "/alerts", label: "Alerts", icon: Bell },
-  { to: "/settings", label: "Settings", icon: Sliders },
+  { to: "/purchases", label: "Review", icon: History },
+  { to: "/cheat-sheet", label: "Cheat", icon: BookOpenText },
 ] as const;
 
 const guestItems = [
-  { to: "/home", label: "Home", icon: Home },
+  { to: "/home", label: "Decide", icon: Home },
   { to: "/cards", label: "Wallet", icon: CreditCard },
   { to: "/plan", label: "Plan", icon: Wand2 },
+  { to: "/cheat-sheet", label: "Cheat", icon: BookOpenText },
   { to: "/login", label: "Sign in", icon: LogIn },
 ] as const;
 
 export function BottomNav() {
   const { pathname } = useLocation();
   const { user } = useAuth();
-  const getCount = useServerFn(getUnreadAlertCount);
-  const [unread, setUnread] = useState(0);
   const items = user ? signedInItems : guestItems;
-
-  useEffect(() => {
-    if (!user) return;
-    let cancelled = false;
-    const refresh = () => {
-      getCount({})
-        .then((r) => !cancelled && setUnread(r.count))
-        .catch(() => {});
-    };
-    refresh();
-    const t = setInterval(refresh, 60_000);
-    return () => {
-      cancelled = true;
-      clearInterval(t);
-    };
-  }, [user, getCount, pathname]);
 
   return (
     <>
@@ -54,7 +34,6 @@ export function BottomNav() {
         {items.map((it) => {
           const active = pathname === it.to;
           const Icon = it.icon;
-          const showDot = it.to === "/alerts" && unread > 0;
           return (
             <Link
               key={it.to}
@@ -67,14 +46,6 @@ export function BottomNav() {
             >
               <span className="relative inline-flex">
                 <Icon className="size-5" strokeWidth={active ? 2.25 : 1.75} />
-                {showDot && (
-                  <span
-                    aria-label={`${unread} unread`}
-                    className="absolute -top-0.5 -right-1 min-w-[14px] h-[14px] px-1 rounded-full bg-destructive text-[9px] font-semibold text-destructive-foreground flex items-center justify-center leading-none"
-                  >
-                    {unread > 9 ? "9+" : unread}
-                  </span>
-                )}
               </span>
               <span className={active ? "font-medium" : ""}>{it.label}</span>
             </Link>

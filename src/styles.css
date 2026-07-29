@@ -4711,6 +4711,539 @@ body {
   display: none;
 }
 
+/* ============================================================
+   TAP CHEAT SHEET — an exportable memory aid, not another
+   analytics dashboard. The answer stays more prominent than
+   the points math and every material exception remains visible.
+   ============================================================ */
+.tap-cheat-main {
+  width: min(100%, 1180px);
+  margin: 0 auto;
+  padding: 42px 22px 52px;
+}
+
+.tap-cheat-header {
+  display: grid;
+  gap: 24px;
+  align-items: end;
+  padding: 18px 0 32px;
+}
+
+.tap-cheat-eyebrow,
+.tap-cheat-section-label {
+  color: var(--tap-orange);
+  font: 650 10px/1.25 var(--font-mono);
+  letter-spacing: 0.15em;
+}
+
+.tap-cheat-header h1 {
+  max-width: 760px;
+  margin-top: 12px;
+  color: var(--tap-plum);
+  font: 800 clamp(42px, 7vw, 76px) / 0.96 var(--font-display);
+  letter-spacing: -0.065em;
+}
+
+.tap-cheat-header > div > p:last-child {
+  max-width: 620px;
+  margin-top: 18px;
+  color: var(--tap-muted);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.tap-cheat-print {
+  display: inline-flex;
+  gap: 9px;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 46px;
+  padding: 0 18px;
+  border: 1px solid rgba(36, 21, 43, 0.15);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--tap-plum);
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 12px 30px rgba(36, 21, 43, 0.06);
+}
+
+.tap-cheat-print svg {
+  width: 16px;
+}
+
+.tap-cheat-print:hover {
+  border-color: rgba(36, 21, 43, 0.3);
+  transform: translateY(-1px);
+}
+
+.tap-cheat-loading {
+  min-height: 420px;
+  border-radius: 28px;
+  background: linear-gradient(100deg, #f1ece5 20%, #fff 42%, #f1ece5 62%);
+  background-size: 240% 100%;
+  animation: tap-shimmer 1.5s linear infinite;
+}
+
+.tap-cheat-empty {
+  display: grid;
+  place-items: center;
+  min-height: 480px;
+  padding: 48px 22px;
+  border: 1px solid rgba(36, 21, 43, 0.1);
+  border-radius: 28px;
+  background: #fff;
+  text-align: center;
+  box-shadow: 0 28px 70px rgba(36, 21, 43, 0.08);
+}
+
+.tap-cheat-empty > span {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border-radius: 18px;
+  background: var(--tap-plum);
+  color: #fff;
+}
+
+.tap-cheat-empty h2 {
+  max-width: 440px;
+  margin-top: 26px;
+  color: var(--tap-plum);
+  font: 760 32px/1.05 var(--font-display);
+  letter-spacing: -0.045em;
+}
+
+.tap-cheat-empty p {
+  max-width: 460px;
+  margin: 12px auto 24px;
+  color: var(--tap-muted);
+  line-height: 1.6;
+}
+
+.tap-cheat-empty a,
+.tap-cheat-empty button,
+.tap-cheat-trust a {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  color: var(--tap-orange);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.tap-cheat-carry {
+  position: relative;
+  display: grid;
+  gap: 28px;
+  align-items: center;
+  min-height: 325px;
+  padding: 34px 28px;
+  overflow: hidden;
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at 76% 20%, rgba(255, 98, 31, 0.24), transparent 28%),
+    linear-gradient(145deg, #211326, #100a14 76%);
+  color: #fff;
+  box-shadow: 0 30px 80px rgba(36, 21, 43, 0.17);
+}
+
+.tap-cheat-carry h2 {
+  max-width: 520px;
+  margin-top: 13px;
+  font: 760 clamp(30px, 5vw, 48px) / 1 var(--font-display);
+  letter-spacing: -0.052em;
+}
+
+.tap-cheat-carry > div:first-child > p:last-child {
+  max-width: 460px;
+  margin-top: 14px;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.tap-cheat-card-stack {
+  position: relative;
+  min-height: 230px;
+}
+
+.tap-cheat-card {
+  position: absolute;
+  top: calc(var(--tap-card-index) * 40px);
+  left: calc(var(--tap-card-index) * 14px);
+  width: min(300px, calc(100vw - 88px));
+  aspect-ratio: 1.586;
+  border-radius: 15px;
+  transform: rotate(calc((var(--tap-card-index) - 1) * 2.5deg));
+  filter: drop-shadow(0 18px 24px rgba(0, 0, 0, 0.28));
+}
+
+.tap-cheat-card .cs-face {
+  height: 100%;
+}
+
+.tap-cheat-plan {
+  margin-top: 24px;
+  padding: 26px 22px;
+  border: 1px solid rgba(36, 21, 43, 0.1);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 24px 60px rgba(36, 21, 43, 0.07);
+}
+
+.tap-cheat-toolbar {
+  display: grid;
+  gap: 20px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid rgba(36, 21, 43, 0.1);
+}
+
+.tap-cheat-toolbar h2 {
+  margin-top: 8px;
+  color: var(--tap-plum);
+  font: 740 29px/1 var(--font-display);
+  letter-spacing: -0.04em;
+}
+
+.tap-cheat-search {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  height: 48px;
+  padding: 0 15px;
+  border: 1px solid rgba(36, 21, 43, 0.13);
+  border-radius: 14px;
+  background: #fffdf9;
+}
+
+.tap-cheat-search:focus-within {
+  border-color: var(--tap-orange);
+  box-shadow: 0 0 0 3px rgba(255, 98, 31, 0.11);
+}
+
+.tap-cheat-search svg {
+  width: 17px;
+  color: var(--tap-muted);
+}
+
+.tap-cheat-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--tap-plum);
+  font-size: 13px;
+}
+
+.tap-cheat-grid {
+  display: grid;
+}
+
+.tap-cheat-row {
+  display: grid;
+  gap: 16px;
+  padding: 22px 2px;
+  border-bottom: 1px solid rgba(36, 21, 43, 0.09);
+}
+
+.tap-cheat-row:last-child {
+  border-bottom: 0;
+}
+
+.tap-cheat-category {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.tap-cheat-category > span {
+  display: grid;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 50%;
+  background: #dff0e9;
+  color: #17684f;
+}
+
+.tap-cheat-category svg {
+  width: 14px;
+}
+
+.tap-cheat-category h3,
+.tap-cheat-answer strong {
+  color: var(--tap-plum);
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.tap-cheat-category p,
+.tap-cheat-answer p,
+.tap-cheat-answer small,
+.tap-cheat-rate span {
+  margin-top: 4px;
+  color: var(--tap-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.tap-cheat-answer {
+  display: grid;
+}
+
+.tap-cheat-answer p {
+  margin: 0;
+  font: 600 9px/1 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.tap-cheat-answer strong {
+  margin-top: 6px;
+  font-size: 15px;
+}
+
+.tap-cheat-rate {
+  display: grid;
+  align-content: start;
+}
+
+.tap-cheat-rate strong {
+  color: var(--tap-plum);
+  font: 650 14px/1.2 var(--font-mono);
+}
+
+.tap-cheat-exception span {
+  display: inline-flex;
+  padding: 7px 10px;
+  border-radius: 9px;
+  background: #f4f0ea;
+  color: #655a66;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.tap-cheat-no-results {
+  padding: 48px 0;
+  color: var(--tap-muted);
+  text-align: center;
+}
+
+.tap-cheat-trust {
+  display: grid;
+  gap: 14px;
+  align-items: center;
+  margin-top: 22px;
+  padding: 20px 22px;
+  border: 1px solid rgba(36, 21, 43, 0.09);
+  border-radius: 20px;
+  background: #f1eee8;
+}
+
+.tap-cheat-trust > svg {
+  width: 22px;
+  color: #17684f;
+}
+
+.tap-cheat-trust strong {
+  color: var(--tap-plum);
+  font-size: 12px;
+}
+
+.tap-cheat-trust p {
+  margin-top: 4px;
+  color: #5d555d;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.tap-cheat-trust a {
+  color: #963307;
+}
+
+.tap-cheat-story {
+  display: grid;
+  gap: 50px;
+  align-items: center;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 110px 28px;
+}
+
+.tap-cheat-story-copy > p {
+  color: #a83c0b;
+  font: 650 10px/1 var(--font-mono);
+  letter-spacing: 0.15em;
+}
+
+.tap-cheat-story-copy h2 {
+  max-width: 580px;
+  margin-top: 16px;
+  color: var(--tap-plum);
+  font: 780 clamp(42px, 6vw, 68px) / 0.98 var(--font-display);
+  letter-spacing: -0.06em;
+}
+
+.tap-cheat-story-copy > span {
+  display: block;
+  max-width: 520px;
+  margin: 20px 0 24px;
+  color: var(--tap-muted);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.tap-cheat-story-sheet {
+  padding: 18px;
+  border: 1px solid rgba(36, 21, 43, 0.11);
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 28px 72px rgba(36, 21, 43, 0.12);
+  transform: rotate(1.5deg);
+}
+
+.tap-cheat-story-sheet > div {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr auto;
+  gap: 14px;
+  align-items: center;
+  min-height: 64px;
+  padding: 0 14px;
+  border-bottom: 1px solid rgba(36, 21, 43, 0.09);
+}
+
+.tap-cheat-story-sheet span {
+  color: var(--tap-muted);
+  font-size: 12px;
+}
+
+.tap-cheat-story-sheet strong {
+  color: var(--tap-plum);
+  font-size: 13px;
+}
+
+.tap-cheat-story-sheet b {
+  color: #a83c0b;
+  font: 650 15px/1 var(--font-mono);
+}
+
+.tap-cheat-story-sheet small {
+  display: block;
+  padding: 16px 14px 5px;
+  color: var(--tap-muted);
+  font-size: 9px;
+}
+
+@media (min-width: 760px) {
+  .tap-cheat-header,
+  .tap-cheat-trust {
+    grid-template-columns: 1fr auto;
+  }
+
+  .tap-cheat-carry,
+  .tap-cheat-story {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.8fr);
+  }
+}
+
+@media (max-width: 1079px) {
+  .tap-cheat-carry {
+    display: none;
+  }
+}
+
+@media (min-width: 1080px) {
+  .tap-cheat-main {
+    padding: 56px 46px 64px;
+  }
+
+  .tap-cheat-header {
+    padding-top: 6px;
+  }
+
+  .tap-cheat-carry {
+    padding: 44px 48px;
+  }
+
+  .tap-cheat-plan {
+    padding: 32px 36px;
+  }
+
+  .tap-cheat-toolbar {
+    grid-template-columns: 1fr auto;
+  }
+
+  .tap-cheat-row {
+    grid-template-columns: minmax(170px, 1.2fr) minmax(160px, 1fr) 140px minmax(130px, 0.85fr);
+    align-items: center;
+  }
+}
+
+@media print {
+  @page {
+    margin: 0.45in;
+  }
+
+  body {
+    background: #fff !important;
+  }
+
+  .tap-cheat-page {
+    display: block !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  .tap-desktop-rail,
+  .tap-cheat-print,
+  .tap-cheat-search,
+  .tap-cheat-carry,
+  .tap-cheat-trust a,
+  .tap-cheat-page > footer,
+  .tap-cheat-page > nav {
+    display: none !important;
+  }
+
+  .tap-cheat-main {
+    width: 100%;
+    padding: 0;
+  }
+
+  .tap-cheat-header {
+    display: block;
+    padding: 0 0 20px;
+  }
+
+  .tap-cheat-header h1 {
+    font-size: 34px;
+  }
+
+  .tap-cheat-plan {
+    margin: 0;
+    padding: 16px;
+    border-color: #bbb;
+    box-shadow: none;
+  }
+
+  .tap-cheat-row {
+    grid-template-columns: 1.2fr 1fr 0.8fr 1fr;
+    break-inside: avoid;
+    padding: 12px 0;
+  }
+
+  .tap-cheat-trust {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    margin-top: 14px;
+    padding: 12px;
+    background: #fff;
+  }
+}
+
 @media (min-width: 1080px) {
   .tap-app-shell,
   .tap-decision-screen {

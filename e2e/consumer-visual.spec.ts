@@ -17,7 +17,7 @@ const guestWallet = {
 };
 
 const routes = [
-  { name: "landing", path: "/", heading: "Know before you tap." },
+  { name: "landing", path: "/", heading: "Know which card to tap—before you pay." },
   { name: "onboarding", path: "/onboarding", heading: "Build your wallet." },
   { name: "home", path: "/home", heading: "Where are you paying?" },
   {
@@ -27,6 +27,7 @@ const routes = [
   },
   { name: "cards", path: "/cards", heading: "Wallet" },
   { name: "plan", path: "/plan", heading: "Plan" },
+  { name: "cheat-sheet", path: "/cheat-sheet", heading: "Your one-glance card plan." },
   { name: "bonuses", path: "/bonuses", redirectTo: "/login" },
   { name: "offers", path: "/offers", redirectTo: "/login" },
   { name: "purchases", path: "/purchases", redirectTo: "/login" },
