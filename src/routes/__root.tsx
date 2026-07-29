@@ -107,11 +107,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:url", content: "https://tapknows.com/" },
       {
         property: "og:image",
-        content: "https://tapknows.com/og-tap.png",
+        content: "https://tapknows.com/og.png",
       },
       {
         name: "twitter:image",
-        content: "https://tapknows.com/og-tap.png",
+        content: "https://tapknows.com/og.png",
       },
     ],
     links: [

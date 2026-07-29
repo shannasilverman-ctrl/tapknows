@@ -4093,7 +4093,7 @@ body {
 }
 
 .tap-app-shell nav .text-muted-foreground {
-  color: #8b828a !important;
+  color: #6f666e !important;
 }
 
 /* The tactile object that persists from home through the recommendation. */
@@ -4908,6 +4908,13 @@ body {
   letter-spacing: -0.04em;
 }
 
+.tap-cheat-basis {
+  margin-top: 8px;
+  color: var(--tap-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
 .tap-cheat-search {
   display: flex;
   gap: 10px;
@@ -5015,6 +5022,12 @@ body {
 .tap-cheat-rate strong {
   color: var(--tap-plum);
   font: 650 14px/1.2 var(--font-mono);
+}
+
+.tap-cheat-rate small {
+  margin-top: 5px;
+  color: #7b5667;
+  font: 600 9px/1.35 var(--font-mono);
 }
 
 .tap-cheat-exception span {
@@ -5158,19 +5171,43 @@ body {
 
 @media (min-width: 1080px) {
   .tap-cheat-main {
-    padding: 56px 46px 64px;
+    padding: 30px 46px 64px;
   }
 
   .tap-cheat-header {
     padding-top: 6px;
+    padding-bottom: 20px;
+  }
+
+  .tap-cheat-header h1 {
+    font-size: clamp(46px, 5vw, 64px);
+  }
+
+  .tap-cheat-header > div > p:last-child {
+    margin-top: 12px;
   }
 
   .tap-cheat-carry {
-    padding: 44px 48px;
+    min-height: 186px;
+    padding: 24px 36px;
+  }
+
+  .tap-cheat-carry h2 {
+    font-size: 34px;
+  }
+
+  .tap-cheat-card-stack {
+    min-height: 138px;
+  }
+
+  .tap-cheat-card {
+    top: calc(var(--tap-card-index) * 22px);
+    width: 220px;
   }
 
   .tap-cheat-plan {
-    padding: 32px 36px;
+    margin-top: 18px;
+    padding: 24px 32px;
   }
 
   .tap-cheat-toolbar {

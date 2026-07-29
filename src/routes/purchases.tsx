@@ -6,13 +6,16 @@ import type { MerchantCatalog, PointsProgram } from "@/lib/types";
 import { dollars, pointsFmt } from "@/lib/format";
 import {
   recommend,
-  resolveEarnRule,
   type EarnRule,
   type EngineCard,
   type EngineOffer,
   type Play,
   type PlayLeg,
 } from "@/lib/recommendationEngine";
+import { CARD_CATALOG } from "@/lib/cardCatalog";
+import { POINT_VALUATIONS } from "@/lib/pointValuations";
+import { capReachedByCardMap, type CapPeriod } from "@/lib/capReached";
+import { canonicalPurchaseCategory, earnedPointsFromEngineLeg } from "@/lib/purchaseReview";
 import { BottomNav } from "@/components/bottom-nav";
 import { ArrowUpRight, Plus, Receipt, ShieldAlert, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
@@ -84,8 +87,21 @@ function PurchasesPage() {
       setLoadFailed(true);
       return;
     }
-    const catalog: Record<string, CatalogRow> = {};
+    const catalog: Record<string, CatalogRow> = Object.fromEntries(
+      CARD_CATALOG.map((card) => [
+        card.id,
+        {
+          id: card.id,
+          issuer: card.issuer,
+          name: card.name,
+          points_program_id: card.points_program_id,
+          foreign_tx_fee_pct: card.foreign_tx_fee_pct,
+          earn_rules: card.earn_rules,
+        },
+      ]),
+    );
     (cc.data ?? []).forEach((c) => {
+      if (catalog[c.id]) return;
       catalog[c.id] = { ...c, earn_rules: (c.earn_rules as unknown as EarnRule[]) ?? [] };
     });
     const programs: Record<string, PointsProgram> = {};
@@ -94,13 +110,27 @@ function PurchasesPage() {
       programs[p.id] = p as unknown as PointsProgram;
       valuations[p.id] = Number(p.default_cpp) * 100;
     });
+    Object.values(POINT_VALUATIONS).forEach((valuation) => {
+      programs[valuation.programId] ??= {
+        id: valuation.programId,
+        name: valuation.displayName,
+        kind: valuation.programId === "cashback" ? "cashback" : "transferable",
+        default_cpp: valuation.cpp,
+      };
+      valuations[valuation.programId] ??= valuation.cpp * 100;
+    });
     (ov.data ?? []).forEach((o) => {
       valuations[o.points_program_id] = Number(o.cpp) * 100;
     });
+    const wallet = (uc.data ?? [])
+      .map((c) => hydrateCard(c.id, c.card_catalog_id, c.nickname, catalog))
+      .filter((c): c is EngineCard => !!c);
+    if (wallet.length !== (uc.data ?? []).length) {
+      setLoadFailed(true);
+      return;
+    }
     setData({
-      wallet: (uc.data ?? [])
-        .map((c) => hydrateCard(c.id, c.card_catalog_id, c.nickname, catalog))
-        .filter((c): c is EngineCard => !!c),
+      wallet,
       programs,
       merchants: (mc.data ?? []) as MerchantCatalog[],
       offers: (uo.data ?? []).map((o) => ({
@@ -189,6 +219,10 @@ function PurchasesPage() {
             accent={totals.missed > 0}
           />
         </div>
+        <p className="-mt-3 mb-6 text-[11px] leading-relaxed text-muted-foreground">
+          Estimates use the offers, point values, cap status, and issuer terms available when you
+          log each purchase. Issuer posting can differ.
+        </p>
 
         {!data ? null : data.purchases.length === 0 ? (
           <EmptyState onAdd={() => setShowAdd(true)} />
@@ -204,6 +238,7 @@ function PurchasesPage() {
       {showAdd && data && (
         <LogPurchaseSheet
           data={data}
+          userId={user.id}
           onClose={() => setShowAdd(false)}
           onSaved={async () => {
             setShowAdd(false);
@@ -333,16 +368,18 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
 
 function LogPurchaseSheet({
   data,
+  userId,
   onClose,
   onSaved,
 }: {
   data: Data;
+  userId: string;
   onClose: () => void;
   onSaved: () => void;
 }) {
   const [merchantId, setMerchantId] = useState<string>("");
   const [merchantText, setMerchantText] = useState("");
-  const [merchantCategory, setMerchantCategory] = useState("other");
+  const [merchantCategory, setMerchantCategory] = useState("everything_else");
   const [amountStr, setAmountStr] = useState("");
   const [userCardId, setUserCardId] = useState(data.wallet[0]?.id ?? "");
   const [occurredAt, setOccurredAt] = useState(new Date().toISOString().slice(0, 10));
@@ -362,6 +399,27 @@ function LogPurchaseSheet({
     return Number.isFinite(n) && n > 0 ? Math.round(n * 100) : 0;
   }, [amountStr]);
 
+  const capReached = useMemo(
+    () =>
+      capReachedByCardMap(
+        userId,
+        data.wallet.flatMap((card) =>
+          card.earn_rules.flatMap((rule) => {
+            const cap = rule.cap_period_spend ?? rule.cap_annual_spend ?? null;
+            if (cap == null) return [];
+            return [
+              {
+                userCardId: card.id,
+                category: rule.category,
+                period: (rule.cap_period ?? "annual") as CapPeriod,
+              },
+            ];
+          }),
+        ),
+      ),
+    [data.wallet, userId],
+  );
+
   const preview = useMemo<{
     used: {
       play: Play;
@@ -377,12 +435,14 @@ function LogPurchaseSheet({
     const usedCard = data.wallet.find((card) => card.id === userCardId);
     if (!usedCard) return { used: null, winner: null, delta: 0 };
 
+    const category = canonicalPurchaseCategory(merchantCategory);
     const engineInput = {
       amountCents,
-      category: merchantCategory,
+      category,
       merchant: merchantText.trim() || null,
       offers: data.offers,
       valuations: data.valuations,
+      capReachedCategoriesByCard: capReached,
     };
     const winner = recommend({ ...engineInput, wallet: data.wallet }).winner;
     const usedPlay = recommend({ ...engineInput, wallet: [usedCard] }).winner;
@@ -391,8 +451,8 @@ function LogPurchaseSheet({
     const program = programId ? data.programs[programId] : null;
     const rewardKind: "points" | "cashback" = program?.kind === "cashback" ? "cashback" : "points";
     const pointsEarned =
-      usedPlay && usedLeg && programId && rewardKind === "points"
-        ? Math.round((amountCents / 100) * resolveEarnRule(usedCard, merchantCategory).multiplier)
+      usedLeg && programId && rewardKind === "points"
+        ? earnedPointsFromEngineLeg(usedLeg, data.valuations[programId] ?? 1)
         : 0;
     const used =
       usedPlay && usedLeg
@@ -401,7 +461,7 @@ function LogPurchaseSheet({
     const delta =
       winner && used ? Math.max(0, winner.totalValueCents - used.play.totalValueCents) : 0;
     return { used, winner, delta };
-  }, [userCardId, amountCents, merchantText, merchantCategory, data]);
+  }, [userCardId, amountCents, merchantText, merchantCategory, data, capReached]);
 
   const submit = async () => {
     if (!userCardId) return toast.error("Pick the card you used");
@@ -427,52 +487,6 @@ function LogPurchaseSheet({
       setSaving(false);
       toast.error(error.message);
       return;
-    }
-
-    // Bump points balance if applicable
-    if (
-      preview.used &&
-      preview.used.rewardKind === "points" &&
-      preview.used.pointsEarned > 0 &&
-      preview.used.programId
-    ) {
-      const programId = preview.used.programId;
-      const { data: existing } = await supabase
-        .from("user_points_balances")
-        .select("id, balance")
-        .eq("points_program_id", programId)
-        .maybeSingle();
-      if (existing) {
-        await supabase
-          .from("user_points_balances")
-          .update({
-            balance: existing.balance + preview.used.pointsEarned,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", existing.id);
-      } else {
-        await supabase.from("user_points_balances").insert({
-          user_id: uid,
-          points_program_id: programId,
-          balance: preview.used.pointsEarned,
-        });
-      }
-    }
-
-    // Bump signup bonus progress for the card used
-    const { data: openBonuses } = await supabase
-      .from("user_signup_bonuses")
-      .select("id, spend_so_far, spend_required")
-      .eq("user_card_id", userCardId);
-    if (openBonuses) {
-      for (const b of openBonuses) {
-        if (b.spend_so_far < b.spend_required) {
-          await supabase
-            .from("user_signup_bonuses")
-            .update({ spend_so_far: b.spend_so_far + Math.round(amountCents / 100) })
-            .eq("id", b.id);
-        }
-      }
     }
 
     setSaving(false);
@@ -537,8 +551,8 @@ function LogPurchaseSheet({
                     className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm"
                   >
                     {CATEGORIES.map((c) => (
-                      <option key={c} value={c}>
-                        {c.replace(/_/g, " ")}
+                      <option key={c.value} value={c.value}>
+                        {c.label}
                       </option>
                     ))}
                   </select>
@@ -605,6 +619,10 @@ function LogPurchaseSheet({
                       <span className="font-medium tabular-nums">+{dollars(preview.delta)}</span>
                     </div>
                   )}
+                  <p className="mt-3 border-t border-border pt-2 text-[10px] leading-relaxed text-muted-foreground">
+                    Estimate only—this does not change your saved points or signup-bonus progress.
+                    Issuer posting can differ.
+                  </p>
                 </div>
               )}
 
@@ -624,18 +642,18 @@ function LogPurchaseSheet({
 }
 
 const CATEGORIES = [
-  "groceries",
-  "dining",
-  "gas",
-  "travel",
-  "flights",
-  "hotels",
-  "transit",
-  "rideshare",
-  "streaming",
-  "drugstore",
-  "online",
-  "other",
+  { value: "groceries", label: "Groceries" },
+  { value: "dining", label: "Dining" },
+  { value: "gas", label: "Gas & EV" },
+  { value: "travel", label: "Other travel" },
+  { value: "flights", label: "Flights" },
+  { value: "hotels", label: "Hotels" },
+  { value: "transit", label: "Transit" },
+  { value: "rideshare", label: "Rideshare" },
+  { value: "streaming", label: "Streaming" },
+  { value: "drugstores", label: "Drugstores" },
+  { value: "online_shopping", label: "Online shopping" },
+  { value: "everything_else", label: "Everything else" },
 ];
 
 function hydrateCard(

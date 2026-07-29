@@ -74,29 +74,12 @@ function cppFor(
   return programs[programId]?.default_cpp ?? 0.01;
 }
 
-function programKind(
-  programId: string | null,
-  programs: Record<string, PointsProgram>,
-): "cashback" | "points" {
-  if (!programId) return "cashback";
-  const p = programs[programId];
-  return p?.kind === "cashback" ? "cashback" : "points";
-}
-
 /**
  * The card's base rule — what it earns when no bonus matches, and what a bonus
  * rule degrades to once its cap is spent.
  *
- * This mirrors `findFallback` in recommendationEngine.ts, which is private
- * there. Sharing it would be better, but LAW criterion JP-6 requires
- * recommendationEngine.ts to stay byte-identical to its law-time baseline, so
- * exporting it is not this change's call to make. Kept deliberately identical;
- * engineParity.test.ts now exercises a capped case, so the two drifting apart
- * fails the build rather than reaching a customer.
- *
- * NOTE: resolveEarnRule() is NOT a substitute — it returns universal-match
- * rules (top_category, rotating quarters) ahead of the base rule, which would
- * resolve a capped bonus back to itself.
+ * This deliberately mirrors the canonical engine and is covered by the
+ * cross-surface parity suite so the two customer surfaces cannot drift.
  */
 function baseRule(rules: EarnRule[]): EarnRule {
   return (
@@ -137,14 +120,13 @@ function evalCard(
   if (!card) return null;
   const amountDollars = amountCents / 100;
   const rule = pickRule(card, category);
-  const kind = programKind(card.points_program_id, ctx.programs);
   const cpp = cppFor(card.points_program_id, ctx.programs, ctx.cppOverrides);
   // Mirror recommendationEngine: when the customer has flagged this rule's
   // bonus as spent, the card earns its post-cap rate — explicit when the
   // rule declares one, otherwise the card's own base rule. A matched rule
   // that IS the fallback has no bonus to exhaust, so it is unaffected.
   const fallbackRule = baseRule(card.earn_rules);
-  const capReached = (ctx.capReachedCategoriesByCard?.[uc.id] ?? []).includes(category);
+  const capReached = (ctx.capReachedCategoriesByCard?.[uc.id] ?? []).includes(rule.category);
   const multiplier =
     capReached && rule !== fallbackRule
       ? (rule.post_cap_multiplier ?? fallbackRule.multiplier)
@@ -152,7 +134,7 @@ function evalCard(
 
   let valueCents: number;
   let pointsEarned = 0;
-  if (kind === "cashback") {
+  if (multiplier < 1) {
     valueCents = Math.round(amountDollars * multiplier * 100);
   } else {
     pointsEarned = Math.round(amountDollars * multiplier);
@@ -161,13 +143,15 @@ function evalCard(
 
   // Foreign penalty
   if (ctx.foreign && card.foreign_tx_fee_pct > 0) {
-    valueCents -= Math.round(amountDollars * Number(card.foreign_tx_fee_pct) * 100);
+    // Catalog values are whole percentages (3 means 3%), matching the
+    // canonical recommendation engine and issuer disclosures.
+    valueCents -= Math.round(amountCents * (Number(card.foreign_tx_fee_pct) / 100));
   }
 
   const matchedCategory = rule.category === "all" ? "everything" : rule.category.replace(/_/g, " ");
   const reasoning =
-    kind === "cashback"
-      ? `${(multiplier * 100).toFixed(multiplier < 0.1 ? 0 : 0)}% back on ${matchedCategory}`
+    multiplier < 1
+      ? `${(multiplier * 100).toFixed(0)}% back on ${matchedCategory}`
       : `${multiplier}x on ${matchedCategory}`;
 
   return {
@@ -179,7 +163,7 @@ function evalCard(
     valueCents,
     rewardsCents: valueCents,
     reasoning,
-    rewardKind: kind === "cashback" ? "cashback" : "points",
+    rewardKind: multiplier < 1 ? "cashback" : "points",
     pointsEarned,
     cpp,
     programId: card.points_program_id,
@@ -190,7 +174,6 @@ function offerValueOnLeg(
   offer: UserOffer,
   amountCents: number,
   cpp: number,
-  kind: "cashback" | "points",
 ): { valueCents: number; kindOverride: "points" | "cashback" | "credit"; reasoning: string } {
   const amountDollars = amountCents / 100;
   if (offer.reward_type === "statement_credit") {
@@ -211,13 +194,6 @@ function offerValueOnLeg(
   }
   // multiplier
   const m = Number(offer.reward_value);
-  if (kind === "cashback") {
-    return {
-      valueCents: Math.round(amountDollars * m * 100),
-      kindOverride: "cashback",
-      reasoning: `${m}x offer at ${offer.merchant_text}`,
-    };
-  }
   const pts = Math.round(amountDollars * m);
   return {
     valueCents: Math.round(pts * cpp * 100),
@@ -238,13 +214,13 @@ function evalCardWithOffer(
   const base = evalCard(uc, amountCents, category, ctx);
   if (!base) return null;
   const cpp = base.cpp;
-  const kind = base.rewardKind === "cashback" ? "cashback" : "points";
-  const off = offerValueOnLeg(offer, amountCents, cpp, kind);
-  // Use max of (base earn + offer overlay) — statement credits stack with base earn,
-  // percent_back replaces base for simplicity, multiplier replaces base multiplier.
+  const off = offerValueOnLeg(offer, amountCents, cpp);
+  // Statement credits and percent-back offers add to normal rewards. A
+  // multiplier is the total earn rate, so it replaces (rather than stacks on)
+  // the card's normal rate. Offers do not stack with each other.
   let combinedValue: number;
   let reasoning: string;
-  if (offer.reward_type === "statement_credit") {
+  if (offer.reward_type === "statement_credit" || offer.reward_type === "percent_back") {
     combinedValue = base.valueCents + off.valueCents;
     reasoning = `${base.reasoning} + ${off.reasoning}`;
   } else {
@@ -257,7 +233,11 @@ function evalCardWithOffer(
     valueCents: combinedValue,
     reasoning,
     offerApplied: offer,
-    rewardKind: off.kindOverride,
+    rewardKind: base.rewardKind,
+    pointsEarned:
+      offer.reward_type === "multiplier"
+        ? Math.round((amountCents / 100) * Number(offer.reward_value))
+        : base.pointsEarned,
   };
 }
 
@@ -328,17 +308,31 @@ export function planPurchase(input: PlannerInput): Play[] {
   const plays: Play[] = [];
   if (amountCents <= 0 || userCards.length === 0) return plays;
 
-  // 1. Single-card plays (with or without offer)
+  const now = new Date();
+  const activeOffers = offers.filter((offer) => {
+    if (!offer.expires_at) return true;
+    const expiry = /^\d{4}-\d{2}-\d{2}$/.test(offer.expires_at)
+      ? new Date(`${offer.expires_at}T23:59:59.999`)
+      : new Date(offer.expires_at);
+    return !Number.isFinite(expiry.getTime()) || expiry.getTime() >= now.getTime();
+  });
+
+  // 1. Single-card plays (with the strongest eligible non-stacking offer)
   for (const uc of userCards) {
-    const offer = offers.find((o) => o.user_card_id === uc.id);
-    let leg: PlayLeg | null;
-    if (offer && offer.min_spend * 100 <= amountCents) {
-      leg = evalCardWithOffer(uc, amountCents, merchantCategory, offer, input);
-    } else {
-      const base = evalCard(uc, amountCents, merchantCategory, input);
-      if (!base) continue;
-      leg = { ...base, amountCents };
-    }
+    const base = evalCard(uc, amountCents, merchantCategory, input);
+    if (!base) continue;
+    const baseLeg: PlayLeg = { ...base, amountCents };
+    const candidates = activeOffers
+      .filter((offer) => offer.user_card_id === uc.id && offer.min_spend * 100 <= amountCents)
+      .map((offer) => evalCardWithOffer(uc, amountCents, merchantCategory, offer, input))
+      .filter((leg): leg is PlayLeg => Boolean(leg));
+    candidates.push(baseLeg);
+    candidates.sort(
+      (a, b) =>
+        b.valueCents - a.valueCents ||
+        (a.offerApplied?.id ?? "").localeCompare(b.offerApplied?.id ?? ""),
+    );
+    let leg: PlayLeg | null = candidates[0] ?? null;
     if (!leg) continue;
     leg = withBenefit(leg, input);
     plays.push({
@@ -352,7 +346,7 @@ export function planPurchase(input: PlannerInput): Play[] {
   }
 
   // 2. Split plays: for every offer with a min_spend that fits, split the charge
-  for (const offer of offers) {
+  for (const offer of activeOffers) {
     const ucA = userCards.find((c) => c.id === offer.user_card_id);
     if (!ucA) continue;
     const minCents = offer.min_spend * 100;

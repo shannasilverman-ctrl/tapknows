@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "build:sites": "npm run build && node scripts/build-sites.mjs",
     "typecheck": "tsc --noEmit",
     "check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build",
     "build:dev": "vite build --mode development",

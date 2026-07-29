@@ -27,8 +27,8 @@ type Props = {
  * The wallet-screen entry point for adding cards.
  *
  * Two states:
- * - No linked institutions (or guest): primary "Set up with Plaid" + quiet
- *   "Add cards manually". Both are always visible.
+ * - No linked institutions (or guest): primary manual add + optional Plaid
+ *   sync. Both are always visible.
  * - One or more linked institutions: shows the linked-institutions row
  *   (status per the connection-health rules) plus a smaller "Link another
  *   bank" secondary button.
@@ -92,7 +92,7 @@ export function WalletConnectEntry({
       <>
         <PlaidLinkButton
           variant="secondary"
-          label="Link a bank to auto-add cards"
+          label="Optional: sync cards with Plaid"
           onComplete={() => {
             onPlaidComplete?.();
             refresh();
@@ -108,9 +108,18 @@ export function WalletConnectEntry({
   return (
     <>
       <div className="space-y-3">
+        <button
+          type="button"
+          onClick={onManual}
+          className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl bg-primary text-primary-foreground text-[14px] font-semibold hover:opacity-90 transition-opacity"
+        >
+          <Plus className="size-4" strokeWidth={2} />
+          Add cards manually
+        </button>
         <div>
           <PlaidLinkButton
-            label="Set up with Plaid"
+            variant="secondary"
+            label="Sync cards with Plaid (optional)"
             onComplete={() => {
               onPlaidComplete?.();
               refresh();
@@ -119,16 +128,8 @@ export function WalletConnectEntry({
             onAtCapacity={() => setCapOpen(true)}
           />
         </div>
-        <button
-          type="button"
-          onClick={onManual}
-          className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl border border-border bg-white text-[14px] font-medium text-foreground hover:border-primary/40 transition-colors"
-        >
-          <Plus className="size-4" strokeWidth={2} />
-          Add cards manually
-        </button>
         <p className="text-center text-[12px] text-muted-foreground leading-snug">
-          Link your bank and your cards appear automatically.
+          Manual setup needs only card product names. Plaid sync requires sign-in.
         </p>
       </div>
       <PlaidCapSheet open={capOpen} onClose={() => setCapOpen(false)} onAddManually={onManual} />

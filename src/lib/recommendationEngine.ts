@@ -17,13 +17,6 @@ export type EarnRule = {
   note?: string;
 };
 
-// Slugs that match ANY purchase category (best-case earn). Used by cards like
-// Citi Custom Cash (top_category), Chase Freedom Flex / Discover it
-// (rotating_5pct), and BofA Customized Cash (choose_category). The UI is
-// responsible for disclosing that we assume the user's category is the active
-// one. Caps still apply.
-const UNIVERSAL_MATCH_SLUGS = new Set(["top_category", "rotating_5pct", "choose_category"]);
-
 // Merchant-specific categories can carry an issuer-specific earn rule while
 // still belonging to a broader spend category for every other card. Exact
 // rules always win; aliases are only consulted when a card has no exact rule.
@@ -110,6 +103,9 @@ export type MathRow = {
 export type EngineOutput = {
   winner: Play | null;
   runnerUp: Play | null;
+  // Complete deterministic ranking. Utilization and other customer preferences
+  // must be able to choose a compliant third card, not just swap the top two.
+  rankedPlays?: Play[];
   dollarDeltaCents: number; // winner - (runnerUp OR best single-card play), whichever exists
   explanation: string;
   mathTable: MathRow[];
@@ -127,7 +123,11 @@ function labelCard(c: EngineCard): string {
 function offerActive(o: EngineOffer, now: Date): boolean {
   if (o.is_used) return false;
   if (o.expires_on) {
-    const exp = new Date(o.expires_on);
+    // A date-only consumer offer remains usable through the end of that date.
+    // Timestamped expirations retain their exact instant.
+    const exp = /^\d{4}-\d{2}-\d{2}$/.test(o.expires_on)
+      ? new Date(`${o.expires_on}T23:59:59.999`)
+      : new Date(o.expires_on);
     if (Number.isFinite(exp.getTime()) && exp.getTime() < now.getTime()) return false;
   }
   return true;
@@ -157,10 +157,10 @@ function findMatchingRule(rules: EarnRule[], category: string): EarnRule | null 
     const broader = rules.find((r) => r.category === broaderCategory);
     if (broader) return broader;
   }
-  // Universal-match rules (Custom Cash top_category, rotating 5% quarters,
-  // BofA choose_category) count as a category match at the rule's cap.
-  const universal = rules.find((r) => UNIVERSAL_MATCH_SLUGS.has(r.category));
-  return universal ?? null;
+  // Rotating, top-spend, and user-choice rules are not universal. Until the
+  // customer explicitly selects/activates a category, scoring them as active
+  // would invent rewards. Safely fall back instead.
+  return null;
 }
 
 /** Resolve the earn rule the engine applies to a card for a purchase category. */
@@ -259,7 +259,7 @@ function capNoteForRule(card: EngineCard, category: string): string | null {
   const catLabel = cat.replace(/_/g, " ");
   const mainRate = formatMultiplier(match.multiplier);
   const postRate = formatMultiplier(postCap);
-  return `${mainRate} on ${catLabel} (up to ${formatCapDollars(cap)}/${periodShort(match.cap_period)}, then ${postRate})`;
+  return `Assumes bonus cap remains: ${mainRate} on ${catLabel} (up to ${formatCapDollars(cap)}/${periodShort(match.cap_period)}, then ${postRate})`;
 }
 
 function foreignPenaltyCents(card: EngineCard, portionCents: number): number {
@@ -306,6 +306,22 @@ function offerValueCents(offer: EngineOffer, portionCents: number, cardCpp: numb
     default:
       return 0;
   }
+}
+
+/**
+ * Offers are non-stacking with each other. Statement credits, percent-back,
+ * and bonus-points offers add to normal card earn. A multiplier describes the
+ * total earn rate, so only its incremental value above the card's base earn is
+ * added. This prevents a 2x card with a 5x offer from being shown as 7x.
+ */
+function offerIncrementCents(
+  offer: EngineOffer,
+  portionCents: number,
+  cardCpp: number,
+  baseEarnCentsBeforeFees: number,
+): number {
+  const value = offerValueCents(offer, portionCents, cardCpp);
+  return offer.offer_type === "multiplier" ? Math.max(0, value - baseEarnCentsBeforeFees) : value;
 }
 
 function dollarStr(cents: number): string {
@@ -369,11 +385,18 @@ export function recommend(input: EngineInput): EngineOutput {
     const base = baseEarnCents(card, amountCents, category, valuations, ytd(card.id), capReached);
     const penalty = foreign ? foreignPenaltyCents(card, amountCents) : 0;
     const cpp = card.points_program_id ? (valuations[card.points_program_id] ?? 1) : 1;
-    const offer =
-      applicableOffers.find(
-        (o) => o.user_card_id === card.id && (o.spend_threshold ?? 0) * 100 <= amountCents,
-      ) ?? null;
-    const offerVal = offer ? offerValueCents(offer, amountCents, cpp) : 0;
+    const eligibleCardOffers = applicableOffers.filter(
+      (o) => o.user_card_id === card.id && (o.spend_threshold ?? 0) * 100 <= amountCents,
+    );
+    const bestOffer =
+      eligibleCardOffers
+        .map((offer) => ({
+          offer,
+          value: offerIncrementCents(offer, amountCents, cpp, base),
+        }))
+        .sort((a, b) => b.value - a.value || a.offer.id.localeCompare(b.offer.id))[0] ?? null;
+    const offer = bestOffer?.offer ?? null;
+    const offerVal = bestOffer?.value ?? 0;
     const total = base + offerVal - penalty;
     // Cap note only surfaces when the matched rule is capped AND still active
     // (user has not flagged it exhausted). Once flagged, the reason should
@@ -415,11 +438,17 @@ export function recommend(input: EngineInput): EngineOutput {
 
     const matchA = findMatchingRule(cardA.earn_rules, category);
     const capReachedA = capReachedFor(cardA.id, matchA?.category ?? category);
-    const baseA =
-      baseEarnCents(cardA, portionA, category, valuations, ytd(cardA.id), capReachedA) -
-      (foreign ? foreignPenaltyCents(cardA, portionA) : 0);
+    const baseAGross = baseEarnCents(
+      cardA,
+      portionA,
+      category,
+      valuations,
+      ytd(cardA.id),
+      capReachedA,
+    );
+    const baseA = baseAGross - (foreign ? foreignPenaltyCents(cardA, portionA) : 0);
     const cppA = cardA.points_program_id ? (valuations[cardA.points_program_id] ?? 1) : 1;
-    const offerValA = offerValueCents(offer, portionA, cppA);
+    const offerValA = offerIncrementCents(offer, portionA, cppA, baseAGross);
 
     let bestB: { card: EngineCard; base: number; capReached: boolean } | null = null;
     for (const cardB of wallet) {
@@ -489,6 +518,7 @@ export function recommend(input: EngineInput): EngineOutput {
   return {
     winner,
     runnerUp,
+    rankedPlays: plays,
     dollarDeltaCents,
     explanation: winner?.headline ?? "",
     mathTable,

@@ -23,7 +23,7 @@ export function TapAppShell({ surface = "canvas", className, ...props }: TapAppS
   const railItems = [
     { to: "/home", label: "Decide", icon: Home },
     { to: "/cards", label: "Wallet", icon: CreditCard },
-    { to: "/plan", label: "Plan ahead", icon: Wand2 },
+    { to: "/plan", label: "Plan", icon: Wand2 },
     { to: "/cheat-sheet", label: "Cheat sheet", icon: BookOpenText },
     ...(user
       ? [

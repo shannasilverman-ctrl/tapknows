@@ -3,6 +3,10 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+export function shouldClearPlaidMemory(clearMemory?: boolean): boolean {
+  return clearMemory !== false;
+}
+
 /**
  * Purge every trace of a linked Plaid item: call /item/remove on Plaid's side
  * (best-effort), delete the private access token, the item row, and the
@@ -77,7 +81,10 @@ export async function purgePlaidItem(
     ])
     .is("dismissed_at", null);
 
-  if (opts.clearMemory) {
+  // Privacy-safe default: disconnecting a bank clears transaction-derived
+  // merchant memory unless a narrowly scoped server caller explicitly opts
+  // out. The consumer UI always requests clearing it.
+  if (shouldClearPlaidMemory(opts.clearMemory)) {
     // Wipe derived aggregates + anonymous merchant category memory.
     await supabaseAdmin
       .from("user_prefs")

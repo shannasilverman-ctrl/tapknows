@@ -42,6 +42,12 @@ test.describe("TAP product system", () => {
     await expect(page.locator(".cs-face")).toHaveCount(3);
     await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Alerts" })).toHaveCount(0);
+    await expect(page.getByText("Recovered this month", { exact: true })).toHaveCount(0);
+    await expect(page.getByText(/card credits you haven't used/i)).toHaveCount(0);
+    await expect(page.getByText(/potential card credits to check/i)).toBeVisible();
+    const primaryNav = page.getByRole("navigation", { name: "Primary" });
+    await expect(primaryNav.getByRole("link", { name: "Plan", exact: true })).toBeVisible();
+    await expect(primaryNav.getByRole("link", { name: "Cheat sheet", exact: true })).toBeVisible();
     expect(errors).toEqual([]);
   });
 
@@ -57,6 +63,8 @@ test.describe("TAP product system", () => {
       "aria-current",
       "page",
     );
+    await expect(workspace.getByRole("link", { name: "Plan", exact: true })).toBeVisible();
+    await expect(workspace.getByRole("link", { name: "Cheat sheet", exact: true })).toBeVisible();
     await expect(page.locator(".tap-home-core")).toHaveCSS("display", "grid");
 
     await workspace.getByRole("link", { name: "Wallet" }).click();
@@ -278,6 +286,7 @@ test.describe("TAP product system", () => {
     await expect(page.getByText("TAP never recommends a card because it pays us.")).toBeVisible();
     await expect(page.getByText(/interest can cost more than the rewards/i)).toBeVisible();
     await expect(page.getByText(/Rates verified/)).toBeVisible();
+    await expect(page.getByText(/2\.00¢\/pt · TAP default/)).toBeVisible();
   });
 
   test("keeps an easy back action visible throughout the recommendation", async ({ page }) => {
@@ -319,7 +328,15 @@ test.describe("TAP product system", () => {
     );
     await expect(page.getByRole("heading", { name: "Build your wallet." })).toBeVisible();
     await expect(page.getByRole("button", { name: "Try demo" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Connect your bank" })).toBeVisible();
+    const quickAdd = page.getByRole("button", { name: "Amex Gold", exact: true });
+    const optionalSync = page.getByRole("button", { name: "Sync cards with Plaid" });
+    await expect(quickAdd).toBeVisible();
+    await expect(optionalSync).toBeVisible();
+    const quickAddBox = await quickAdd.boundingBox();
+    const optionalSyncBox = await optionalSync.boundingBox();
+    expect(quickAddBox?.y ?? Number.MAX_SAFE_INTEGER).toBeLessThan(
+      optionalSyncBox?.y ?? Number.MIN_SAFE_INTEGER,
+    );
   });
 
   test("shows its work before revealing the onboarding recommendation", async ({ page }) => {

@@ -360,23 +360,11 @@ function OnboardingPage() {
             </p>
 
             <div className="mt-5">
-              <PlaidLinkButton
-                onNeedAuth={() => setAuthForPlaidOpen(true)}
-                onComplete={() => {
-                  // Reload wallet after Plaid confirmation adds cards
-                  supabase
-                    .from("user_cards")
-                    .select("card_catalog_id")
-                    .then(({ data }) => {
-                      if (data) setSelectedCatalogIds(new Set(data.map((r) => r.card_catalog_id)));
-                    });
-                }}
-              />
-
-              {/* Quick-add chips — one-tap add for the most common US rewards cards. */}
-              <div className="mt-4">
+              {/* Manual quick add is the default path: it is private, immediate,
+                  and sufficient for a useful first recommendation. */}
+              <div>
                 <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                  Quick add
+                  Quick add a card
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {QUICK_ADD_CHIPS.map((chip) => {
@@ -401,7 +389,30 @@ function OnboardingPage() {
                 </div>
               </div>
 
-              {/* Photo quick load — second in hierarchy, above manual search. */}
+              {/* Plaid is real but optional; it follows the no-account manual
+                  path instead of competing with it as the primary action. */}
+              <div className="mt-4 rounded-2xl border border-border bg-secondary/30 p-3">
+                <p className="mb-2 text-center text-[11px] text-muted-foreground">
+                  Optional — sign in to sync eligible cards from your bank.
+                </p>
+                <PlaidLinkButton
+                  variant="secondary"
+                  label="Sync cards with Plaid"
+                  onNeedAuth={() => setAuthForPlaidOpen(true)}
+                  onComplete={() => {
+                    // Reload wallet after Plaid confirmation adds cards
+                    supabase
+                      .from("user_cards")
+                      .select("card_catalog_id")
+                      .then(({ data }) => {
+                        if (data)
+                          setSelectedCatalogIds(new Set(data.map((r) => r.card_catalog_id)));
+                      });
+                  }}
+                />
+              </div>
+
+              {/* Photo quick load — optional, above full catalog search. */}
               <button
                 type="button"
                 onClick={() => photoInputRef.current?.click()}
@@ -434,7 +445,7 @@ function OnboardingPage() {
               <div className="my-4 flex items-center gap-3">
                 <div className="h-px flex-1 bg-border" />
                 <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                  Or add manually
+                  Or search all cards
                 </span>
                 <div className="h-px flex-1 bg-border" />
               </div>

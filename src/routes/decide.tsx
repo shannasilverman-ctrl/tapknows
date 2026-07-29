@@ -13,12 +13,15 @@ import { MERCHANTS, resolveMerchant } from "@/lib/merchantMap";
 import { POINT_VALUATIONS } from "@/lib/pointValuations";
 import { planPurchase, type Play } from "@/lib/planner";
 import type { CardCatalog, PointsProgram, UserCard, UserOffer } from "@/lib/types";
+import { resolveEarnRule, type EngineCard } from "@/lib/recommendationEngine";
+import type { AccountSnapshot, UtilizationBehavior } from "@/lib/utilizationFilter";
+import { applyDecideUtilization } from "@/lib/decideUtilization";
 import { dollars } from "@/lib/format";
 import { ArrowLeft, Wallet, ShieldCheck, AlertTriangle, Sliders, Sparkles } from "lucide-react";
 import { SeeTheMath } from "@/components/see-the-math";
 import { TapAppShell } from "@/components/tap-primitives";
 
-import { applyPriorities, STRONG_PROTECTION_CARDS } from "@/lib/priorities";
+import { applyPriorities } from "@/lib/priorities";
 import { recordRecovered } from "@/lib/recovered";
 import { recordDecide } from "@/lib/quickPicks";
 import { bumpDecideCount } from "@/lib/feedback";
@@ -62,6 +65,22 @@ function programsFromCatalog(cards: CardCatalog[]): Record<string, PointsProgram
   return out;
 }
 
+function offersForMerchant(
+  offers: UserOffer[],
+  merchantId: string | null,
+  merchantName: string,
+): UserOffer[] {
+  const name = merchantName.trim().toLowerCase();
+  if (!name || name === "custom purchase") return [];
+  return offers.filter((offer) => {
+    if (merchantId && offer.merchant_catalog_id === merchantId) return true;
+    const offerMerchant = offer.merchant_text.trim().toLowerCase();
+    return (
+      offerMerchant.length > 0 && (name.includes(offerMerchant) || offerMerchant.includes(name))
+    );
+  });
+}
+
 function DecidePage() {
   const { user, loading } = useAuth();
   const search = Route.useSearch();
@@ -81,6 +100,14 @@ function DecidePage() {
   // literal {} and valued everything at catalog defaults, while Settings
   // promised "every recommendation" uses them.
   const [cppOverrides, setCppOverrides] = useState<Record<string, number>>({});
+  const [offers, setOffers] = useState<UserOffer[]>([]);
+  const [accountsByCard, setAccountsByCard] = useState<Record<string, AccountSnapshot>>({});
+  const [perCardUtilization, setPerCardUtilization] = useState<Record<string, number>>({});
+  const [utilizationPrefs, setUtilizationPrefs] = useState<{
+    enabled: boolean;
+    thresholdPct: number;
+    behavior: UtilizationBehavior;
+  }>({ enabled: false, thresholdPct: 10, behavior: "warn" });
   const [amount, setAmount] = useState<number>(search.amount ?? 50);
   const [bigPurchase, setBigPurchase] = useState<boolean>((search.amount ?? 50) > 200);
   const [cardFeePct, setCardFeePct] = useState(0);
@@ -140,22 +167,33 @@ function DecidePage() {
     let cancelled = false;
     (async () => {
       if (user) {
-        const [cardsRes, cppRes, catalogRes, programRes] = await Promise.all([
-          supabase
-            .from("user_cards")
-            .select(
-              "id, user_id, card_catalog_id, nickname, opened_at, annual_fee_paid_at, created_at",
-            )
-            .eq("user_id", user.id),
-          supabase.from("user_cpp_overrides").select("*"),
-          supabase.from("cards_catalog").select("*"),
-          supabase.from("points_programs").select("*"),
-        ]);
+        const [cardsRes, cppRes, catalogRes, programRes, offersRes, accountsRes, prefsRes] =
+          await Promise.all([
+            supabase
+              .from("user_cards")
+              .select(
+                "id, user_id, card_catalog_id, nickname, opened_at, annual_fee_paid_at, created_at, utilization_override_pct",
+              )
+              .eq("user_id", user.id),
+            supabase.from("user_cpp_overrides").select("*").eq("user_id", user.id),
+            supabase.from("cards_catalog").select("*"),
+            supabase.from("points_programs").select("*"),
+            supabase.from("user_offers").select("*").eq("user_id", user.id),
+            supabase.from("user_card_accounts").select("*").eq("user_id", user.id),
+            supabase.from("user_prefs").select("*").eq("user_id", user.id).maybeSingle(),
+          ]);
         if (cancelled) return;
 
         // Branch on the error. An unreadable wallet is a failure to report,
         // never an empty wallet to act on.
-        if (cardsRes.error || catalogRes.error || programRes.error) {
+        if (
+          cardsRes.error ||
+          catalogRes.error ||
+          programRes.error ||
+          offersRes.error ||
+          accountsRes.error ||
+          prefsRes.error
+        ) {
           setLoadFailed(true);
           setReady(true);
           return;
@@ -173,6 +211,43 @@ function DecidePage() {
         }
 
         setCppOverrides(overrides);
+        setOffers(
+          (offersRes.data ?? [])
+            .filter((offer) => !offer.is_used)
+            .map((offer) => ({
+              id: offer.id,
+              user_id: offer.user_id,
+              user_card_id: offer.user_card_id,
+              merchant_catalog_id: offer.merchant_catalog_id,
+              merchant_text: offer.merchant_text,
+              reward_type: offer.reward_type as UserOffer["reward_type"],
+              reward_value: Number(offer.reward_value),
+              min_spend: Number(offer.min_spend),
+              expires_at: offer.expires_at,
+            })),
+        );
+        const accountMap: Record<string, AccountSnapshot> = {};
+        for (const account of accountsRes.data ?? []) {
+          if (!account.user_card_id || account.credit_limit_cents == null) continue;
+          accountMap[account.user_card_id] = {
+            limitCents: Number(account.credit_limit_cents),
+            balanceCents: Number(account.current_balance_cents ?? 0),
+          };
+        }
+        setAccountsByCard(accountMap);
+        const cardOverrides: Record<string, number> = {};
+        for (const card of cardsRes.data ?? []) {
+          if (card.utilization_override_pct != null) {
+            cardOverrides[card.id] = Number(card.utilization_override_pct) / 100;
+          }
+        }
+        setPerCardUtilization(cardOverrides);
+        setUtilizationPrefs({
+          enabled: !!prefsRes.data?.utilization_enabled,
+          thresholdPct: Number(prefsRes.data?.utilization_threshold_pct ?? 10),
+          behavior:
+            (prefsRes.data?.utilization_behavior as UtilizationBehavior | undefined) ?? "warn",
+        });
         setRemoteCatalog(
           Object.fromEntries(
             (catalogRes.data ?? []).map((card) => [
@@ -215,6 +290,45 @@ function DecidePage() {
         if (!cancelled) {
           setRemoteCatalog({});
           setRemotePrograms({});
+          setCppOverrides(
+            Object.fromEntries(
+              g.overrides
+                .filter((override) => Number.isFinite(Number(override.cpp)))
+                .map((override) => [override.points_program_id, Number(override.cpp)]),
+            ),
+          );
+          setOffers(
+            g.offers.map((offer) => ({
+              id: offer.id,
+              user_id: "guest",
+              user_card_id: offer.user_card_id,
+              merchant_catalog_id: null,
+              merchant_text: offer.merchant_text,
+              reward_type: offer.reward_type,
+              reward_value: Number(offer.reward_value),
+              min_spend: Number(offer.min_spend),
+              expires_at: offer.expires_at ?? null,
+            })),
+          );
+          setAccountsByCard(
+            Object.fromEntries(
+              g.accounts
+                .filter((account) => account.credit_limit_cents != null)
+                .map((account) => [
+                  account.user_card_id,
+                  {
+                    limitCents: Number(account.credit_limit_cents),
+                    balanceCents: Number(account.current_balance_cents ?? 0),
+                  },
+                ]),
+            ),
+          );
+          setPerCardUtilization({});
+          setUtilizationPrefs({
+            enabled: g.prefs.utilization_enabled,
+            thresholdPct: g.prefs.utilization_threshold_pct,
+            behavior: g.prefs.utilization_behavior,
+          });
           setUserCards(cards);
           setReady(true);
         }
@@ -283,20 +397,34 @@ function DecidePage() {
     const entries: Array<{ userCardId: string; category: string; period: CapPeriod }> = [];
     for (const uc of userCards) {
       const c = catalog[uc.card_catalog_id];
-      for (const r of c?.earn_rules ?? []) {
-        const cap = r.cap_period_spend ?? r.cap_annual_spend ?? null;
-        if (cap == null) continue;
-        if (r.category !== category) continue;
-        entries.push({
-          userCardId: uc.id,
-          category: r.category,
-          period: (r.cap_period ?? "annual") as CapPeriod,
-        });
-      }
+      if (!c) continue;
+      const engineCard: EngineCard = {
+        id: uc.id,
+        card_catalog_id: c.id,
+        nickname: uc.nickname,
+        issuer: c.issuer,
+        name: c.name,
+        points_program_id: c.points_program_id,
+        foreign_tx_fee_pct: c.foreign_tx_fee_pct,
+        earn_rules: c.earn_rules,
+      };
+      const rule = resolveEarnRule(engineCard, category);
+      const cap = rule.cap_period_spend ?? rule.cap_annual_spend ?? null;
+      if (cap == null) continue;
+      entries.push({
+        userCardId: uc.id,
+        category: rule.category,
+        period: (rule.cap_period ?? "annual") as CapPeriod,
+      });
     }
     return capReachedByCardMap(user?.id ?? null, entries);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userCards, catalog, category, user?.id, capTick]);
+
+  const matchingOffers = useMemo(
+    () => offersForMerchant(offers, merchant?.id ?? null, merchantName),
+    [offers, merchant?.id, merchantName],
+  );
 
   const rawPlays: Play[] = useMemo(() => {
     if (!ready || userCards.length === 0) return [];
@@ -304,7 +432,7 @@ function DecidePage() {
       userCards,
       catalog,
       programs,
-      offers: [] as UserOffer[],
+      offers: matchingOffers,
       cppOverrides,
       capReachedCategoriesByCard: capReachedByCard,
       merchantCategory: category,
@@ -317,6 +445,7 @@ function DecidePage() {
     userCards,
     catalog,
     programs,
+    matchingOffers,
     cppOverrides,
     capReachedByCard,
     category,
@@ -326,14 +455,32 @@ function DecidePage() {
     benefitsByCard,
   ]);
 
-  const {
-    plays,
-    reason: priorityReason,
-    utilizationCaution,
-  } = useMemo(
+  const priorityResult = useMemo(
     () => applyPriorities(rawPlays, { amountCents: Math.round(amount * 100) }),
     [rawPlays, amount],
   );
+  const utilizationResult = useMemo(
+    () =>
+      utilizationPrefs.enabled
+        ? applyDecideUtilization({
+            plays: priorityResult.plays,
+            accountsByUserCardId: accountsByCard,
+            threshold: utilizationPrefs.thresholdPct / 100,
+            behavior: utilizationPrefs.behavior,
+            perCardOverrides: perCardUtilization,
+          })
+        : null,
+    [priorityResult.plays, accountsByCard, perCardUtilization, utilizationPrefs],
+  );
+  const plays = utilizationResult?.plays ?? priorityResult.plays;
+  const priorityReason = priorityResult.reason
+    ? priorityResult.reason.includes("protection")
+      ? "Your saved protection priority influenced this ranking. Verify issuer eligibility and terms."
+      : priorityResult.reason
+    : null;
+  const utilizationCaution = utilizationPrefs.enabled
+    ? (utilizationResult?.caution ?? null)
+    : priorityResult.utilizationCaution;
 
   const detectedAt = useMemo(
     () => new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
@@ -365,8 +512,21 @@ function DecidePage() {
   const netCardValueCents = raisedPlay ? raisedPlay.totalValueCents - cardFeeCents : -cardFeeCents;
   const reasoningLine =
     raisedPlay?.legs[0]?.reasoning ?? "Best value for this charge in your wallet.";
-  const raisedHasProtections =
-    !!raisedPlay && raisedPlay.legs.some((l) => STRONG_PROTECTION_CARDS.has(l.card.id));
+  const valuationAssumption = useMemo(() => {
+    if (!raisedPlay) return "Uses TAP's default point values unless you set your own";
+    const pointPrograms = raisedPlay.programIdsUsed.filter((id) => id !== "cashback");
+    if (pointPrograms.length === 0) return "Cash back is shown at face value";
+    return pointPrograms
+      .map((id) => {
+        const program = programs[id];
+        const cpp = cppOverrides[id] ?? program?.default_cpp ?? 0.01;
+        const source = cppOverrides[id] != null ? "your value" : "TAP default";
+        return `${program?.name ?? id}: ${(cpp * 100).toFixed(2)}¢/pt · ${source}`;
+      })
+      .join("; ");
+  }, [raisedPlay, cppOverrides, programs]);
+  const capStatus =
+    "Bonus rates assume cap room remains unless you marked a cap reached; credits use tracked remaining amounts";
 
   // Fire benefit_surfaced when the recommendation reason line references a credit.
   // Must live above the early returns so hook order is stable across loading -> ready.
@@ -666,25 +826,19 @@ function DecidePage() {
               amountCents={Math.round(amount * 100)}
               merchant={merchantKey}
               category={category}
+              valuationAssumption={valuationAssumption}
+              capStatus={capStatus}
               onEditAssumptions={() => navigate({ to: "/settings" })}
             />
           ) : null}
 
-          {/* Priority + protection + utilization notes */}
-          {(priorityReason || raisedHasProtections || utilizationCaution) && (
+          {/* Priority + utilization notes */}
+          {(priorityReason || utilizationCaution) && (
             <div className="tap-decision-notes tap-stage mt-4 space-y-2">
               {priorityReason && (
                 <div className="flex items-start gap-2.5 rounded-xl bg-primary/8 border border-primary/20 px-3.5 py-2.5">
                   <ShieldCheck className="size-4 text-primary shrink-0 mt-0.5" />
                   <p className="text-[13px] text-foreground leading-snug">{priorityReason}</p>
-                </div>
-              )}
-              {!priorityReason && raisedHasProtections && (
-                <div className="flex items-start gap-2.5 rounded-xl bg-white border border-border px-3.5 py-2.5">
-                  <ShieldCheck className="size-4 text-muted-foreground shrink-0 mt-0.5" />
-                  <p className="text-[13px] text-muted-foreground leading-snug">
-                    Includes strong purchase and travel protections.
-                  </p>
                 </div>
               )}
               {utilizationCaution && (
@@ -717,7 +871,7 @@ function DecidePage() {
                 ? `The best card reward was about ${dollars(
                     raisedPlay.totalValueCents,
                   )} before the fee.`
-                : `Estimated from your point valuations on a ${dollars(
+                : `Estimated using the point-value assumptions shown above on a ${dollars(
                     Math.round(amount * 100),
                   )} charge.`}
             </p>
@@ -780,9 +934,11 @@ function DecidePage() {
           </div>
         )}
 
-        <p className="mt-3 text-[11px] text-muted-foreground text-center">
-          Tap a receded card to see what it would earn instead.
-        </p>
+        {plays.length > 1 ? (
+          <p className="mt-3 text-[11px] text-muted-foreground text-center">
+            Tap another card to compare what it would earn.
+          </p>
+        ) : null}
       </main>
 
       <LegalFooter compact />

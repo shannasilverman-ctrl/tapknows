@@ -65,6 +65,33 @@ describe("buildCheatSheetPicks", () => {
     expect(lowPointValue?.cardLabel).toContain("Custom Cash");
   });
 
+  it("labels TAP defaults separately from a customer's custom point value", () => {
+    const defaultValue = buildCheatSheetPicks({
+      wallet: [pointsCard],
+      offers: [],
+      valuations: { points: 2 },
+    }).find((pick) => pick.categoryId === "dining");
+    const customValue = buildCheatSheetPicks({
+      wallet: [pointsCard],
+      offers: [],
+      valuations: { points: 1.75 },
+      customValuationProgramIds: ["points"],
+    }).find((pick) => pick.categoryId === "dining");
+
+    expect(defaultValue?.valuationLabel).toBe("2.00¢/pt · TAP default");
+    expect(customValue?.valuationLabel).toBe("1.75¢/pt · your value");
+  });
+
+  it("makes the available-cap assumption explicit", () => {
+    const dining = buildCheatSheetPicks({
+      wallet: [customCashCard],
+      offers: [],
+      valuations: { cashback: 1 },
+    }).find((pick) => pick.categoryId === "dining");
+
+    expect(dining?.exception).toContain("Assumes bonus cap remains");
+  });
+
   it("honors a user's cap-reached state", () => {
     const dining = buildCheatSheetPicks({
       wallet: [pointsCard, customCashCard],

@@ -42,7 +42,7 @@ type Props = {
 export function PlaidLinkButton({
   onNeedAuth,
   variant = "primary",
-  label = "Connect your bank",
+  label = "Sync cards with Plaid",
   ...props
 }: Props) {
   const { user } = useAuth();
@@ -81,7 +81,7 @@ function AuthenticatedPlaidLinkButton({
   onComplete,
   onAtCapacity,
   variant = "primary",
-  label = "Connect your bank",
+  label = "Sync cards with Plaid",
   updateForItemId,
   addAccountsForItemId,
 }: Props) {
@@ -283,8 +283,8 @@ function AuthenticatedPlaidLinkButton({
 function PlaidPrivacyCopy() {
   return (
     <p className="mt-2 text-center text-[12px] leading-snug text-muted-foreground">
-      TAP uses Plaid to link your bank. We see transactions to learn your merchants, never your
-      login, and you can{" "}
+      If you choose bank sync, TAP uses Plaid. We can read eligible accounts and transactions to
+      identify cards and merchants, never your bank login, and you can{" "}
       <a href="/privacy" className="underline underline-offset-2">
         disconnect and delete anytime
       </a>

@@ -287,7 +287,7 @@ describe("foreign transactions", () => {
     const c = mkCard({
       id: "fx",
       points_program_id: "cashback",
-      foreign_tx_fee_pct: 0.03,
+      foreign_tx_fee_pct: 3,
       earn_rules: [{ category: "all", multiplier: 0.02 }],
     });
     const plays = planPurchase(
@@ -324,7 +324,7 @@ describe("foreign transactions", () => {
   it("foreign fee flips the winner", () => {
     const highEarnFee = mkCard({
       id: "hef",
-      foreign_tx_fee_pct: 0.03,
+      foreign_tx_fee_pct: 3,
       earn_rules: [{ category: "all", multiplier: 0.03 }],
     });
     const lowerEarnNoFee = mkCard({
@@ -356,12 +356,12 @@ describe("foreign transactions", () => {
   it("sort still orders negative-value plays correctly", () => {
     const bad = mkCard({
       id: "bad",
-      foreign_tx_fee_pct: 0.05,
+      foreign_tx_fee_pct: 5,
       earn_rules: [{ category: "all", multiplier: 0.01 }],
     });
     const worse = mkCard({
       id: "worse",
-      foreign_tx_fee_pct: 0.1,
+      foreign_tx_fee_pct: 10,
       earn_rules: [{ category: "all", multiplier: 0.01 }],
     });
     const plays = planPurchase(
@@ -426,8 +426,8 @@ describe("offers", () => {
     expect(plays[0].totalValueCents).toBe(2200);
   });
 
-  it("percent_back replaces base only when larger (max)", () => {
-    // 3% offer replaces 2% base
+  it("percent_back is an additive, non-stacking card-linked offer", () => {
+    // 3% offer adds to the card's normal 2% earn.
     const p1 = planPurchase(
       baseInput({
         userCards: [mkUc("uA", "a")],
@@ -437,8 +437,8 @@ describe("offers", () => {
         offers: [mkOffer({ user_card_id: "uA", reward_type: "percent_back", reward_value: 3 })],
       }),
     );
-    expect(p1[0].totalValueCents).toBe(300);
-    // 1% offer worse than 2% base — base wins
+    expect(p1[0].totalValueCents).toBe(500);
+    // A 1% offer still adds to normal earn.
     const p2 = planPurchase(
       baseInput({
         userCards: [mkUc("uA", "a")],
@@ -448,7 +448,7 @@ describe("offers", () => {
         offers: [mkOffer({ user_card_id: "uA", reward_type: "percent_back", reward_value: 1 })],
       }),
     );
-    expect(p2[0].totalValueCents).toBe(200);
+    expect(p2[0].totalValueCents).toBe(300);
   });
 
   it("multiplier offer replaces base only when larger", () => {
@@ -468,6 +468,51 @@ describe("offers", () => {
       }),
     );
     expect(plays[0].totalValueCents).toBe(1000);
+  });
+
+  it("interprets a 3x earn rule as points even when the program id is cashback", () => {
+    const c = mkCard({
+      id: "autograph_like",
+      points_program_id: "cashback",
+      earn_rules: [{ category: "dining", multiplier: 3 }],
+    });
+    const plays = planPurchase(
+      baseInput({
+        userCards: [mkUc("uA", c.id)],
+        catalog: catalog(c),
+        amountCents: 10000,
+        merchantCategory: "dining",
+      }),
+    );
+    expect(plays[0].totalValueCents).toBe(300);
+    expect(plays[0].legs[0].reasoning).toContain("3x");
+  });
+
+  it("chooses the strongest eligible offer regardless of input order", () => {
+    const plays = planPurchase(
+      baseInput({
+        userCards: [mkUc("uA", "a")],
+        catalog: catalog(CARD_A),
+        amountCents: 40000,
+        merchantCategory: "all",
+        offers: [
+          mkOffer({
+            id: "worse",
+            user_card_id: "uA",
+            reward_type: "statement_credit",
+            reward_value: 10,
+          }),
+          mkOffer({
+            id: "better",
+            user_card_id: "uA",
+            reward_type: "statement_credit",
+            reward_value: 50,
+          }),
+        ],
+      }),
+    );
+    expect(plays[0].legs[0].offerApplied?.id).toBe("better");
+    expect(plays[0].totalValueCents).toBe(5800);
   });
 
   it("offer with min_spend above amount does NOT apply on single play", () => {
@@ -727,7 +772,7 @@ describe("ranking invariants", () => {
           mkCard({
             id: `c${k}`,
             points_program_id: isCashback ? "cashback" : "ur",
-            foreign_tx_fee_pct: rand() > 0.7 ? 0.03 : 0,
+            foreign_tx_fee_pct: rand() > 0.7 ? 3 : 0,
             earn_rules: [
               { category: "all", multiplier: isCashback ? 0.01 + rand() * 0.05 : 1 + rand() * 4 },
             ],

@@ -31,6 +31,7 @@ type Loaded = {
   wallet: EngineCard[];
   offers: EngineOffer[];
   valuations: Record<string, number>;
+  customValuationProgramIds: string[];
   accounts: Record<string, AccountSnapshot>;
   perCardOverrides: Record<string, number>;
   prefs: {
@@ -126,6 +127,9 @@ function CheatSheetPage() {
               wallet,
               offers,
               valuations,
+              customValuationProgramIds: guest.overrides.map(
+                (override) => override.points_program_id,
+              ),
               accounts,
               perCardOverrides: {},
               prefs: guest.prefs,
@@ -232,6 +236,9 @@ function CheatSheetPage() {
             wallet,
             offers,
             valuations,
+            customValuationProgramIds: (overrideResult.data ?? []).map(
+              (override) => override.points_program_id,
+            ),
             accounts,
             perCardOverrides,
             prefs,
@@ -274,6 +281,7 @@ function CheatSheetPage() {
             wallet: data.wallet,
             offers: data.offers,
             valuations: data.valuations,
+            customValuationProgramIds: data.customValuationProgramIds,
             capReachedCategoriesByCard: capReached,
             utilization: {
               enabled: data.prefs.utilization_enabled,
@@ -371,11 +379,12 @@ function CheatSheetPage() {
               </div>
             </section>
 
-            <section className="tap-cheat-plan">
+            <section className="tap-cheat-plan" aria-labelledby="cheat-answers-title">
               <div className="tap-cheat-toolbar">
                 <div>
                   <p className="tap-cheat-section-label">WHAT TO TAP</p>
-                  <h2>Your everyday answers</h2>
+                  <h2 id="cheat-answers-title">Your everyday answers</h2>
+                  <p className="tap-cheat-basis">Compared on a representative $100 purchase</p>
                 </div>
                 <label className="tap-cheat-search">
                   <Search aria-hidden />
@@ -394,7 +403,11 @@ function CheatSheetPage() {
               {filtered.length ? (
                 <div className="tap-cheat-grid" data-testid="cheat-sheet-results">
                   {filtered.map((pick) => (
-                    <article className="tap-cheat-row" key={pick.categoryId}>
+                    <article
+                      className="tap-cheat-row"
+                      key={pick.categoryId}
+                      aria-label={`${pick.category}: ${pick.cards.length > 1 ? "use" : "tap"} ${pick.cardLabel}`}
+                    >
                       <div className="tap-cheat-category">
                         <span>
                           <Check aria-hidden />
@@ -412,6 +425,7 @@ function CheatSheetPage() {
                       <div className="tap-cheat-rate">
                         <strong>{pick.rateLabel}</strong>
                         <span>{pick.valueLabel}</span>
+                        {pick.valuationLabel ? <small>{pick.valuationLabel}</small> : null}
                       </div>
                       <div className="tap-cheat-exception">
                         {pick.exception ? <span>{pick.exception}</span> : <span>Simple win</span>}
@@ -430,7 +444,9 @@ function CheatSheetPage() {
                 <strong>Built from your wallet, never an affiliate ranking.</strong>
                 <p>
                   Card terms checked {RATES_VERIFIED_ON}; point estimates checked{" "}
-                  {VALUATIONS_VERIFIED_ON}. Merchant coding and issuer terms can change.
+                  {VALUATIONS_VERIFIED_ON}. Estimated returns—and credit-health guidance when
+                  enabled—use the same representative $100 purchase. Merchant coding and issuer
+                  terms can change.
                 </p>
               </div>
               <Link to="/plan">

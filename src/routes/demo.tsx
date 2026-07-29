@@ -11,8 +11,6 @@ import {
   Check,
   ChevronRight,
   Landmark,
-  Pause,
-  Play,
   ShoppingCart,
   Wallet,
 } from "lucide-react";
@@ -22,9 +20,10 @@ export const Route = createFileRoute("/demo")({
 });
 
 /**
- * Six-beat guided journey demo. Each beat auto-advances after a short
- * dwell, with a Skip control. Motion is transform/opacity only, under
- * 450ms, with a reduced-motion fallback baked into the shared cs-fade-up.
+ * Six-step guided journey demo. The viewer advances explicitly, so the
+ * experience never moves on while they are still reading. Motion is
+ * transform/opacity only, under 450ms, with a reduced-motion fallback baked
+ * into the shared cs-fade-up.
  *
  * Beats:
  *   1. Get started
@@ -51,20 +50,11 @@ const DEMO_CARDS: DemoCard[] = [
   { id: "capone-sr", issuer: "Capital One", name: "Savor Rewards", last4: "8102" },
 ];
 
-const BEAT_MS: Record<Beat, number> = {
-  1: 2400,
-  2: 5200,
-  3: 4200,
-  4: 3800,
-  5: 12000,
-  6: 6000,
-};
-
 const BEAT_META: Record<Beat, { label: string; caption: string }> = {
   1: { label: "Get started", caption: "You tap Try TAP now. Guest mode begins." },
   2: {
-    label: "Connect",
-    caption: "Choose your bank. TAP reads your card list — never numbers.",
+    label: "Optional bank sync",
+    caption: "If you choose Plaid, TAP can identify eligible cards without storing card numbers.",
   },
   3: { label: "Your wallet", caption: "Cards slide into your wallet." },
   4: { label: "At checkout", caption: "You walk into a store. A pass lands." },
@@ -83,19 +73,11 @@ function DemoPage() {
   const navigate = useNavigate();
   const [beat, setBeat] = useState<Beat>(1);
   const [recoveredCents, setRecoveredCents] = useState(1284); // month-to-date starting point
-  // A viewer who misses a beat can stop the clock and step back to it, rather
-  // than sitting through the whole run again.
-  const [paused, setPaused] = useState(false);
+  const [interactive, setInteractive] = useState(false);
 
   useEffect(() => {
-    if (beat === 6) return; // last beat holds
-    if (paused) return; // the viewer holds the clock
-    const t = window.setTimeout(
-      () => setBeat((b) => Math.min(6, (b + 1) as Beat) as Beat),
-      BEAT_MS[beat],
-    );
-    return () => window.clearTimeout(t);
-  }, [beat, paused]);
+    setInteractive(true);
+  }, []);
 
   const advance = () => setBeat((b) => Math.min(6, (b + 1) as Beat) as Beat);
   const restart = () => {
@@ -116,22 +98,14 @@ function DemoPage() {
         </button>
         <Wordmark size="sm" />
         {beat < 6 ? (
-          <div className="flex items-center">
-            <button
-              onClick={() => setPaused((p) => !p)}
-              className="inline-flex items-center justify-center text-muted-foreground hover:text-foreground min-h-11 min-w-11"
-              aria-label={paused ? "Resume demo" : "Pause demo"}
-              aria-pressed={paused}
-            >
-              {paused ? <Play className="size-4" /> : <Pause className="size-4" />}
-            </button>
-            <button
-              onClick={advance}
-              className="text-sm text-muted-foreground hover:text-foreground min-h-11 px-2"
-            >
-              Skip
-            </button>
-          </div>
+          <button
+            onClick={advance}
+            disabled={!interactive}
+            className="inline-flex items-center gap-1 text-sm text-foreground hover:text-primary min-h-11 px-2"
+          >
+            Next
+            <ArrowRight className="size-4" aria-hidden />
+          </button>
         ) : (
           <div className="w-11" />
         )}
@@ -144,14 +118,15 @@ function DemoPage() {
             const active = beat === b;
             const done = beat > b;
             return (
-              // Each segment is a real control: a viewer who missed a beat can
-              // step straight back to it. The negative margin keeps a 24px tap
+              // Each segment is a real control so a viewer can revisit any
+              // step. The negative margin keeps a 24px tap
               // target without changing the bar's visual height.
               <button
                 key={b}
                 type="button"
                 onClick={() => setBeat(b)}
-                aria-label={`Beat ${b}: ${BEAT_META[b].label}`}
+                disabled={!interactive}
+                aria-label={`Step ${b}: ${BEAT_META[b].label}`}
                 aria-current={active ? "step" : undefined}
                 className="flex-1 py-3 -my-3"
               >
@@ -165,7 +140,7 @@ function DemoPage() {
           })}
         </div>
         <p className="mt-3 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-          Beat {beat} of 6 · {BEAT_META[beat].label}
+          Step {beat} of 6 · {BEAT_META[beat].label}
         </p>
       </div>
 
@@ -255,7 +230,7 @@ function BeatConnect() {
       <div className="rounded-3xl border border-border bg-white shadow-sm overflow-hidden">
         <div className="px-5 pt-4 pb-3 border-b border-border flex items-center gap-2">
           <Landmark className="size-4 text-muted-foreground" />
-          <p className="text-[13px] font-medium text-foreground">Link your bank</p>
+          <p className="text-[13px] font-medium text-foreground">Optional bank sync</p>
         </div>
 
         {step < 2 ? (
@@ -300,7 +275,7 @@ function BeatConnect() {
       </div>
 
       <p className="mt-3 text-[11px] text-muted-foreground text-center">
-        Simulation — live bank linking via Plaid coming soon.
+        Example only — no bank is connected during this demo.
       </p>
     </div>
   );

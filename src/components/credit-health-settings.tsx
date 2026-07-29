@@ -101,19 +101,26 @@ export function CreditHealthSettings() {
   }, [user]);
 
   const savePrefs = async (patch: Partial<Prefs>) => {
+    const previous = prefs;
     const next = { ...prefs, ...patch };
     setPrefs(next);
     if (user) {
-      const { error } = await supabase
-        .from("user_prefs")
-        .upsert({ user_id: user.id, ...next, updated_at: new Date().toISOString() });
-      if (error) toast.error(error.message);
+      try {
+        const { error } = await supabase
+          .from("user_prefs")
+          .upsert({ user_id: user.id, ...next, updated_at: new Date().toISOString() });
+        if (error) throw error;
+      } catch (error) {
+        setPrefs(previous);
+        toast.error(error instanceof Error ? error.message : "Couldn't save credit preferences.");
+      }
     } else {
       setGuestPrefs(patch);
     }
   };
 
   const saveAccount = async (cardId: string, limit: number | null, balance: number | null) => {
+    const previous = accounts[cardId];
     setAccounts((a) => ({
       ...a,
       [cardId]: {
@@ -124,27 +131,34 @@ export function CreditHealthSettings() {
       },
     }));
     if (user) {
-      const existing = accounts[cardId];
-      if (existing) {
-        await supabase
-          .from("user_card_accounts")
-          .update({
-            credit_limit_cents: limit,
-            current_balance_cents: balance,
-            synced_at: new Date().toISOString(),
-          })
-          .eq("user_card_id", cardId)
-          .eq("user_id", user.id);
-      } else {
-        await supabase.from("user_card_accounts").insert({
-          user_id: user.id,
-          user_card_id: cardId,
-          credit_limit_cents: limit,
-          current_balance_cents: balance,
-          source: "manual",
+      try {
+        const result = previous
+          ? await supabase
+              .from("user_card_accounts")
+              .update({
+                credit_limit_cents: limit,
+                current_balance_cents: balance,
+                synced_at: new Date().toISOString(),
+              })
+              .eq("user_card_id", cardId)
+              .eq("user_id", user.id)
+          : await supabase.from("user_card_accounts").insert({
+              user_id: user.id,
+              user_card_id: cardId,
+              credit_limit_cents: limit,
+              current_balance_cents: balance,
+              source: "manual",
+            });
+        if (result.error) throw result.error;
+        toast.success("Saved");
+      } catch (error) {
+        setAccounts((current) => {
+          if (previous) return { ...current, [cardId]: previous };
+          const { [cardId]: _, ...rest } = current;
+          return rest;
         });
+        toast.error(error instanceof Error ? error.message : "Couldn't save card details.");
       }
-      toast.success("Saved");
     } else {
       setGuestAccount(cardId, limit, balance);
       toast.success("Saved");
@@ -152,16 +166,23 @@ export function CreditHealthSettings() {
   };
 
   const clearAccount = async (cardId: string) => {
+    const previous = accounts[cardId];
     setAccounts((a) => {
       const { [cardId]: _, ...rest } = a;
       return rest;
     });
     if (user) {
-      await supabase
-        .from("user_card_accounts")
-        .delete()
-        .eq("user_card_id", cardId)
-        .eq("user_id", user.id);
+      try {
+        const { error } = await supabase
+          .from("user_card_accounts")
+          .delete()
+          .eq("user_card_id", cardId)
+          .eq("user_id", user.id);
+        if (error) throw error;
+      } catch (error) {
+        if (previous) setAccounts((current) => ({ ...current, [cardId]: previous }));
+        toast.error(error instanceof Error ? error.message : "Couldn't clear card details.");
+      }
     } else {
       removeGuestAccount(cardId);
     }

@@ -36,7 +36,7 @@ const routes = [
   { name: "login", path: "/login", readyText: "Continue with Apple" },
   { name: "privacy", path: "/privacy", heading: "Privacy Policy" },
   { name: "terms", path: "/terms", heading: "Terms of Use" },
-  { name: "demo", path: "/demo", readyText: "Beat 1 of 6" },
+  { name: "demo", path: "/demo", readyText: "Step 1 of 6" },
 ] as const;
 
 const viewports = [

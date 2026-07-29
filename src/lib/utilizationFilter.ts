@@ -87,19 +87,14 @@ function playIsCompliant(play: Play, input: UtilizationInput): boolean {
   for (const leg of play.legs) {
     const t = effectiveThresholdFor(leg.userCardId, input.threshold, input.perCardOverrides);
     const acc = input.accountsByUserCardId[leg.userCardId];
-    if (!acc || acc.limitCents <= 0) continue; // unknown limit is not blocking
+    // Unknown limits can be shown as unknown, but must never support a claim
+    // that TAP kept the customer under a utilization threshold.
+    if (!acc || acc.limitCents <= 0) return false;
     const projected = (acc.balanceCents + leg.amountCents) / acc.limitCents;
     if (projected > t) return false;
   }
   return true;
 }
-
-// Map math-table rows back to plays. The engine builds plays and mathTable in
-// lockstep, but the wrapper only receives winner/runnerUp typed. To synthesize
-// alternate plays for rerank, we accept the original plays via a helper on
-// EngineOutput's cached data. The engine currently exposes only winner and
-// runnerUp Play objects, so rerank considers those two — sufficient for the
-// warn/rerank/split behaviors defined in the plan.
 
 function findSplitFromWinnerAndRunnerUp(
   winner: Play,
@@ -129,10 +124,9 @@ function findSplitFromWinnerAndRunnerUp(
   const portionA = Math.min(total, maxA);
   const portionB = total - portionA;
   if (portionB <= 0) return null;
-  if (secondaryAcc && secondaryAcc.limitCents > 0) {
-    const projB = (secondaryAcc.balanceCents + portionB) / secondaryAcc.limitCents;
-    if (projB > tB) return null;
-  }
+  if (!secondaryAcc || secondaryAcc.limitCents <= 0) return null;
+  const projB = (secondaryAcc.balanceCents + portionB) / secondaryAcc.limitCents;
+  if (projB > tB) return null;
   // Value-preserving heuristic: earn scales with amount for both legs, so we
   // approximate value by the per-dollar rate implied by each play's totals.
   const winnerPerCent = winner.totalValueCents / winner.legs[0].amountCents;
@@ -176,6 +170,9 @@ export function applyUtilization(input: UtilizationInput): UtilizationOutput {
   const { engineOutput, behavior } = input;
   const winner = engineOutput.winner;
   const runnerUp = engineOutput.runnerUp;
+  const ranked = engineOutput.rankedPlays?.length
+    ? engineOutput.rankedPlays
+    : [winner, runnerUp].filter((play): play is Play => Boolean(play));
 
   if (!winner) {
     return {
@@ -214,12 +211,15 @@ export function applyUtilization(input: UtilizationInput): UtilizationOutput {
   }
 
   if (behavior === "rerank") {
-    // Prefer runnerUp if it's compliant; otherwise fall back to winner + warn.
-    if (runnerUp && playIsCompliant(runnerUp, input)) {
+    // Choose the highest-value compliant play across the full ranking. Looking
+    // at only the runner-up could miss a safe third card.
+    const compliant =
+      ranked.find((play) => play !== winner && playIsCompliant(play, input)) ?? null;
+    if (compliant) {
       return {
-        winner: runnerUp,
+        winner: compliant,
         runnerUp: winner,
-        notes: notesForPlay(runnerUp, input),
+        notes: notesForPlay(compliant, input),
         behaviorApplied: "reranked",
         originalWinner: winner,
         splitSuggestion: null,
@@ -236,7 +236,15 @@ export function applyUtilization(input: UtilizationInput): UtilizationOutput {
   }
 
   // behavior === "split"
-  const split = findSplitFromWinnerAndRunnerUp(winner, runnerUp, input);
+  const compliantExistingSplit =
+    ranked.find((play) => play.kind === "split" && playIsCompliant(play, input)) ?? null;
+  const alternate =
+    ranked.find(
+      (play) =>
+        play !== winner && play.legs.some((leg) => leg.userCardId !== winner.legs[0]?.userCardId),
+    ) ?? runnerUp;
+  const split =
+    compliantExistingSplit ?? findSplitFromWinnerAndRunnerUp(winner, alternate ?? null, input);
   if (split) {
     return {
       winner,

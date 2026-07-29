@@ -47,14 +47,8 @@ export function RecommendationProof({
   runnerUp,
   amountCents,
   termsDate,
-  valuationAssumption = "Point values use your saved assumptions",
-  // This claim was briefly false: planner.ts had no cap logic, so a customer
-  // who had told TAP their 5% quarterly cap was blown was still shown that card
-  // at 5x under this exact reassurance. The planner is now cap-aware and
-  // /decide passes the customer's real cap state, so the original wording is
-  // true again — and engineParity.test.ts now exercises a capped case, so it
-  // fails the build if the two surfaces ever drift apart again.
-  capStatus = "Caps and credits are included when TAP has their status",
+  valuationAssumption = "Uses TAP's default point values unless you set your own",
+  capStatus = "Bonus rates assume cap room remains unless you marked a cap reached",
   onEditAssumptions,
   onReportIssue,
   today,
@@ -75,9 +69,7 @@ export function RecommendationProof({
         {hasRunnerUp && runnerUp ? (
           <ProofRow play={runnerUp} />
         ) : (
-          <p className="tap-proof-no-runner">
-            No other card in your wallet earns on this purchase.
-          </p>
+          <p className="tap-proof-no-runner">There isn't another card in this wallet to compare.</p>
         )}
       </div>
 

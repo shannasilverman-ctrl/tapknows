@@ -69,8 +69,9 @@ function PrivacyPage() {
             <li>We never see or store your bank login credentials.</li>
             <li>We never store account or routing numbers.</li>
             <li>
-              Raw Plaid transaction rows are retained for a maximum of 30 days and are used only to
-              derive merchant frequency. Derived aggregates carry no transaction details.
+              Raw Plaid transaction rows are processed transiently and are not stored. Derived
+              merchant-frequency aggregates are retained for a maximum of 30 days and carry no
+              transaction details.
             </li>
             <li>
               Disconnecting a bank calls Plaid's <code>/item/remove</code> and deletes the access

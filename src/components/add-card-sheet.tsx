@@ -223,7 +223,7 @@ export function AddCardSheet({
           <div className="space-y-3">
             <div>
               <PlaidLinkButton
-                label="Set up with Plaid"
+                label="Sync cards with Plaid (optional)"
                 onComplete={() => {
                   onPlaidComplete?.();
                   onClose();

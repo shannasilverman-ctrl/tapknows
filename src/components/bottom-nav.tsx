@@ -8,14 +8,14 @@ const signedInItems = [
   { to: "/cards", label: "Wallet", icon: CreditCard },
   { to: "/plan", label: "Plan", icon: Wand2 },
   { to: "/purchases", label: "Review", icon: History },
-  { to: "/cheat-sheet", label: "Cheat", icon: BookOpenText },
+  { to: "/cheat-sheet", label: "Cheat sheet", icon: BookOpenText },
 ] as const;
 
 const guestItems = [
   { to: "/home", label: "Decide", icon: Home },
   { to: "/cards", label: "Wallet", icon: CreditCard },
   { to: "/plan", label: "Plan", icon: Wand2 },
-  { to: "/cheat-sheet", label: "Cheat", icon: BookOpenText },
+  { to: "/cheat-sheet", label: "Cheat sheet", icon: BookOpenText },
   { to: "/login", label: "Sign in", icon: LogIn },
 ] as const;
 
@@ -29,7 +29,7 @@ export function BottomNav() {
       <LegalFooter />
       <nav
         aria-label="Primary"
-        className="border-t border-x border-border bg-surface px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex items-center justify-around text-xs sticky bottom-0 w-full max-w-md mx-auto rounded-t-2xl shadow-[0_-10px_30px_rgba(36,21,43,0.05)]"
+        className="border-t border-x border-border bg-surface px-1 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex items-center justify-around text-[10px] sm:text-xs sticky bottom-0 w-full max-w-md mx-auto rounded-t-2xl shadow-[0_-10px_30px_rgba(36,21,43,0.05)]"
       >
         {items.map((it) => {
           const active = pathname === it.to;
@@ -40,7 +40,7 @@ export function BottomNav() {
               to={it.to}
               aria-current={active ? "page" : undefined}
               data-active={active ? "true" : "false"}
-              className={`tap-nav-item flex flex-col items-center justify-center gap-0.5 min-h-11 min-w-11 px-3 py-1.5 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 ${
+              className={`tap-nav-item flex flex-col items-center justify-center gap-0.5 min-h-11 min-w-11 px-1.5 py-1.5 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 ${
                 active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
             >

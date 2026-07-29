@@ -1024,21 +1024,18 @@ function HomePage() {
 
         {/* Supporting account context follows the core decision moment so
             the customer's question is always the first action on the page. */}
-        {ready && wallet.length > 0 && (
+        {ready && wallet.length > 0 && (recovered > 0 || benefitsSummary.unusedCents > 0) && (
           <section className="tap-home-summary mt-8 flex items-end justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-                Recovered this month
-              </p>
-              <p className="cs-money text-[22px] font-semibold text-foreground tabular-nums mt-0.5">
-                {dollars(recovered)}
-              </p>
-              {recovered === 0 && (
-                <p className="mt-1 text-[11px] text-muted-foreground leading-snug">
-                  Money TAP has caught for you this month.
+            {recovered > 0 ? (
+              <div className="min-w-0">
+                <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                  Recorded savings this month
                 </p>
-              )}
-            </div>
+                <p className="cs-money text-[22px] font-semibold text-foreground tabular-nums mt-0.5">
+                  {dollars(recovered)}
+                </p>
+              </div>
+            ) : null}
             {benefitsSummary.unusedCents > 0 ? (
               <button
                 type="button"
@@ -1049,19 +1046,19 @@ function HomePage() {
                   if (card) setOpenedId(card.id);
                 }}
                 className="shrink-0 inline-flex items-center gap-1.5 min-h-11 rounded-full border border-border bg-white pl-3 pr-2.5 text-[12px] text-muted-foreground hover:border-primary/40 transition-colors text-left"
-                aria-label="View card credits you haven't used"
+                aria-label="Review potential card credits"
               >
                 <span className="tabular-nums text-foreground font-medium">
                   {dollars(benefitsSummary.unusedCents)}
                 </span>
-                <span>in card credits you haven't used</span>
+                <span>in potential card credits to check</span>
                 <ArrowRight className="size-3 text-muted-foreground shrink-0" aria-hidden />
               </button>
-            ) : (
+            ) : recovered > 0 ? (
               <p className="text-[11px] text-muted-foreground shrink-0">
                 {wallet.length} {wallet.length === 1 ? "card" : "cards"}
               </p>
-            )}
+            ) : null}
           </section>
         )}
 

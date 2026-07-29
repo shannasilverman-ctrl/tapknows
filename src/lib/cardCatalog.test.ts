@@ -132,10 +132,11 @@ describe("engine — category cap pro-rate", () => {
   });
 });
 
-describe("engine — universal-match categories", () => {
-  it("Citi Custom Cash top_category earns 5% on any category up to the cap", () => {
+describe("engine — customer-dependent categories", () => {
+  it("does not invent a Citi Custom Cash top category without monthly spend context", () => {
     const cc = engineCardFromCatalog("citi_custom_cash");
-    // $400 dining purchase, no YTD: cap is $500 monthly, so full 5% = 2000¢
+    // TAP does not know whether dining will be the customer's top eligible
+    // category this month, so it uses the card's verified 1% fallback.
     const out = recommend({
       amountCents: 40000,
       category: "dining",
@@ -144,12 +145,11 @@ describe("engine — universal-match categories", () => {
       valuations: ENGINE_VALUATIONS,
       categorySpendYtdByCard: { [cc.id]: 0 },
     });
-    expect(out.winner?.totalValueCents).toBe(2000);
+    expect(out.winner?.totalValueCents).toBe(400);
   });
 
-  it("Custom Cash beyond monthly cap pro-rates: 5% up to $500, 1% on the rest", () => {
+  it("does not apply a top-category cap until that category is explicitly known", () => {
     const cc = engineCardFromCatalog("citi_custom_cash");
-    // $800 purchase, no YTD: $500 * 5% ($25) + $300 * 1% ($3) = $28 = 2800¢
     const out = recommend({
       amountCents: 80000,
       category: "dining",
@@ -158,7 +158,8 @@ describe("engine — universal-match categories", () => {
       valuations: ENGINE_VALUATIONS,
       categorySpendYtdByCard: { [cc.id]: 0 },
     });
-    expect(out.winner?.totalValueCents).toBe(2800);
+    expect(out.winner?.totalValueCents).toBe(800);
+    expect(out.winner?.legs[0].capNote).toBeUndefined();
   });
 });
 

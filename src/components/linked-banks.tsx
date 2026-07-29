@@ -30,7 +30,6 @@ export function LinkedBanks({ autoReconnect, autoAddAccounts, compact }: Props) 
   const [items, setItems] = useState<Item[] | null>(null);
   const [activeFlow, setActiveFlow] = useState<{ id: string; mode: Mode } | null>(null);
   const [confirming, setConfirming] = useState<string | null>(null);
-  const [alsoClearMemory, setAlsoClearMemory] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const refresh = useCallback(async () => {
@@ -135,7 +134,6 @@ export function LinkedBanks({ autoReconnect, autoAddAccounts, compact }: Props) 
                 <button
                   type="button"
                   onClick={() => {
-                    setAlsoClearMemory(false);
                     setConfirming(it.plaid_item_id);
                   }}
                   aria-label={`Disconnect ${name}`}
@@ -148,18 +146,9 @@ export function LinkedBanks({ autoReconnect, autoAddAccounts, compact }: Props) 
             {confirming === it.plaid_item_id && (
               <div className="mt-3 rounded-xl border border-border bg-secondary/40 p-3 space-y-3">
                 <p className="text-[13px] text-foreground">
-                  Disconnect {name}? We'll remove your bank access token and its derived data. Your
-                  wallet cards stay.
+                  Disconnect {name}? We'll remove your bank access token and clear the merchant
+                  memory learned from linked transactions. Your wallet cards stay.
                 </p>
-                <label className="flex items-center gap-2 text-[12px] text-muted-foreground">
-                  <input
-                    type="checkbox"
-                    checked={alsoClearMemory}
-                    onChange={(e) => setAlsoClearMemory(e.target.checked)}
-                    className="size-4"
-                  />
-                  Also clear my merchant memory
-                </label>
                 <div className="flex items-center justify-end gap-2">
                   <button
                     type="button"
@@ -178,7 +167,7 @@ export function LinkedBanks({ autoReconnect, autoAddAccounts, compact }: Props) 
                         await unlink({
                           data: {
                             plaid_item_id: it.plaid_item_id,
-                            clear_memory: alsoClearMemory,
+                            clear_memory: true,
                           },
                         });
                         toast.success("Bank disconnected.");

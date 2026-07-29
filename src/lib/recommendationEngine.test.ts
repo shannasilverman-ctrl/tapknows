@@ -113,6 +113,51 @@ describe("recommendationEngine — other cases", () => {
     expect(out.winner?.totalValueCents).toBe(2040);
   });
 
+  it("keeps a date-only offer active through the end of its stated date", () => {
+    const out = recommend({
+      amountCents: 10000,
+      category: "everything_else",
+      wallet: [cardA()],
+      offers: [
+        {
+          id: "today",
+          user_card_id: "card_a",
+          offer_type: "statement_credit",
+          discount_amount: 10,
+          expires_on: "2026-07-29",
+        },
+      ],
+      valuations: { cashback: 1 },
+      now: new Date("2026-07-29T18:00:00.000Z"),
+    });
+    expect(out.winner?.legs[0].offerValueCents).toBe(1000);
+  });
+
+  it("treats a date-only expiry as the customer's local calendar day", () => {
+    const input = {
+      amountCents: 10000,
+      category: "everything_else",
+      wallet: [cardA()],
+      offers: [
+        {
+          id: "today",
+          user_card_id: "card_a",
+          offer_type: "statement_credit" as const,
+          discount_amount: 10,
+          expires_on: "2026-07-29",
+        },
+      ],
+      valuations: { cashback: 1 },
+    };
+
+    expect(
+      recommend({ ...input, now: new Date(2026, 6, 29, 23, 30) }).winner?.legs[0].offerValueCents,
+    ).toBe(1000);
+    expect(
+      recommend({ ...input, now: new Date(2026, 6, 30, 0, 0) }).winner?.legs[0].offerValueCents,
+    ).toBe(0);
+  });
+
   it("category cap exceeded falls back to everything_else", () => {
     const capped: EngineCard = {
       id: "card_capped",
@@ -265,20 +310,11 @@ describe("recommendationEngine — phase 3 correctness suite", () => {
 
   it("when two offers exist on the same card, the better one is chosen", () => {
     // Purchase $400. Offer X: $10 off $100. Offer Y: $50 off $300. Both apply; better = Y.
-    // Note: engine takes the FIRST applicable offer via `.find()` — we assert the total
-    // reflects the better-of-two by ordering the better offer first in the input.
     const out = recommend({
       amountCents: 40000,
       category: "everything_else",
       wallet: [cardA()],
       offers: [
-        {
-          id: "better",
-          user_card_id: "card_a",
-          offer_type: "dollars_off_threshold",
-          discount_amount: 50,
-          spend_threshold: 300,
-        },
         {
           id: "worse",
           user_card_id: "card_a",
@@ -286,12 +322,43 @@ describe("recommendationEngine — phase 3 correctness suite", () => {
           discount_amount: 10,
           spend_threshold: 100,
         },
+        {
+          id: "better",
+          user_card_id: "card_a",
+          offer_type: "dollars_off_threshold",
+          discount_amount: 50,
+          spend_threshold: 300,
+        },
       ],
       valuations: { cashback: 1.0 },
     });
     // base = 400¢. offer = 5000¢. Total = 5400¢.
     expect(out.winner?.legs[0].offerValueCents).toBe(5000);
     expect(out.winner?.totalValueCents).toBe(5400);
+  });
+
+  it("treats a multiplier offer as the total rate rather than stacking it", () => {
+    const twoX = {
+      ...cardB(),
+      earn_rules: [{ category: "everything_else", multiplier: 2 }],
+    };
+    const out = recommend({
+      amountCents: 10000,
+      category: "everything_else",
+      wallet: [twoX],
+      offers: [
+        {
+          id: "five_x",
+          user_card_id: twoX.id,
+          offer_type: "multiplier",
+          discount_amount: 5,
+        },
+      ],
+      valuations: { hyatt: 1 },
+    });
+    expect(out.winner?.legs[0].baseEarnCents).toBe(200);
+    expect(out.winner?.legs[0].offerValueCents).toBe(300);
+    expect(out.winner?.totalValueCents).toBe(500);
   });
 
   it("offer threshold exactly equal to purchase amount: single-card play uses offer, no split", () => {

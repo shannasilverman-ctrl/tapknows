@@ -33,6 +33,7 @@ export type CheatSheetPick = {
   issuerLabel: string;
   rateLabel: string;
   valueLabel: string;
+  valuationLabel: string | null;
   exception: string | null;
 };
 
@@ -48,6 +49,27 @@ function exceptionLabel(rule: EarnRule, capNotes: string[]) {
   return details.length ? details.join(" · ") : null;
 }
 
+function valuationLabel({
+  cards,
+  valuations,
+  customValuationProgramIds,
+}: {
+  cards: EngineCard[];
+  valuations: Record<string, number>;
+  customValuationProgramIds: ReadonlySet<string>;
+}) {
+  const labels = cards.flatMap((card) => {
+    const programId = card.points_program_id;
+    if (!programId || programId === "cashback") return [];
+    const cpp = valuations[programId];
+    if (!Number.isFinite(cpp) || cpp <= 0) return [];
+    const source = customValuationProgramIds.has(programId) ? "your value" : "TAP default";
+    return [`${cpp.toFixed(2)}¢/pt · ${source}`];
+  });
+  const unique = [...new Set(labels)];
+  return unique.length ? unique.join(" + ") : null;
+}
+
 /**
  * Build the playbook with the same deterministic engine used by Plan.
  * The representative $100 purchase makes the estimated return easy to read;
@@ -57,6 +79,7 @@ export function buildCheatSheetPicks({
   wallet,
   offers,
   valuations,
+  customValuationProgramIds = [],
   capReachedCategoriesByCard,
   utilization,
   amountCents = 10_000,
@@ -64,6 +87,7 @@ export function buildCheatSheetPicks({
   wallet: EngineCard[];
   offers: EngineOffer[];
   valuations: Record<string, number>;
+  customValuationProgramIds?: Iterable<string>;
   capReachedCategoriesByCard?: Record<string, string[]>;
   utilization?: {
     enabled: boolean;
@@ -74,6 +98,7 @@ export function buildCheatSheetPicks({
   };
   amountCents?: number;
 }): CheatSheetPick[] {
+  const customValuations = new Set(customValuationProgramIds);
   return CHEAT_SHEET_CATEGORIES.flatMap((category) => {
     const result = recommend({
       amountCents,
@@ -139,6 +164,11 @@ export function buildCheatSheetPicks({
         issuerLabel: winner.kind === "split" ? "Split purchase" : cards[0].issuer,
         rateLabel: winner.kind === "split" ? "2-card split" : formatRate(displayedRule),
         valueLabel: `${returnPct.toFixed(returnPct >= 10 ? 0 : 1)}% estimated value`,
+        valuationLabel: valuationLabel({
+          cards,
+          valuations,
+          customValuationProgramIds: customValuations,
+        }),
         exception: exceptionLabel(displayedRule, [
           ...(creditException ? [creditException] : []),
           ...(capReached ? ["Bonus cap marked reached; showing the post-cap rate"] : []),

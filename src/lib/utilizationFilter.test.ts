@@ -20,10 +20,11 @@ function singlePlay(cardId: string, label: string, amountCents: number, value: n
   };
 }
 
-function output(winner: Play, runnerUp: Play | null = null): EngineOutput {
+function output(winner: Play, runnerUp: Play | null = null, rankedPlays?: Play[]): EngineOutput {
   return {
     winner,
     runnerUp,
+    rankedPlays,
     dollarDeltaCents: runnerUp ? winner.totalValueCents - runnerUp.totalValueCents : 0,
     explanation: winner.headline,
     mathTable: [],
@@ -93,6 +94,26 @@ describe("utilizationFilter", () => {
     expect(r.winner).toBe(winner);
   });
 
+  it("rerank selects a compliant third card when the first two breach", () => {
+    const winner = singlePlay("c1", "Card 1", 40_000, 500);
+    const runnerUp = singlePlay("c2", "Card 2", 40_000, 490);
+    const third = singlePlay("c3", "Card 3", 40_000, 470);
+    const inp: UtilizationInput = {
+      engineOutput: output(winner, runnerUp, [winner, runnerUp, third]),
+      accountsByUserCardId: {
+        c1: { limitCents: 100_000, balanceCents: 0 },
+        c2: { limitCents: 100_000, balanceCents: 0 },
+        c3: { limitCents: 1_000_000, balanceCents: 0 },
+      },
+      threshold: 0.1,
+      behavior: "rerank",
+    };
+    const r = applyUtilization(inp);
+    expect(r.behaviorApplied).toBe("reranked");
+    expect(r.winner).toBe(third);
+    expect(r.runnerUp).toBe(winner);
+  });
+
   it("split behavior suggests a two-card split that keeps each leg under the cap", () => {
     const winner = singlePlay("c1", "Card 1", 40_000, 500);
     const runnerUp = singlePlay("c2", "Card 2", 40_000, 480);
@@ -145,7 +166,7 @@ describe("utilizationFilter", () => {
     expect(r.notes[0].effectiveThreshold).toBe(0.5);
   });
 
-  it("cards with unknown limit are treated as unconstrained", () => {
+  it("cards with unknown limit never support a false threshold-compliance claim", () => {
     const winner = singlePlay("c1", "Card 1", 40_000, 500);
     const inp: UtilizationInput = {
       engineOutput: output(winner),
@@ -156,6 +177,22 @@ describe("utilizationFilter", () => {
     const r = applyUtilization(inp);
     expect(r.behaviorApplied).toBe("none");
     expect(r.notes[0].limitKnown).toBe(false);
+  });
+
+  it("does not suggest a split when the second card limit is unknown", () => {
+    const winner = singlePlay("c1", "Card 1", 40_000, 500);
+    const runnerUp = singlePlay("c2", "Card 2", 40_000, 480);
+    const inp: UtilizationInput = {
+      engineOutput: output(winner, runnerUp),
+      accountsByUserCardId: {
+        c1: { limitCents: 200_000, balanceCents: 0 },
+      },
+      threshold: 0.1,
+      behavior: "split",
+    };
+    const r = applyUtilization(inp);
+    expect(r.behaviorApplied).toBe("warn");
+    expect(r.splitSuggestion).toBeNull();
   });
 
   it("empty engine output returns null winner and no behavior", () => {

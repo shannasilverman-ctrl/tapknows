@@ -84,7 +84,11 @@ function OffersPage() {
         active.push(o);
         return;
       }
-      const t = new Date(o.expires_at).getTime();
+      const t = (
+        /^\d{4}-\d{2}-\d{2}$/.test(o.expires_at)
+          ? new Date(`${o.expires_at}T23:59:59.999`)
+          : new Date(o.expires_at)
+      ).getTime();
       if (t < now) expired.push(o);
       else if (t - now <= 14 * 86400_000) soon.push(o);
       else active.push(o);

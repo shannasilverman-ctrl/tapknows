@@ -5,14 +5,9 @@
 // winning card at the same value in cents.
 //
 // The wallet deliberately includes a card whose only earn rule is a
-// universal-match category slug ("top_category" — the Citi Custom Cash /
-// BofA Customized Cash pattern). recommendationEngine.ts has always
-// recognized that slug as a category match (UNIVERSAL_MATCH_SLUGS); before
-// TAP-3's consolidation, planner.ts's own independent rule-matching did not,
-// so it fell through to a hardcoded 1x default instead — a real, silent
-// divergence between the two surfaces on exactly this kind of card. Cashback
-// (multiplier < 1) cards are used throughout so the comparison isolates
-// rule-matching parity from any cpp/points valuation concern.
+// user-dependent category slug ("top_category"). Without an explicit category
+// selection, neither surface may invent that bonus; both must use the safe
+// fallback and agree on the same answer.
 import { describe, expect, it } from "vitest";
 import { recommend as engineRecommend, type EngineCard } from "./recommendationEngine";
 import { planPurchase, type PlannerInput } from "./planner";
@@ -43,8 +38,8 @@ const catalog: Record<string, CardCatalog> = {
     annual_fee: 0,
     points_program_id: "cashback",
     foreign_tx_fee_pct: 0,
-    // Universal-match rule only — no direct "dining" rule and no "all" /
-    // "everything_else" fallback rule on this card at all.
+    // User-dependent rule only — no explicit active-category selection and no
+    // "all" / "everything_else" rule.
     earn_rules: [{ category: "top_category", multiplier: 0.05 }],
     notes: null,
   },
@@ -122,10 +117,10 @@ describe("engine parity — Purchases and Decide agree on one wallet", () => {
     const decideWinnerCardId = decideWinner.legs[0].userCardId;
     const decideWinnerCents = decideWinner.totalValueCents;
 
-    // The correctly-matched winner is the universal-match ("top_category")
-    // card at its real 5% rate: $100 * 5% = $5.00 = 500 cents.
-    expect(purchasesWinnerCardId).toBe("uc_top");
-    expect(purchasesWinnerCents).toBe(500);
+    // TAP must not assume dining is this customer's top category. The honest
+    // winner is the known flat 2% card.
+    expect(purchasesWinnerCardId).toBe("uc_flat");
+    expect(purchasesWinnerCents).toBe(200);
 
     expect(decideWinnerCardId).toBe(purchasesWinnerCardId);
     expect(decideWinnerCents).toBe(purchasesWinnerCents);

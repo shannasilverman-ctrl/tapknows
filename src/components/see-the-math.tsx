@@ -14,6 +14,8 @@ type Props = {
   /** Allowlisted funnel context — slugs only, never amounts. */
   merchant?: string | null;
   category?: string | null;
+  valuationAssumption?: string;
+  capStatus?: string;
   onEditAssumptions?: () => void;
   onReportIssue?: () => void;
 };
@@ -34,6 +36,8 @@ export function SeeTheMath({
   amountCents,
   merchant,
   category,
+  valuationAssumption,
+  capStatus,
   onEditAssumptions,
   onReportIssue,
 }: Props) {
@@ -77,6 +81,8 @@ export function SeeTheMath({
           runnerUp={runnerUp}
           amountCents={amountCents}
           termsDate={RATES_VERIFIED_ON}
+          valuationAssumption={valuationAssumption}
+          capStatus={capStatus}
           onEditAssumptions={onEditAssumptions}
           onReportIssue={onReportIssue}
         />

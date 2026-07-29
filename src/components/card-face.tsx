@@ -8,9 +8,9 @@ type Props = {
   trailing?: React.ReactNode;
   /** Shared value treatment used by recommendation and compact proof variants. */
   value?: React.ReactNode;
-  /** Last four of the card. If omitted, derived deterministically from name+issuer. */
+  /** Last four of an explicitly illustrative card. Never inferred for a customer's card. */
   last4?: string;
-  /** Hide the illustrative number line when the surface only needs card identity. */
+  /** Override number-line visibility. Defaults to visible only when `last4` is supplied. */
   showNumber?: boolean;
   /** Cardholder line (spaced caps). Defaults to "TAP MEMBER". */
   holder?: string;
@@ -33,7 +33,7 @@ export function CardFace({
   trailing,
   value,
   last4,
-  showNumber = true,
+  showNumber,
   holder,
   className,
 }: Props) {
@@ -44,7 +44,8 @@ export function CardFace({
         ? " cs-face--proof"
         : ""
   }`;
-  const digits = last4 ?? deriveLast4(`${issuer}:${name}`);
+  const shouldShowNumber = showNumber ?? last4 != null;
+  const digits = last4 ?? (shouldShowNumber ? deriveLast4(`${issuer}:${name}`) : "");
   const holderLine = (holder ?? "TAP MEMBER").toUpperCase();
   return (
     <div className={`cs-face ${tint} ${className ?? ""}`}>
@@ -62,7 +63,7 @@ export function CardFace({
 
         {/* Row 3 — masked number line */}
         <div className="mt-auto">
-          {showNumber ? (
+          {shouldShowNumber ? (
             <p className="cs-face-number">
               <span aria-hidden>•••• •••• •••• </span>
               <span className="cs-face-last4">{digits}</span>
