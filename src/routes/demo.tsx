@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Wordmark } from "@/components/wordmark";
 import { CardFace } from "@/components/card-face";
 import { WalletStack, type StackCard } from "@/components/wallet-stack";
@@ -51,28 +51,35 @@ const DEMO_CARDS: DemoCard[] = [
 ];
 
 const BEAT_META: Record<Beat, { label: string; caption: string }> = {
-  1: { label: "Get started", caption: "You tap Try TAP now. Guest mode begins." },
+  1: {
+    label: "The purchase",
+    caption: "Start with a merchant and amount. No bank connection required.",
+  },
   2: {
-    label: "Optional bank sync",
+    label: "Add your cards",
     caption: "If you choose Plaid, TAP can identify eligible cards without storing card numbers.",
   },
   3: { label: "Your wallet", caption: "Cards slide into your wallet." },
   4: { label: "At checkout", caption: "You walk into a store. A pass lands." },
-  5: { label: "Optimization", caption: "The winning card rises with a reason." },
-  6: { label: "Paid", caption: "The tap completes. Your balance ticks up." },
+  5: { label: "The answer", caption: "The winning card rises with a reason." },
+  6: {
+    label: "What you gained",
+    caption: "The tap completes. TAP shows the estimated difference for this purchase.",
+  },
 };
 
 // Per-tap earnings for the checkout demo (Q3 2026 accurate: Freedom Flex 5%
 // this quarter is gas / transit / live entertainment / United Way — groceries
 // are not a category, so the winner at a grocery store is Amex Gold at 4x.)
 const TAP_SPEND_CENTS = 8400; // $84 grocery basket
-const TAP_EARN_CENTS = 336; // Amex Gold 4x on $84 = $3.36
-const DEFAULT_EARN_CENTS = 84; // 1% default card
+const TAP_POINTS = 336; // Amex Gold 4x on $84
+const TAP_EARN_CENTS = 672; // 336 Membership Rewards points at TAP's 2.0¢ default
+const DEFAULT_POINTS = 84; // 1x runner-up
+const DEFAULT_EARN_CENTS = 172; // 84 Ultimate Rewards points at TAP's 2.05¢ default
 
 function DemoPage() {
   const navigate = useNavigate();
   const [beat, setBeat] = useState<Beat>(1);
-  const [recoveredCents, setRecoveredCents] = useState(1284); // month-to-date starting point
   const [interactive, setInteractive] = useState(false);
 
   useEffect(() => {
@@ -80,84 +87,116 @@ function DemoPage() {
   }, []);
 
   const advance = () => setBeat((b) => Math.min(6, (b + 1) as Beat) as Beat);
+  const retreat = () => setBeat((b) => Math.max(1, (b - 1) as Beat) as Beat);
   const restart = () => {
-    setRecoveredCents(1284);
     setBeat(1);
   };
 
   return (
-    <div className="tap-demo-screen min-h-screen flex flex-col bg-background text-foreground">
-      <header className="px-5 pt-6 pb-3 flex items-center justify-between max-w-md w-full mx-auto">
+    <div className="tap-demo-screen">
+      <header className="tap-demo-nav">
         <button
-          onClick={() => navigate({ to: "/home" })}
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground min-h-11"
+          onClick={() => navigate({ to: "/" })}
+          className="tap-demo-exit"
           aria-label="Exit demo"
         >
           <ArrowLeft className="size-4" />
           Exit
         </button>
         <Wordmark size="sm" />
-        {beat < 6 ? (
-          <button
-            onClick={advance}
-            disabled={!interactive}
-            className="inline-flex items-center gap-1 text-sm text-foreground hover:text-primary min-h-11 px-2"
-          >
-            Next
-            <ArrowRight className="size-4" aria-hidden />
-          </button>
-        ) : (
-          <div className="w-11" />
-        )}
+        <Link to="/onboarding" className="tap-demo-nav-cta">
+          Add my cards
+        </Link>
       </header>
 
-      {/* Progress dots */}
-      <div className="px-5 max-w-md w-full mx-auto">
-        <div className="flex items-center gap-1.5">
-          {([1, 2, 3, 4, 5, 6] as Beat[]).map((b) => {
-            const active = beat === b;
-            const done = beat > b;
-            return (
-              // Each segment is a real control so a viewer can revisit any
-              // step. The negative margin keeps a 24px tap
-              // target without changing the bar's visual height.
+      <main className="tap-demo-experience">
+        <aside className="tap-demo-narrative">
+          <p className="tap-demo-eyebrow">30-second product tour</p>
+          <h1>See how TAP makes the call.</h1>
+          <p className="tap-demo-intro">
+            Follow an $84 grocery run from wallet to recommendation—and see the math.
+          </p>
+          <div className="tap-demo-scenario" aria-label="Example purchase">
+            <span>Whole Foods</span>
+            <strong>$84.00</strong>
+          </div>
+          <ol className="tap-demo-chapters" aria-label="Demo chapters">
+            {([1, 2, 3, 4, 5, 6] as Beat[]).map((b) => {
+              const active = beat === b;
+              const done = beat > b;
+              return (
+                <li key={b}>
+                  <button
+                    type="button"
+                    onClick={() => setBeat(b)}
+                    disabled={!interactive}
+                    aria-label={`Step ${b}: ${BEAT_META[b].label}`}
+                    aria-current={active ? "step" : undefined}
+                    data-done={done ? "true" : "false"}
+                  >
+                    <span>{done ? <Check size={14} /> : b}</span>
+                    <div>
+                      <strong>{BEAT_META[b].label}</strong>
+                      <small>{BEAT_META[b].caption}</small>
+                    </div>
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+          <p className="tap-demo-privacy">Guided example · no bank connection · no card numbers</p>
+        </aside>
+
+        <section className="tap-demo-stage" aria-live="polite">
+          <div className="tap-demo-stage-head">
+            <div>
+              <p>Step {beat} of 6</p>
+              <h2>{BEAT_META[beat].label}</h2>
+            </div>
+            <span>{Math.round((beat / 6) * 100)}%</span>
+          </div>
+          <div className="tap-demo-progress" aria-hidden>
+            <i style={{ width: `${(beat / 6) * 100}%` }} />
+          </div>
+
+          <div className="tap-demo-frame">
+            {beat === 1 && <BeatGetStarted />}
+            {beat === 2 && <BeatConnect />}
+            {beat === 3 && <BeatWallet />}
+            {beat === 4 && <BeatCheckout />}
+            {beat === 5 && <BeatOptimize />}
+            {beat === 6 && <BeatPaid onRestart={restart} />}
+          </div>
+
+          <p className="tap-demo-caption">{BEAT_META[beat].caption}</p>
+          <div className="tap-demo-controls">
+            <button
+              type="button"
+              onClick={retreat}
+              disabled={!interactive || beat === 1}
+              className="tap-demo-back"
+            >
+              <ArrowLeft size={16} />
+              Back
+            </button>
+            {beat < 6 ? (
               <button
-                key={b}
                 type="button"
-                onClick={() => setBeat(b)}
+                onClick={advance}
                 disabled={!interactive}
-                aria-label={`Step ${b}: ${BEAT_META[b].label}`}
-                aria-current={active ? "step" : undefined}
-                className="flex-1 py-3 -my-3"
+                className="tap-demo-next"
               >
-                <span
-                  className={`block h-1 rounded-full transition-colors duration-300 ${
-                    active ? "bg-foreground" : done ? "bg-foreground/40" : "bg-secondary"
-                  }`}
-                />
+                Next
+                <ArrowRight size={16} aria-hidden />
               </button>
-            );
-          })}
-        </div>
-        <p className="mt-3 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-          Step {beat} of 6 · {BEAT_META[beat].label}
-        </p>
-      </div>
-
-      <main className="flex-1 px-5 pb-10 max-w-md w-full mx-auto pt-6">
-        {beat === 1 && <BeatGetStarted />}
-        {beat === 2 && <BeatConnect />}
-        {beat === 3 && <BeatWallet />}
-        {beat === 4 && <BeatCheckout />}
-        {beat === 5 && <BeatOptimize />}
-        {beat === 6 && (
-          <BeatPaid
-            recoveredCents={recoveredCents + TAP_EARN_CENTS - DEFAULT_EARN_CENTS}
-            onRestart={restart}
-          />
-        )}
-
-        <p className="mt-6 text-[12px] text-foreground leading-snug">{BEAT_META[beat].caption}</p>
+            ) : (
+              <Link to="/onboarding" className="tap-demo-next">
+                Add my cards
+                <ArrowRight size={16} aria-hidden />
+              </Link>
+            )}
+          </div>
+        </section>
       </main>
     </div>
   );
@@ -168,32 +207,23 @@ function DemoPage() {
 function BeatGetStarted() {
   return (
     <div className="cs-fade-up">
-      <div className="relative rounded-3xl border border-border bg-surface overflow-hidden">
-        {/* Faux landing page */}
-        <div className="p-6">
-          <p className="text-[10px] uppercase tracking-[0.18em] text-primary font-medium">TAP</p>
-          <h2 className="mt-2 font-display text-2xl tracking-tight text-foreground">
-            Every tap, optimized.
-          </h2>
-          <p className="mt-2 text-[13px] text-muted-foreground leading-relaxed">
-            One clear pick, every time. No card numbers stored.
-          </p>
-          <div className="mt-5">
-            <button
-              className="cs-cta-tap w-full h-12 rounded-xl bg-primary text-primary-foreground text-sm font-medium inline-flex items-center justify-center gap-2"
-              aria-hidden
-              tabIndex={-1}
-            >
-              Try TAP now
-              <ArrowRight className="size-4" />
-            </button>
-          </div>
+      <div className="tap-demo-opening-card">
+        <div className="tap-demo-opening-top">
+          <span>Whole Foods · groceries</span>
+          <strong>$84.00</strong>
         </div>
-        {/* Tap indicator ring */}
-        <div
-          className="pointer-events-none absolute left-1/2 bottom-[70px] -translate-x-1/2 cs-tap-ring"
-          aria-hidden
-        />
+        <div className="tap-demo-opening-copy">
+          <p>TAP</p>
+          <h2>One purchase. One clear card.</h2>
+          <span>
+            TAP checks the cards you already carry and tells you which one wins before checkout.
+          </span>
+        </div>
+        <div className="tap-demo-opening-answer">
+          <span>Best card for this purchase</span>
+          <strong>Amex Gold · 4×</strong>
+          <small>{TAP_POINTS} points · estimated $6.72 travel value</small>
+        </div>
       </div>
     </div>
   );
@@ -418,16 +448,19 @@ function BeatOptimize() {
 
         <div className="tap-demo-value-panel rounded-2xl bg-primary/6 border border-primary/12 px-4 py-3">
           <p className="cs-microlabel text-[10px] text-primary">Value of this choice</p>
-          <p className="tap-demo-value">About $3.36 in reward value</p>
-          <p className="mt-1 text-[13px] text-muted-foreground">Next best: about $0.84</p>
+          <p className="tap-demo-value">{TAP_POINTS} points · estimated $6.72 travel value</p>
+          <p className="mt-1 text-[13px] text-muted-foreground">
+            At TAP’s 2.0¢/point default · change anytime
+          </p>
           <div className="mt-3 flex items-baseline justify-between">
-            <p className="text-[12px] text-muted-foreground">Estimated difference</p>
+            <p className="text-[12px] text-muted-foreground">Versus the next best card</p>
             <p className="cs-money text-[18px] font-semibold text-primary">
               +{dollars(TAP_EARN_CENTS - DEFAULT_EARN_CENTS)}
             </p>
           </div>
           <p className="mt-3 text-[12px] text-muted-foreground">
-            Amex Gold earns 4× on U.S. supermarkets. Beats your Freedom Flex here.
+            Amex Gold earns 4× at U.S. supermarkets. That is {TAP_POINTS} Membership Rewards points
+            on this purchase.
           </p>
         </div>
         <button className="tap-demo-used" type="button" tabIndex={-1}>
@@ -451,25 +484,26 @@ function BeatOptimize() {
               <span className="tap-proof-swatch tap-proof-swatch-gold" />
               <span>
                 <strong>Amex Gold</strong>
-                <small>4× groceries</small>
+                <small>{TAP_POINTS} points · 4× groceries</small>
               </span>
-              <strong>~$3.36</strong>
+              <strong>est. $6.72</strong>
             </div>
             <div className="tap-demo-proof-card">
               <span className="tap-proof-swatch tap-proof-swatch-blue" />
               <span>
                 <strong>Sapphire</strong>
-                <small>1×</small>
+                <small>{DEFAULT_POINTS} points · 1×</small>
               </span>
-              <strong>~$0.84</strong>
+              <strong>est. $1.72</strong>
             </div>
             <div className="tap-demo-proof-delta">
               <span>Estimated difference</span>
-              <strong>+$2.52</strong>
+              <strong>+$5.00</strong>
             </div>
             <ul>
-              <li>Terms checked Jul 18, 2026</li>
-              <li>Assumption: 1 point = 1¢</li>
+              <li>Rates checked Jul 12, 2026</li>
+              <li>Amex assumption: 2.0¢ per point · TAP default</li>
+              <li>Chase assumption: 2.05¢ per point · TAP default</li>
               <li>Bonus cap status: not provided</li>
             </ul>
             <p>
@@ -484,39 +518,7 @@ function BeatOptimize() {
 
 /* ---------------- Beat 6 · Paid ---------------- */
 
-function BeatPaid({
-  recoveredCents,
-  onRestart,
-}: {
-  recoveredCents: number;
-  onRestart: () => void;
-}) {
-  const annualized = useMemo(() => recoveredCents * 12, [recoveredCents]);
-  const [displayed, setDisplayed] = useState(0);
-  const [balance, setBalance] = useState(recoveredCents - (TAP_EARN_CENTS - DEFAULT_EARN_CENTS));
-
-  useEffect(() => {
-    // tick the running balance up by the delta
-    const t = window.setTimeout(() => setBalance(recoveredCents), 350);
-    return () => window.clearTimeout(t);
-  }, [recoveredCents]);
-
-  useEffect(() => {
-    const start = Date.now();
-    const dur = 1200;
-    const from = 0;
-    const to = annualized;
-    let raf = 0;
-    const tick = () => {
-      const t = Math.min(1, (Date.now() - start) / dur);
-      const eased = 1 - Math.pow(1 - t, 3);
-      setDisplayed(Math.round(from + (to - from) * eased));
-      if (t < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [annualized]);
-
+function BeatPaid({ onRestart }: { onRestart: () => void }) {
   return (
     <div className="cs-fade-up">
       {/* Receipt */}
@@ -525,45 +527,27 @@ function BeatPaid({
           Receipt · Whole Foods
         </p>
         <div className="mt-2 flex items-baseline justify-between gap-3">
-          <p className="text-[13px] text-foreground">This tap earned</p>
-          <p className="cs-money text-[22px] font-semibold text-foreground">
-            {dollars(TAP_EARN_CENTS)}
-          </p>
+          <p className="text-[13px] text-foreground">Amex Gold earns</p>
+          <p className="cs-money text-[22px] font-semibold text-foreground">{TAP_POINTS} points</p>
         </div>
         <div className="mt-1.5 flex items-baseline justify-between gap-3">
-          <p className="text-[12px] text-muted-foreground">Default card would earn</p>
-          <p className="cs-money text-[13px] text-muted-foreground">
-            {dollars(DEFAULT_EARN_CENTS)}
-          </p>
+          <p className="text-[12px] text-muted-foreground">Estimated travel value at 2.0¢/pt</p>
+          <p className="cs-money text-[13px] text-muted-foreground">{dollars(TAP_EARN_CENTS)}</p>
         </div>
         <div className="mt-2 pt-2 border-t border-border flex items-baseline justify-between gap-3">
-          <p className="text-[12px] font-medium text-foreground">You gained</p>
+          <p className="text-[12px] font-medium text-foreground">More than the next best card</p>
           <p className="cs-money text-[15px] font-semibold text-primary">
             +{dollars(TAP_EARN_CENTS - DEFAULT_EARN_CENTS)}
           </p>
         </div>
       </div>
 
-      {/* Running balance */}
-      <div className="mt-4 rounded-2xl bg-primary/6 border border-primary/12 px-4 py-3 flex items-center justify-between">
-        <p className="text-[12px] text-foreground">Recovered this month</p>
-        <p className="cs-money cs-count text-[16px] font-semibold text-primary" aria-live="polite">
-          {dollars(balance)}
+      <div className="mt-5 text-center">
+        <p className="font-display text-4xl text-foreground">One clear answer. Visible math.</p>
+        <p className="mx-auto mt-3 max-w-sm text-[13px] leading-relaxed text-muted-foreground">
+          This is an illustration, not a posted reward balance. Your issuer determines the points
+          that ultimately post.
         </p>
-      </div>
-
-      {/* Annualized counter */}
-      <div className="mt-6 text-center">
-        <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground font-medium">
-          At this pace, that's
-        </p>
-        <p
-          className="cs-money mt-3 font-display text-5xl sm:text-6xl text-foreground"
-          aria-live="polite"
-        >
-          {dollars(displayed)}
-        </p>
-        <p className="mt-1 text-[13px] text-muted-foreground">a year</p>
       </div>
 
       <div className="mt-8 flex flex-col gap-2">

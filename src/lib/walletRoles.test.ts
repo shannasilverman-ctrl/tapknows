@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { computeWalletGuide, computeWalletRoles } from "./walletRoles";
-import type { CardCatalog, PointsProgram, UserCard } from "./types";
+import type { CardCatalog, PointsProgram, UserCard, UserOffer } from "./types";
 
 const PROGRAMS: Record<string, PointsProgram> = {
   cashback: { id: "cashback", name: "Cash Back", kind: "cashback", default_cpp: 0.01 },
@@ -142,6 +142,37 @@ describe("walletRoles", () => {
     expect(online?.cardCatalogId).toBe("prime");
   });
 
+  it("uses an active offer only for the wallet job whose merchant it matches", () => {
+    const flat = mkCard({
+      id: "flat",
+      earn_rules: [{ category: "everything_else", multiplier: 0.02 }],
+    });
+    const offerCard = mkCard({
+      id: "offer",
+      earn_rules: [{ category: "everything_else", multiplier: 0.01 }],
+    });
+    const amazonOffer = {
+      id: "amazon-10",
+      user_id: "u",
+      user_card_id: "u_offer",
+      merchant_catalog_id: null,
+      merchant_text: "Amazon",
+      reward_type: "percent_back",
+      reward_value: 10,
+      min_spend: 0,
+      expires_at: "2099-12-31",
+    } satisfies UserOffer;
+    const guide = computeWalletGuide({
+      userCards: [mkUc("u_flat", "flat"), mkUc("u_offer", "offer")],
+      catalog: cat(flat, offerCard),
+      programs: PROGRAMS,
+      offers: [amazonOffer],
+    });
+
+    expect(guide.find((role) => role.key === "online")?.cardCatalogId).toBe("offer");
+    expect(guide.find((role) => role.key === "dining")?.cardCatalogId).toBe("flat");
+  });
+
   it("full guide always answers every common spending situation", () => {
     const flat = mkCard({
       id: "flat",
@@ -161,5 +192,176 @@ describe("walletRoles", () => {
       "online",
     ]);
     expect(new Set(guide.map((role) => role.cardCatalogId))).toEqual(new Set(["flat"]));
+  });
+
+  it("uses the customer's CPP override when assigning wallet jobs", () => {
+    const points = mkCard({
+      id: "points",
+      points_program_id: "ur",
+      earn_rules: [{ category: "everything_else", multiplier: 3 }],
+    });
+    const cash = mkCard({
+      id: "cash",
+      earn_rules: [{ category: "everything_else", multiplier: 0.02 }],
+    });
+    const input = {
+      userCards: [mkUc("u_points", "points"), mkUc("u_cash", "cash")],
+      catalog: cat(points, cash),
+      programs: PROGRAMS,
+    };
+
+    expect(computeWalletGuide(input)[0].cardCatalogId).toBe("points");
+    expect(
+      computeWalletGuide({
+        ...input,
+        cppOverrides: { ur: 0.005 },
+      })[0].cardCatalogId,
+    ).toBe("cash");
+  });
+
+  it("changes a category job when the customer marks its bonus cap reached", () => {
+    const capped = mkCard({
+      id: "capped",
+      earn_rules: [
+        {
+          category: "groceries",
+          multiplier: 0.05,
+          cap_period_spend: 6_000,
+          cap_period: "annual",
+          post_cap_multiplier: 0.01,
+        },
+        { category: "everything_else", multiplier: 0.01 },
+      ],
+    });
+    const flat = mkCard({
+      id: "flat",
+      earn_rules: [{ category: "everything_else", multiplier: 0.02 }],
+    });
+    const input = {
+      userCards: [mkUc("u_capped", "capped"), mkUc("u_flat", "flat")],
+      catalog: cat(capped, flat),
+      programs: PROGRAMS,
+    };
+
+    expect(computeWalletGuide(input).find((role) => role.key === "groceries")?.cardCatalogId).toBe(
+      "capped",
+    );
+    expect(
+      computeWalletGuide({
+        ...input,
+        capReachedCategoriesByCard: { u_capped: ["groceries"] },
+      }).find((role) => role.key === "groceries")?.cardCatalogId,
+    ).toBe("flat");
+  });
+
+  it("does not ignore a utilization rerank when assigning a job", () => {
+    const rewardsWinner = mkCard({
+      id: "winner",
+      earn_rules: [{ category: "everything_else", multiplier: 0.05 }],
+    });
+    const safeCard = mkCard({
+      id: "safe",
+      earn_rules: [{ category: "everything_else", multiplier: 0.02 }],
+    });
+    const input = {
+      userCards: [mkUc("u_winner", "winner"), mkUc("u_safe", "safe")],
+      catalog: cat(rewardsWinner, safeCard),
+      programs: PROGRAMS,
+    };
+
+    expect(computeWalletGuide(input)[0].cardCatalogId).toBe("winner");
+    const adjusted = computeWalletGuide({
+      ...input,
+      utilization: {
+        enabled: true,
+        accountsByUserCardId: {
+          u_winner: { limitCents: 100_000, balanceCents: 9_000 },
+          u_safe: { limitCents: 100_000, balanceCents: 0 },
+        },
+        threshold: 0.1,
+        behavior: "rerank",
+      },
+    })[0];
+    expect(adjusted.cardCatalogId).toBe("safe");
+    expect(adjusted.creditHealth.kind).toBe("reranked");
+    expect(adjusted.creditHealth.caution).toContain("Re-ranked to Test safe");
+  });
+
+  it("keeps an above-target warning distinct from a changed recommendation", () => {
+    const rewardsWinner = mkCard({
+      id: "winner",
+      earn_rules: [{ category: "everything_else", multiplier: 0.05 }],
+    });
+    const safeCard = mkCard({
+      id: "safe",
+      earn_rules: [{ category: "everything_else", multiplier: 0.02 }],
+    });
+    const warned = computeWalletGuide({
+      userCards: [mkUc("u_winner", "winner"), mkUc("u_safe", "safe")],
+      catalog: cat(rewardsWinner, safeCard),
+      programs: PROGRAMS,
+      utilization: {
+        enabled: true,
+        accountsByUserCardId: {
+          u_winner: { limitCents: 100_000, balanceCents: 9_000 },
+          u_safe: { limitCents: 100_000, balanceCents: 0 },
+        },
+        threshold: 0.1,
+        behavior: "warn",
+      },
+    })[0];
+
+    expect(warned.cardCatalogId).toBe("winner");
+    expect(warned.creditHealth.kind).toBe("warning");
+    expect(warned.creditHealth.caution).toContain("14% utilization");
+    expect(warned.creditHealth.caution).toContain("above your 10% target");
+  });
+
+  it("preserves the useful amounts and cards in a split suggestion", () => {
+    const rewardsWinner = mkCard({
+      id: "winner",
+      earn_rules: [{ category: "everything_else", multiplier: 0.05 }],
+    });
+    const safeCard = mkCard({
+      id: "safe",
+      earn_rules: [{ category: "everything_else", multiplier: 0.02 }],
+    });
+    const split = computeWalletGuide({
+      userCards: [mkUc("u_winner", "winner"), mkUc("u_safe", "safe")],
+      catalog: cat(rewardsWinner, safeCard),
+      programs: PROGRAMS,
+      utilization: {
+        enabled: true,
+        accountsByUserCardId: {
+          u_winner: { limitCents: 100_000, balanceCents: 9_000 },
+          u_safe: { limitCents: 100_000, balanceCents: 0 },
+        },
+        threshold: 0.1,
+        behavior: "split",
+      },
+    })[0];
+
+    expect(split.cardCatalogId).toBe("winner");
+    expect(split.creditHealth.kind).toBe("split-suggested");
+    expect(split.creditHealth.caution).toContain("$10 on Test winner");
+    expect(split.creditHealth.caution).toContain("$40 on Test safe");
+  });
+
+  it("labels close calls instead of overstating a tiny edge", () => {
+    const twoPercent = mkCard({
+      id: "two",
+      earn_rules: [{ category: "everything_else", multiplier: 0.02 }],
+    });
+    const nearTie = mkCard({
+      id: "near",
+      earn_rules: [{ category: "everything_else", multiplier: 0.019 }],
+    });
+    const everyday = computeWalletGuide({
+      userCards: [mkUc("u_two", "two"), mkUc("u_near", "near")],
+      catalog: cat(twoPercent, nearTie),
+      programs: PROGRAMS,
+    })[0];
+
+    expect(everyday.comparisonLabel).toBe("Close call");
   });
 });

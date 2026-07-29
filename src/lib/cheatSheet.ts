@@ -10,6 +10,7 @@ import {
   type AccountSnapshot,
   type UtilizationBehavior,
 } from "./utilizationFilter";
+import { POINT_VALUATIONS } from "./pointValuations";
 
 export const CHEAT_SHEET_CATEGORIES = [
   { id: "dining", label: "Dining", hint: "Restaurants, cafés, and takeout" },
@@ -49,6 +50,14 @@ function exceptionLabel(rule: EarnRule, capNotes: string[]) {
   return details.length ? details.join(" · ") : null;
 }
 
+function dollars(cents: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
+  }).format(cents / 100);
+}
+
 function valuationLabel({
   cards,
   valuations,
@@ -64,7 +73,10 @@ function valuationLabel({
     const cpp = valuations[programId];
     if (!Number.isFinite(cpp) || cpp <= 0) return [];
     const source = customValuationProgramIds.has(programId) ? "your value" : "TAP default";
-    return [`${cpp.toFixed(2)}¢/pt · ${source}`];
+    const programName =
+      POINT_VALUATIONS[programId]?.displayName ??
+      programId.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+    return [`${programName}: ${cpp.toFixed(2)}¢/pt · ${source}`];
   });
   const unique = [...new Set(labels)];
   return unique.length ? unique.join(" + ") : null;
@@ -148,7 +160,11 @@ export function buildCheatSheetPicks({
           : utilizationResult?.behaviorApplied === "warn"
             ? "Credit health: this example goes above your comfort level"
             : null;
-    const returnPct = (winner.totalValueCents / amountCents) * 100;
+    const usesPointEstimate = cards.some(
+      (card) => card.points_program_id && card.points_program_id !== "cashback",
+    );
+    const mixesRewardKinds =
+      cards.some((card) => card.points_program_id === "cashback") && usesPointEstimate;
     const cardLabel =
       winner.kind === "split"
         ? winner.legs.map((leg) => leg.cardLabel).join(" + ")
@@ -163,7 +179,11 @@ export function buildCheatSheetPicks({
         cardLabel,
         issuerLabel: winner.kind === "split" ? "Split purchase" : cards[0].issuer,
         rateLabel: winner.kind === "split" ? "2-card split" : formatRate(displayedRule),
-        valueLabel: `${returnPct.toFixed(returnPct >= 10 ? 0 : 1)}% estimated value`,
+        valueLabel: mixesRewardKinds
+          ? `${dollars(winner.totalValueCents)} est. combined value`
+          : usesPointEstimate
+            ? `${dollars(winner.totalValueCents)} est. travel value`
+            : `${dollars(winner.totalValueCents)} cash back`,
         valuationLabel: valuationLabel({
           cards,
           valuations,

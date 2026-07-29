@@ -17,8 +17,8 @@ const guestWallet = {
 };
 
 const routes = [
-  { name: "landing", path: "/", heading: "Know which card to tap—before you pay." },
-  { name: "onboarding", path: "/onboarding", heading: "Build your wallet." },
+  { name: "landing", path: "/", heading: "Know which card to tap." },
+  { name: "onboarding", path: "/onboarding", heading: "Add another card." },
   { name: "home", path: "/home", heading: "Where are you paying?" },
   {
     name: "recommendation",
@@ -90,5 +90,25 @@ test.describe("TAP consumer visual system", () => {
         });
       });
     }
+  }
+
+  for (const viewport of viewports) {
+    test(`recommendation proof — ${viewport.name}`, async ({ page }) => {
+      await page.setViewportSize(viewport);
+      await page.goto("/decide?merchant=whole_foods&category=groceries&amount=84");
+      await page.getByRole("button", { name: /Why Gold\?/ }).click();
+
+      const dialog = page.getByRole("dialog", { name: "Why Gold?" });
+      await expect(dialog).toBeVisible();
+      await expect(dialog.getByRole("button", { name: "Close Why Gold?" })).toBeVisible();
+      await expect(dialog.getByText("336 pts × 2.00¢ = est. $6.72")).toBeVisible();
+      await expect(dialog.getByText("84 pts × 2.05¢ = est. $1.72")).toBeVisible();
+      await expect(page).toHaveScreenshot(`recommendation-proof-${viewport.name}.png`, {
+        animations: "disabled",
+        caret: "hide",
+        fullPage: false,
+        maxDiffPixelRatio: 0.005,
+      });
+    });
   }
 });

@@ -77,6 +77,10 @@ export type PlayLeg = {
   amountCents: number;
   baseEarnCents: number;
   offerValueCents: number;
+  rewardKind?: "points" | "cashback";
+  pointsEarned?: number;
+  cppCents?: number;
+  programId?: string | null;
   reason: string;
   // Honest cap disclosure for rules with a period cap. Present only when the
   // winning rule for this leg is capped. UI may render inline; also appended
@@ -332,6 +336,16 @@ function dollarStr(cents: number): string {
   return frac === 0 ? `${sign}$${whole}` : `${sign}$${whole}.${String(frac).padStart(2, "0")}`;
 }
 
+function rewardHeadline(
+  kind: "points" | "cashback",
+  pointsEarned: number,
+  valueCents: number,
+  cppCents: number,
+): string {
+  if (kind === "cashback") return `${dollarStr(valueCents)} cash back`;
+  return `${Math.max(0, pointsEarned).toLocaleString("en-US")} points (estimated ${dollarStr(valueCents)} value at ${cppCents.toFixed(2)}¢/pt)`;
+}
+
 // --------------------------------------------------------------------------
 // public API
 // --------------------------------------------------------------------------
@@ -404,9 +418,14 @@ export function recommend(input: EngineInput): EngineOutput {
     const capNote = capReached ? null : capNoteForRule(card, category);
     const reasonBase = offer ? "base earn + offer" : "base earn";
     const reason = capNote ? `${reasonBase} · ${capNote}` : reasonBase;
+    const appliedRule = resolveEarnRule(card, category);
+    const rewardKind = appliedRule.multiplier < 1 ? "cashback" : "points";
+    const pointsEarned = rewardKind === "points" ? Math.max(0, Math.round(base / cpp)) : 0;
+    const rewardCopy = rewardHeadline(rewardKind, pointsEarned, base, cpp);
+    const feeCopy = penalty > 0 ? `, less ${dollarStr(penalty)} foreign transaction fee` : "";
     const headlineBase = offer
-      ? `Put ${dollarStr(amountCents)} on ${labelCard(card)} — ${dollarStr(base - penalty)} earn plus ${dollarStr(offerVal)} offer.`
-      : `Put ${dollarStr(amountCents)} on ${labelCard(card)} for ${dollarStr(base - penalty)} back.`;
+      ? `Put ${dollarStr(amountCents)} on ${labelCard(card)} — ${rewardCopy}${feeCopy}, plus ${dollarStr(offerVal)} offer.`
+      : `Put ${dollarStr(amountCents)} on ${labelCard(card)} for ${rewardCopy}${feeCopy}.`;
     plays.push({
       kind: "single",
       legs: [
@@ -416,6 +435,10 @@ export function recommend(input: EngineInput): EngineOutput {
           amountCents,
           baseEarnCents: base - penalty,
           offerValueCents: offerVal,
+          rewardKind,
+          pointsEarned,
+          cppCents: cpp,
+          programId: card.points_program_id,
           reason,
           capNote: capNote ?? undefined,
         },

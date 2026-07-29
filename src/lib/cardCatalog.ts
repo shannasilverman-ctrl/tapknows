@@ -165,7 +165,7 @@ export const CARD_CATALOG: CatalogCard[] = [
     issuer: "Chase",
     name: "Amazon Prime Visa",
     annual_fee: 0,
-    foreign_tx_fee_pct: 3,
+    foreign_tx_fee_pct: 0,
     points_program_id: "cashback",
     earn_rules: [
       { category: "amazon", multiplier: 0.05, note: "with Prime membership" },
@@ -211,7 +211,21 @@ export const CARD_CATALOG: CatalogCard[] = [
       { category: "dining", multiplier: 4, cap_period_spend: 50000, cap_period: "annual" },
       { category: "groceries", multiplier: 4, cap_period_spend: 25000, cap_period: "annual" },
       { category: "hotels", multiplier: 5, note: "prepaid on AmexTravel.com" },
-      { category: "flights", multiplier: 3, note: "booked on AmexTravel.com" },
+      {
+        category: "flights",
+        multiplier: 3,
+        note: "booked directly with airlines or on AmexTravel.com",
+      },
+      {
+        category: "car_rentals",
+        multiplier: 2,
+        note: "prepaid on AmexTravel.com",
+      },
+      {
+        category: "cruises",
+        multiplier: 2,
+        note: "booked and paid on AmexTravel.com",
+      },
       { category: "everything_else", multiplier: 1 },
     ],
     rates_verified_on: RATES_VERIFIED_ON,
@@ -448,7 +462,7 @@ export const CARD_CATALOG: CatalogCard[] = [
     issuer: "Wells Fargo",
     name: "Autograph",
     annual_fee: 0,
-    foreign_tx_fee_pct: 3,
+    foreign_tx_fee_pct: 0,
     points_program_id: "cashback",
     earn_rules: [
       { category: "dining", multiplier: 3 },

@@ -78,8 +78,19 @@ describe("buildCheatSheetPicks", () => {
       customValuationProgramIds: ["points"],
     }).find((pick) => pick.categoryId === "dining");
 
-    expect(defaultValue?.valuationLabel).toBe("2.00¢/pt · TAP default");
-    expect(customValue?.valuationLabel).toBe("1.75¢/pt · your value");
+    expect(defaultValue?.valuationLabel).toBe("Points: 2.00¢/pt · TAP default");
+    expect(customValue?.valuationLabel).toBe("Points: 1.75¢/pt · your value");
+    expect(defaultValue?.valueLabel).toBe("$8 est. travel value");
+  });
+
+  it("shows the estimated dollar return instead of only a rate", () => {
+    const dining = buildCheatSheetPicks({
+      wallet: [customCashCard],
+      offers: [],
+      valuations: { cashback: 1 },
+    }).find((pick) => pick.categoryId === "dining");
+
+    expect(dining?.valueLabel).toBe("$5 cash back");
   });
 
   it("makes the available-cap assumption explicit", () => {

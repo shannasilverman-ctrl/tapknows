@@ -70,6 +70,33 @@ describe("catalog integrity", () => {
       expect.objectContaining({ category: "gas", multiplier: 3 }),
     );
   });
+
+  it("keeps verified no-foreign-transaction-fee cards at zero", () => {
+    expect(CATALOG_BY_ID.chase_amazon_prime_visa.foreign_tx_fee_pct).toBe(0);
+    expect(CATALOG_BY_ID.wf_autograph.foreign_tx_fee_pct).toBe(0);
+  });
+
+  it("keeps the complete current Amex Gold travel earn rules", () => {
+    expect(CATALOG_BY_ID.amex_gold.earn_rules).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          category: "flights",
+          multiplier: 3,
+          note: expect.stringMatching(/directly with airlines.*AmexTravel/i),
+        }),
+        expect.objectContaining({
+          category: "car_rentals",
+          multiplier: 2,
+          note: expect.stringMatching(/prepaid.*AmexTravel/i),
+        }),
+        expect.objectContaining({
+          category: "cruises",
+          multiplier: 2,
+          note: expect.stringMatching(/booked and paid.*AmexTravel/i),
+        }),
+      ]),
+    );
+  });
 });
 
 describe("engine — category cap pro-rate", () => {

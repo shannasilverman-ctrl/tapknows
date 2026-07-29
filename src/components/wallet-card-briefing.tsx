@@ -33,6 +33,8 @@ type Props = {
 function categoryLabel(category: string): string {
   const labels: Record<string, string> = {
     amazon: "Amazon",
+    car_rentals: "Prepaid car rentals",
+    cruises: "Cruises",
     dining: "Dining",
     everything_else: "Everyday purchases",
     flights: "Flights",
@@ -263,7 +265,17 @@ export function WalletCardBriefing({
 
           {redeemable.length > 0 ? (
             <section className="mt-6">
-              <p className="cs-microlabel text-[10px]">Credits to use</p>
+              <p className="cs-microlabel text-[10px]">Credits to check</p>
+              <div className="mt-2 rounded-2xl border border-border bg-secondary/45 px-4 py-3">
+                <p className="text-[12px] text-foreground leading-relaxed">
+                  TAP cannot see your issuer credit usage. These estimates assume each
+                  current-period credit is unused except for uses you mark in TAP.
+                </p>
+                <p className="mt-1 text-[11px] text-muted-foreground leading-relaxed">
+                  When TAP applies a credit to a purchase, choose “Mark used” to update the
+                  estimate.
+                </p>
+              </div>
               <ul className="mt-2 divide-y divide-border rounded-2xl border border-border bg-white">
                 {redeemable.map((state) => {
                   const total = state.benefit.value_cents ?? 0;
@@ -279,7 +291,7 @@ export function WalletCardBriefing({
                           {state.benefit.label}
                         </span>
                         <span className="cs-money text-[14px] font-semibold text-foreground whitespace-nowrap">
-                          {dollars(state.remaining_cents)} left
+                          Up to {dollars(state.remaining_cents)} assumed remaining
                         </span>
                       </div>
                       <div className="mt-2 h-1.5 rounded-full bg-secondary overflow-hidden">

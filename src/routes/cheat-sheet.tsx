@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, Check, Download, Search, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Download, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { BottomNav } from "@/components/bottom-nav";
 import { CardFace } from "@/components/card-face";
 import { TapAppShell } from "@/components/tap-primitives";
@@ -9,7 +9,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { CARD_CATALOG, RATES_VERIFIED_ON } from "@/lib/cardCatalog";
 import { buildCheatSheetPicks } from "@/lib/cheatSheet";
 import { getGuestWallet } from "@/lib/guestWallet";
-import { POINT_VALUATIONS, VALUATIONS_VERIFIED_ON } from "@/lib/pointValuations";
+import {
+  POINT_VALUATIONS,
+  VALUATIONS_VERIFIED_ON,
+  VALUATION_SOURCE_LABEL,
+} from "@/lib/pointValuations";
 import type { EarnRule, EngineCard, EngineOffer } from "@/lib/recommendationEngine";
 import { capReachedByCardMap, type CapPeriod } from "@/lib/capReached";
 import type { AccountSnapshot, UtilizationBehavior } from "@/lib/utilizationFilter";
@@ -75,6 +79,18 @@ function hydrateCard(
     foreign_tx_fee_pct: Number(card.foreign_tx_fee_pct),
     earn_rules: card.earn_rules,
   };
+}
+
+function friendlyDate(value: string) {
+  const parsed = new Date(`${value}T12:00:00Z`);
+  return Number.isNaN(parsed.getTime())
+    ? value
+    : parsed.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        timeZone: "UTC",
+      });
 }
 
 function CheatSheetPage() {
@@ -316,11 +332,19 @@ function CheatSheetPage() {
       .map(([id]) => data?.wallet.find((card) => card.id === id))
       .filter((card): card is EngineCard => Boolean(card));
   }, [data?.wallet, picks]);
+  const valuationAssumptions = useMemo(
+    () => [...new Set(picks.flatMap((pick) => (pick.valuationLabel ? [pick.valuationLabel] : [])))],
+    [picks],
+  );
+  const hasTravelValueEstimate = useMemo(
+    () => data?.wallet.some((card) => card.points_program_id !== "cashback") ?? false,
+    [data?.wallet],
+  );
 
   return (
-    <TapAppShell className="tap-app-shell tap-cheat-page">
+    <TapAppShell className="tap-app-shell tap-cheat-page tap-cheat-v2">
       <main className="tap-cheat-main">
-        <header className="tap-cheat-header">
+        <header className="tap-cheat-header tap-cheat-v2-header">
           <div>
             <p className="tap-cheat-eyebrow">YOUR PERSONAL PLAYBOOK</p>
             <h1>Your one-glance card plan.</h1>
@@ -360,27 +384,32 @@ function CheatSheetPage() {
           </section>
         ) : (
           <>
-            <section className="tap-cheat-carry">
-              <div>
-                <p className="tap-cheat-section-label">USE THESE MOST OFTEN</p>
-                <h2>Your front-of-wallet cards</h2>
-                <p>These cards win the most everyday categories in your current wallet.</p>
-              </div>
-              <div className="tap-cheat-card-stack" aria-label="Your most useful cards">
-                {everydayCards.map((card, index) => (
-                  <div
-                    className="tap-cheat-card"
-                    key={card.id}
-                    style={{ "--tap-card-index": index } as React.CSSProperties}
-                  >
-                    <CardFace issuer={card.issuer} name={card.name} showNumber={false} />
-                  </div>
-                ))}
-              </div>
-            </section>
+            {everydayCards.length > 1 ? (
+              <section className="tap-cheat-carry">
+                <div>
+                  <p className="tap-cheat-section-label">USE THESE MOST OFTEN</p>
+                  <h2>Your front-of-wallet cards</h2>
+                  <p>These cards win the most everyday categories in your current wallet.</p>
+                </div>
+                <div className="tap-cheat-card-stack" aria-label="Your most useful cards">
+                  {everydayCards.map((card, index) => (
+                    <div
+                      className="tap-cheat-card"
+                      key={card.id}
+                      style={{ "--tap-card-index": index } as React.CSSProperties}
+                    >
+                      <CardFace issuer={card.issuer} name={card.name} showNumber={false} />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ) : null}
 
-            <section className="tap-cheat-plan" aria-labelledby="cheat-answers-title">
-              <div className="tap-cheat-toolbar">
+            <section
+              className="tap-cheat-plan tap-cheat-v2-plan"
+              aria-labelledby="cheat-answers-title"
+            >
+              <div className="tap-cheat-toolbar tap-cheat-v2-toolbar">
                 <div>
                   <p className="tap-cheat-section-label">WHAT TO TAP</p>
                   <h2 id="cheat-answers-title">Your everyday answers</h2>
@@ -397,21 +426,40 @@ function CheatSheetPage() {
                 </label>
               </div>
 
+              <div className="tap-cheat-v2-assumptions" aria-label="Plan assumptions">
+                <strong>Assumptions</strong>
+                <span>
+                  {valuationAssumptions.length
+                    ? valuationAssumptions.join(" · ")
+                    : "Cash back shown at face value"}
+                </span>
+                {hasTravelValueEstimate ? (
+                  <span>Travel-value estimates are not cash · basis: {VALUATION_SOURCE_LABEL}</span>
+                ) : null}
+                <span>Credit-health guidance uses the same $100 example when enabled.</span>
+              </div>
+
               <div aria-live="polite" aria-atomic="true" className="sr-only">
                 {filtered.length} {filtered.length === 1 ? "answer" : "answers"} shown
               </div>
               {filtered.length ? (
-                <div className="tap-cheat-grid" data-testid="cheat-sheet-results">
+                <div
+                  className="tap-cheat-grid tap-cheat-v2-table"
+                  data-testid="cheat-sheet-results"
+                >
+                  <div className="tap-cheat-v2-table-head" aria-hidden>
+                    <span>Purchase</span>
+                    <span>Card</span>
+                    <span>Earn</span>
+                    <span>Condition</span>
+                  </div>
                   {filtered.map((pick) => (
                     <article
-                      className="tap-cheat-row"
+                      className="tap-cheat-row tap-cheat-v2-row"
                       key={pick.categoryId}
                       aria-label={`${pick.category}: ${pick.cards.length > 1 ? "use" : "tap"} ${pick.cardLabel}`}
                     >
                       <div className="tap-cheat-category">
-                        <span>
-                          <Check aria-hidden />
-                        </span>
                         <div>
                           <h3>{pick.category}</h3>
                           <p>{pick.hint}</p>
@@ -420,15 +468,16 @@ function CheatSheetPage() {
                       <div className="tap-cheat-answer">
                         <p>{pick.cards.length > 1 ? "Use" : "Tap"}</p>
                         <strong>{pick.cardLabel}</strong>
-                        <small>{pick.issuerLabel}</small>
                       </div>
                       <div className="tap-cheat-rate">
                         <strong>{pick.rateLabel}</strong>
                         <span>{pick.valueLabel}</span>
-                        {pick.valuationLabel ? <small>{pick.valuationLabel}</small> : null}
                       </div>
-                      <div className="tap-cheat-exception">
-                        {pick.exception ? <span>{pick.exception}</span> : <span>Simple win</span>}
+                      <div
+                        className="tap-cheat-exception tap-cheat-v2-condition"
+                        data-empty={pick.exception ? "false" : "true"}
+                      >
+                        {pick.exception ? <span>{pick.exception}</span> : null}
                       </div>
                     </article>
                   ))}
@@ -438,15 +487,14 @@ function CheatSheetPage() {
               )}
             </section>
 
-            <section className="tap-cheat-trust">
+            <section className="tap-cheat-trust tap-cheat-v2-trust">
               <ShieldCheck aria-hidden />
               <div>
                 <strong>Built from your wallet, never an affiliate ranking.</strong>
                 <p>
-                  Card terms checked {RATES_VERIFIED_ON}; point estimates checked{" "}
-                  {VALUATIONS_VERIFIED_ON}. Estimated returns—and credit-health guidance when
-                  enabled—use the same representative $100 purchase. Merchant coding and issuer
-                  terms can change.
+                  Card terms checked {friendlyDate(RATES_VERIFIED_ON)}; point estimates checked{" "}
+                  {friendlyDate(VALUATIONS_VERIFIED_ON)}. Merchant coding and issuer terms can
+                  change.
                 </p>
               </div>
               <Link to="/plan">

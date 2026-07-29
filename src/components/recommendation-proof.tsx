@@ -36,6 +36,27 @@ function earnLabel(play: Play): string {
   return `${multiplier}× on ${leg.matchedCategory.replace(/_/g, " ")}`;
 }
 
+function valueEquation(play: Play): string {
+  const equations = play.legs.map((leg) => {
+    if (leg.rewardKind === "points") {
+      return `${leg.pointsEarned.toLocaleString()} pts × ${(leg.cpp * 100).toFixed(
+        2,
+      )}¢ = est. ${dollars(leg.rewardsCents)}`;
+    }
+    if (leg.rewardKind === "cashback") {
+      return `${dollars(leg.amountCents)} × ${(leg.earnMultiplier * 100).toFixed(
+        0,
+      )}% = ${dollars(leg.rewardsCents)} cash back`;
+    }
+    return `${dollars(leg.rewardsCents)} estimated reward value`;
+  });
+  const rewardsTotal = play.legs.reduce((sum, leg) => sum + leg.rewardsCents, 0);
+  if (rewardsTotal !== play.totalValueCents) {
+    equations.push(`estimated total ${dollars(play.totalValueCents)}`);
+  }
+  return equations.join(" · ");
+}
+
 /**
  * Dedicated light proof surface.
  *
@@ -76,7 +97,7 @@ export function RecommendationProof({
       {delta > 0 ? (
         <div className="tap-proof-value-difference">
           <span>Estimated difference</span>
-          <strong>{dollars(delta)}</strong>
+          <strong>= {dollars(delta)}</strong>
         </div>
       ) : null}
 
@@ -144,6 +165,7 @@ function ProofRow({ play, winner = false }: { play: Play; winner?: boolean }) {
       <div>
         <h3>{recommendationLabel(play)}</h3>
         <p>{earnLabel(play)}</p>
+        <small>{valueEquation(play)}</small>
       </div>
       <strong>{dollars(play.totalValueCents)}</strong>
     </article>

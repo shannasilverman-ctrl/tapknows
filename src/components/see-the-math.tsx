@@ -16,6 +16,7 @@ type Props = {
   category?: string | null;
   valuationAssumption?: string;
   capStatus?: string;
+  capBadge?: string | null;
   onEditAssumptions?: () => void;
   onReportIssue?: () => void;
 };
@@ -38,6 +39,7 @@ export function SeeTheMath({
   category,
   valuationAssumption,
   capStatus,
+  capBadge,
   onEditAssumptions,
   onReportIssue,
 }: Props) {
@@ -64,9 +66,12 @@ export function SeeTheMath({
           <strong>Why {recommendationLabel(winner)}?</strong>
           <small>
             {delta > 0
-              ? `${dollars(delta)} more value than your next-best card`
-              : "See the reward math and assumptions"}
+              ? `vs ${recommendationLabel(runnerUp!)}: est. ${dollars(
+                  runnerUp!.totalValueCents,
+                )} · +${dollars(delta)}`
+              : "See the estimated reward math and assumptions"}
           </small>
+          {capBadge ? <em className="tap-proof-cap-badge">{capBadge}</em> : null}
         </span>
         <ChevronRight aria-hidden />
       </button>
@@ -75,6 +80,7 @@ export function SeeTheMath({
         open={open}
         onClose={() => setOpen(false)}
         title={`Why ${recommendationLabel(winner)}?`}
+        panelClassName="tap-proof-sheet"
       >
         <RecommendationProof
           winner={winner}

@@ -8,10 +8,18 @@
 // The role engine is intentionally thin — it calls the same math the test
 // suite pins so we can't drift.
 
-import type { CardCatalog, PointsProgram, UserCard } from "./types";
+import type { CardCatalog, PointsProgram, UserCard, UserOffer } from "./types";
 import { planPurchase, type Play } from "./planner";
+import { applyDecideUtilization } from "./decideUtilization";
+import type { AccountSnapshot, UtilizationBehavior } from "./utilizationFilter";
 
 export type WalletRoleKey = "everyday" | "groceries" | "dining" | "gas" | "travel" | "online";
+
+export type WalletRoleCreditHealth =
+  | { kind: "none"; caution: null }
+  | { kind: "warning"; caution: string }
+  | { kind: "reranked"; caution: string }
+  | { kind: "split-suggested"; caution: string };
 
 export type WalletRole = {
   key: WalletRoleKey;
@@ -25,6 +33,9 @@ export type WalletRole = {
   nickname: string | null;
   reasoning: string; // one-line why, drawn from the planner leg
   valueCents: number; // representative-amount value for this domain
+  deltaCents: number | null;
+  comparisonLabel: string | null;
+  creditHealth: WalletRoleCreditHealth;
 };
 
 type Domain = {
@@ -84,23 +95,107 @@ export type WalletRoleInput = {
   // Optional frecency map: userCardId -> weight (higher = more recent/frequent).
   // Used only to tie-break the everyday role when two cards return the same value.
   frecencyByCardId?: Record<string, number>;
+  offers?: UserOffer[];
+  cppOverrides?: Record<string, number>;
+  capReachedCategoriesByCard?: Record<string, string[]>;
+  utilization?: {
+    enabled: boolean;
+    accountsByUserCardId: Record<string, AccountSnapshot>;
+    threshold: number;
+    behavior: UtilizationBehavior;
+    perCardOverrides?: Record<string, number>;
+  };
 };
 
-function runDomain(input: WalletRoleInput, d: Domain): Play[] {
-  return planPurchase({
+function normalized(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function offerIsRelevant(offer: UserOffer, domain: Domain) {
+  const merchant = normalized(offer.merchant_text);
+  const jobMerchant = normalized(domain.merchantLabel);
+  if (!merchant || !jobMerchant) return false;
+  if (
+    merchant === jobMerchant ||
+    merchant.includes(jobMerchant) ||
+    jobMerchant.includes(merchant)
+  ) {
+    return true;
+  }
+  // The online role represents Amazon explicitly in the planner category.
+  return domain.category === "amazon" && merchant.includes("amazon");
+}
+
+function runDomain(
+  input: WalletRoleInput,
+  d: Domain,
+): { plays: Play[]; creditHealth: WalletRoleCreditHealth } {
+  const basePlays = planPurchase({
     userCards: input.userCards,
     catalog: input.catalog,
     programs: input.programs,
-    offers: [],
-    cppOverrides: {},
+    offers: (input.offers ?? []).filter((offer) => offerIsRelevant(offer, d)),
+    cppOverrides: input.cppOverrides ?? {},
     merchantCategory: d.category,
     amountCents: d.amountCents,
+    merchant: { name: d.merchantLabel },
+    capReachedCategoriesByCard: input.capReachedCategoriesByCard,
   });
+  if (!input.utilization?.enabled) {
+    return { plays: basePlays, creditHealth: { kind: "none", caution: null } };
+  }
+  const adjusted = applyDecideUtilization({
+    plays: basePlays,
+    accountsByUserCardId: input.utilization.accountsByUserCardId,
+    threshold: input.utilization.threshold,
+    behavior: input.utilization.behavior,
+    perCardOverrides: input.utilization.perCardOverrides,
+  });
+  const creditHealth: WalletRoleCreditHealth =
+    adjusted.behaviorApplied === "warn"
+      ? {
+          kind: "warning",
+          caution: adjusted.caution ?? "This purchase is above your saved utilization target.",
+        }
+      : adjusted.behaviorApplied === "reranked"
+        ? {
+            kind: "reranked",
+            caution:
+              adjusted.caution ??
+              "TAP re-ranked this job to stay within your saved utilization target.",
+          }
+        : adjusted.behaviorApplied === "split-suggested"
+          ? {
+              kind: "split-suggested",
+              caution:
+                adjusted.caution ??
+                "TAP suggests splitting this purchase to stay within your saved utilization target.",
+            }
+          : { kind: "none", caution: null };
+  return {
+    plays: adjusted.plays,
+    creditHealth,
+  };
 }
 
-function toRole(d: Domain, p: Play): WalletRole | null {
+function comparisonLabel(deltaCents: number | null, winnerValueCents: number) {
+  if (deltaCents == null) return null;
+  if (deltaCents <= Math.max(25, Math.round(winnerValueCents * 0.1))) return "Close call";
+  return `Est. +$${(deltaCents / 100).toFixed(2)} vs. next card`;
+}
+
+function toRole(
+  d: Domain,
+  p: Play,
+  runnerUp: Play | undefined,
+  creditHealth: WalletRoleCreditHealth,
+): WalletRole | null {
   const leg = p.legs[0];
   if (!leg) return null;
+  const deltaCents = runnerUp ? Math.max(0, p.totalValueCents - runnerUp.totalValueCents) : null;
   return {
     key: d.key,
     label: d.label,
@@ -113,6 +208,9 @@ function toRole(d: Domain, p: Play): WalletRole | null {
     nickname: leg.nickname,
     reasoning: leg.reasoning,
     valueCents: p.totalValueCents,
+    deltaCents,
+    comparisonLabel: comparisonLabel(deltaCents, p.totalValueCents),
+    creditHealth,
   };
 }
 
@@ -130,7 +228,8 @@ export function computeWalletRoles(input: WalletRoleInput): WalletRole[] {
 
   // 1. Everyday winner — with frecency tiebreak.
   const everydayDomain = DOMAINS[0];
-  const everydayPlays = runDomain(input, everydayDomain);
+  const everydayResult = runDomain(input, everydayDomain);
+  const everydayPlays = everydayResult.plays;
   if (!everydayPlays.length) return [];
   const topEverydayValue = everydayPlays[0].totalValueCents;
   const everydayTies = everydayPlays.filter((p) => p.totalValueCents === topEverydayValue);
@@ -142,7 +241,12 @@ export function computeWalletRoles(input: WalletRoleInput): WalletRole[] {
         (frecencyByCardId[a.legs[0].userCardId] ?? 0),
     )[0];
   }
-  const everydayRole = toRole(everydayDomain, everydayPlay);
+  const everydayRole = toRole(
+    everydayDomain,
+    everydayPlay,
+    everydayPlays.find((play) => play !== everydayPlay),
+    everydayResult.creditHealth,
+  );
   if (!everydayRole) return [];
 
   const roles: WalletRole[] = [everydayRole];
@@ -150,10 +254,11 @@ export function computeWalletRoles(input: WalletRoleInput): WalletRole[] {
   // 2. Specialist domains — assigned only when the winner is a different card
   //    AND the domain value beats the everyday value by more than rounding.
   for (const d of DOMAINS.slice(1)) {
-    const plays = runDomain(input, d);
+    const domainResult = runDomain(input, d);
+    const plays = domainResult.plays;
     const winner = plays[0];
     if (!winner) continue;
-    const role = toRole(d, winner);
+    const role = toRole(d, winner, plays[1], domainResult.creditHealth);
     if (!role) continue;
     if (role.userCardId === everydayRole.userCardId) continue;
     if (!beatsEveryday(role.valueCents, everydayRole.valueCents)) continue;
@@ -171,7 +276,8 @@ export function computeWalletRoles(input: WalletRoleInput): WalletRole[] {
 export function computeWalletGuide(input: WalletRoleInput): WalletRole[] {
   if (input.userCards.length === 0) return [];
   return DOMAINS.map((domain) => {
-    const winner = runDomain(input, domain)[0];
-    return winner ? toRole(domain, winner) : null;
+    const result = runDomain(input, domain);
+    const winner = result.plays[0];
+    return winner ? toRole(domain, winner, result.plays[1], result.creditHealth) : null;
   }).filter((role): role is WalletRole => role !== null);
 }

@@ -25,6 +25,8 @@ export type CardCatalog = {
   foreign_tx_fee_pct: number;
   earn_rules: EarnRule[];
   notes: string | null;
+  rates_verified_on?: string | null;
+  rates_as_of?: string | null;
 };
 
 export type PointsProgram = {

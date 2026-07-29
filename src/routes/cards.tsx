@@ -3,11 +3,10 @@ import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import type { CardCatalog, EarnRule, PointsProgram, UserCard } from "@/lib/types";
+import type { CardCatalog, EarnRule, PointsProgram, UserCard, UserOffer } from "@/lib/types";
 import { dollars } from "@/lib/format";
 import { BottomNav } from "@/components/bottom-nav";
 import { TapAppShell } from "@/components/tap-primitives";
-import { CardFace } from "@/components/card-face";
 import {
   addGuestCard,
   getGuestWallet,
@@ -21,6 +20,8 @@ import { CARD_CATALOG, CATALOG_BY_ID } from "@/lib/cardCatalog";
 import { POINT_VALUATIONS } from "@/lib/pointValuations";
 import { computeWalletGuide, type WalletRole } from "@/lib/walletRoles";
 import { WalletCardBriefing } from "@/components/wallet-card-briefing";
+import { capReachedByCardMap, type CapPeriod } from "@/lib/capReached";
+import type { AccountSnapshot, UtilizationBehavior } from "@/lib/utilizationFilter";
 
 const cardsSearch = z.object({
   card: z.string().optional(),
@@ -37,8 +38,33 @@ type Data = {
   catalog: Record<string, CardCatalog & { is_custom?: boolean }>;
   catalogList: (CardCatalog & { is_custom?: boolean })[];
   programs: PointsProgram[];
+  offers: UserOffer[];
+  cppOverrides: Record<string, number>;
+  accountsByUserCardId: Record<string, AccountSnapshot>;
+  perCardUtilization: Record<string, number>;
+  utilizationPrefs: {
+    enabled: boolean;
+    threshold: number;
+    behavior: UtilizationBehavior;
+  };
   isGuest: boolean;
 };
+
+function friendlyDate(value: string): string {
+  const parsed = new Date(`${value}T12:00:00Z`);
+  return Number.isNaN(parsed.getTime())
+    ? value
+    : parsed.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        timeZone: "UTC",
+      });
+}
+
+function catalogRateLabel(multiplier: number): string {
+  return multiplier < 1 ? `${Math.round(multiplier * 100)}%` : `${multiplier}x`;
+}
 
 function CardsPage() {
   const { user, loading } = useAuth();
@@ -46,6 +72,7 @@ function CardsPage() {
   const navigate = useNavigate();
   const [data, setData] = useState<Data | null>(null);
   const [mode, setMode] = useState<"list" | "choose" | "catalog" | "manual">("list");
+  const [capRevision, setCapRevision] = useState(0);
 
   const load = async () => {
     // Guest checkout decisions are entirely device-local. Do not hold their
@@ -75,6 +102,7 @@ function CardsPage() {
         foreign_tx_fee_pct: verified.foreign_tx_fee_pct,
         earn_rules: verified.earn_rules,
         notes: verified.notes ?? null,
+        rates_verified_on: verified.rates_verified_on,
       };
     });
     // The checked-in, source-dated catalog is TAP's offline trust baseline.
@@ -87,12 +115,58 @@ function CardsPage() {
     catalogList.forEach((c) => (catalog[c.id] = c));
 
     let userCards: UserCard[] = [];
+    let offers: UserOffer[] = [];
+    const cppOverrides: Record<string, number> = {};
+    const accountsByUserCardId: Record<string, AccountSnapshot> = {};
+    const perCardUtilization: Record<string, number> = {};
+    let utilizationPrefs = {
+      enabled: false,
+      threshold: 0.1,
+      behavior: "warn" as UtilizationBehavior,
+    };
     if (user) {
-      const uc = await supabase
-        .from("user_cards")
-        .select("*")
-        .order("created_at", { ascending: false });
-      userCards = (uc.data ?? []) as UserCard[];
+      const [uc, uo, ov, ua, up] = await Promise.all([
+        supabase.from("user_cards").select("*").order("created_at", { ascending: false }),
+        supabase.from("user_offers").select("*").eq("user_id", user.id),
+        supabase.from("user_cpp_overrides").select("*").eq("user_id", user.id),
+        supabase.from("user_card_accounts").select("*").eq("user_id", user.id),
+        supabase.from("user_prefs").select("*").eq("user_id", user.id).maybeSingle(),
+      ]);
+      const rawCards = (uc.data ?? []) as Array<UserCard & { utilization_override_pct?: number }>;
+      userCards = rawCards;
+      rawCards.forEach((card) => {
+        if (card.utilization_override_pct != null) {
+          perCardUtilization[card.id] = Number(card.utilization_override_pct) / 100;
+        }
+      });
+      offers = (uo.data ?? [])
+        .filter((offer) => !offer.is_used)
+        .map((offer) => ({
+          id: offer.id,
+          user_id: offer.user_id,
+          user_card_id: offer.user_card_id,
+          merchant_catalog_id: offer.merchant_catalog_id,
+          merchant_text: offer.merchant_text,
+          reward_type: offer.reward_type as UserOffer["reward_type"],
+          reward_value: Number(offer.reward_value),
+          min_spend: Number(offer.min_spend),
+          expires_at: offer.expires_at,
+        }));
+      (ov.data ?? []).forEach((override) => {
+        cppOverrides[override.points_program_id] = Number(override.cpp);
+      });
+      (ua.data ?? []).forEach((account) => {
+        if (!account.user_card_id || account.credit_limit_cents == null) return;
+        accountsByUserCardId[account.user_card_id] = {
+          limitCents: Number(account.credit_limit_cents),
+          balanceCents: Number(account.current_balance_cents ?? 0),
+        };
+      });
+      utilizationPrefs = {
+        enabled: Boolean(up.data?.utilization_enabled),
+        threshold: Number(up.data?.utilization_threshold_pct ?? 10) / 100,
+        behavior: (up.data?.utilization_behavior as UtilizationBehavior | undefined) ?? "warn",
+      };
     } else {
       const g = getGuestWallet();
       userCards = g.cards.map((gc) => ({
@@ -104,6 +178,32 @@ function CardsPage() {
         annual_fee_paid_at: null,
         created_at: "",
       })) as UserCard[];
+      offers = g.offers.map((offer) => ({
+        id: offer.id,
+        user_id: "guest",
+        user_card_id: offer.user_card_id,
+        merchant_catalog_id: null,
+        merchant_text: offer.merchant_text,
+        reward_type: offer.reward_type,
+        reward_value: offer.reward_value,
+        min_spend: offer.min_spend,
+        expires_at: offer.expires_at ?? null,
+      }));
+      g.overrides.forEach((override) => {
+        cppOverrides[override.points_program_id] = override.cpp;
+      });
+      g.accounts.forEach((account) => {
+        if (account.credit_limit_cents == null) return;
+        accountsByUserCardId[account.user_card_id] = {
+          limitCents: account.credit_limit_cents,
+          balanceCents: account.current_balance_cents ?? 0,
+        };
+      });
+      utilizationPrefs = {
+        enabled: g.prefs.utilization_enabled,
+        threshold: g.prefs.utilization_threshold_pct / 100,
+        behavior: g.prefs.utilization_behavior,
+      };
     }
 
     setData({
@@ -119,6 +219,11 @@ function CardsPage() {
               kind: valuation.programId === "cashback" ? "cashback" : "transferable",
               default_cpp: valuation.cpp,
             })),
+      offers,
+      cppOverrides,
+      accountsByUserCardId,
+      perCardUtilization,
+      utilizationPrefs,
       isGuest: !user,
     });
   };
@@ -128,6 +233,33 @@ function CardsPage() {
     void load();
   }, [user, loading]);
 
+  useEffect(() => {
+    const refreshCaps = () => setCapRevision((revision) => revision + 1);
+    window.addEventListener("tap:capReached", refreshCaps);
+    return () => window.removeEventListener("tap:capReached", refreshCaps);
+  }, []);
+
+  const capReachedCategoriesByCard = useMemo(() => {
+    if (!data) return {};
+    return capReachedByCardMap(
+      user?.id ?? null,
+      data.userCards.flatMap((userCard) => {
+        const card = data.catalog[userCard.card_catalog_id];
+        return (card?.earn_rules ?? []).flatMap((rule) =>
+          rule.cap_period
+            ? [
+                {
+                  userCardId: userCard.id,
+                  category: rule.category,
+                  period: rule.cap_period as CapPeriod,
+                },
+              ]
+            : [],
+        );
+      }),
+    );
+  }, [capRevision, data, user?.id]);
+
   const walletRoles = useMemo(() => {
     if (!data || data.userCards.length === 0) return [];
     const programs = Object.fromEntries(data.programs.map((program) => [program.id, program]));
@@ -135,8 +267,18 @@ function CardsPage() {
       userCards: data.userCards,
       catalog: data.catalog,
       programs,
+      offers: data.offers,
+      cppOverrides: data.cppOverrides,
+      capReachedCategoriesByCard,
+      utilization: {
+        enabled: data.utilizationPrefs.enabled,
+        accountsByUserCardId: data.accountsByUserCardId,
+        threshold: data.utilizationPrefs.threshold,
+        behavior: data.utilizationPrefs.behavior,
+        perCardOverrides: data.perCardUtilization,
+      },
     });
-  }, [data]);
+  }, [capReachedCategoriesByCard, data]);
 
   if (loading) return <div className="min-h-screen bg-background" />;
 
@@ -184,8 +326,8 @@ function CardsPage() {
   }
 
   return (
-    <TapAppShell className="tap-wallet-screen">
-      <header className="px-6 pt-12 pb-4 flex items-center justify-between">
+    <TapAppShell className="tap-wallet-screen tap-wallet-v2">
+      <header className="tap-wallet-v2-header px-6 pt-12 pb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           {mode !== "list" && (
             <button
@@ -219,7 +361,7 @@ function CardsPage() {
       </header>
 
       <main
-        className="flex-1 px-6 py-2 max-w-md mx-auto w-full pb-8"
+        className="tap-wallet-v2-main flex-1 px-6 py-2 mx-auto w-full pb-8"
         data-wallet-ready={data ? "true" : "false"}
       >
         {data?.isGuest && mode === "list" && !isEmptyList && (
@@ -335,34 +477,42 @@ function CardList({
   }
   return (
     <>
-      <WalletPlaybook roles={roles} />
-      <section className="mt-7">
-        <div className="flex items-end justify-between gap-3 px-1">
-          <div>
-            <p className="cs-microlabel text-[10px]">Each card's job</p>
-            <h2 className="mt-1 text-[21px] font-semibold text-foreground">Your card guides</h2>
+      <div className="tap-wallet-v2-overview">
+        <WalletPlaybook roles={roles} cardCount={data.userCards.length} />
+        <section className="tap-wallet-v2-guides">
+          <div className="flex items-end justify-between gap-3 px-1">
+            <div>
+              <p className="cs-microlabel text-[10px]">Each card's job</p>
+              <h2 className="mt-1 text-[21px] font-semibold text-foreground">Your card guides</h2>
+            </div>
+            <span className="text-[11px] text-muted-foreground">Tap to open</span>
           </div>
-          <span className="text-[11px] text-muted-foreground">Tap to open</span>
-        </div>
-        <ul className="space-y-3 mt-3">
-          {data.userCards.map((uc) => (
-            <UserCardRow
-              key={uc.id}
-              userCard={uc}
-              data={data}
-              onChanged={onChanged}
-              onOpen={() => onOpen(uc.id)}
-            />
-          ))}
-        </ul>
-      </section>
+          <ul className="space-y-3 mt-3">
+            {data.userCards.map((uc) => (
+              <UserCardRow
+                key={uc.id}
+                userCard={uc}
+                data={data}
+                onChanged={onChanged}
+                onOpen={() => onOpen(uc.id)}
+              />
+            ))}
+          </ul>
+        </section>
+      </div>
     </>
   );
 }
 
-function WalletPlaybook({ roles }: { roles: WalletRole[] }) {
+function WalletPlaybook({ roles, cardCount }: { roles: WalletRole[]; cardCount: number }) {
+  const roleCards = new Set(roles.map((role) => role.nickname ?? role.cardName));
+  const singleCard = cardCount === 1 || roleCards.size === 1;
+  const strongestRoles = roles.slice(0, 3);
   return (
-    <section className="mt-1 rounded-[1.75rem] bg-foreground text-background p-5 overflow-hidden relative">
+    <section
+      className="tap-wallet-v2-playbook mt-1 rounded-[1.75rem] bg-foreground text-background p-5 overflow-hidden relative"
+      data-single-card={singleCard ? "true" : "false"}
+    >
       <div
         className="absolute -right-10 -top-10 size-36 rounded-full border border-primary/35"
         aria-hidden
@@ -377,14 +527,15 @@ function WalletPlaybook({ roles }: { roles: WalletRole[] }) {
           <p className="text-[10px] uppercase tracking-[0.18em] font-semibold">Your playbook</p>
         </div>
         <h2 className="mt-3 text-[28px] font-semibold tracking-[-0.035em] leading-[1.02]">
-          Know what every card is for.
+          {singleCard ? "Your card’s strongest jobs." : "Know what every card is for."}
         </h2>
         <p className="mt-2 text-[13px] leading-relaxed text-background/70 max-w-[19rem]">
-          TAP keeps the short version here. Open any card for its credits, travel protections, fees,
-          caps, and verified terms.
+          {singleCard
+            ? "These are its strongest everyday uses. Open the guide for every rate, credit, and watch-out."
+            : "TAP keeps the short version here. Open any card for its credits, travel protections, fees, caps, and verified terms."}
         </p>
-        <ul className="mt-5 grid grid-cols-2 gap-2">
-          {roles.map((role) => (
+        <ul className="tap-wallet-v2-role-grid mt-5 grid grid-cols-2 gap-2">
+          {(singleCard ? strongestRoles : roles).map((role) => (
             <li key={role.key}>
               <Link
                 to="/decide"
@@ -400,8 +551,29 @@ function WalletPlaybook({ roles }: { roles: WalletRole[] }) {
                   {role.label}
                 </span>
                 <span className="w-full flex items-end gap-2">
-                  <span className="flex-1 text-[13px] font-semibold leading-tight">
-                    {role.nickname ?? role.cardName}
+                  <span className="flex-1 grid gap-1 text-[13px] font-semibold leading-tight">
+                    <span>
+                      {singleCard
+                        ? `Best for ${role.label.toLowerCase()}`
+                        : (role.nickname ?? role.cardName)}
+                    </span>
+                    {role.creditHealth.kind !== "none" ? (
+                      <small
+                        className="tap-wallet-v2-comparison tap-wallet-v2-credit-health"
+                        data-kind={role.creditHealth.kind}
+                      >
+                        <strong>
+                          {role.creditHealth.kind === "warning"
+                            ? "Above utilization target"
+                            : role.creditHealth.kind === "reranked"
+                              ? "Re-ranked for credit health"
+                              : "Split suggested"}
+                        </strong>
+                        <span>{role.creditHealth.caution}</span>
+                      </small>
+                    ) : role.comparisonLabel ? (
+                      <small className="tap-wallet-v2-comparison">{role.comparisonLabel}</small>
+                    ) : null}
                   </span>
                   <ArrowRight
                     className="size-3.5 text-primary shrink-0 group-hover:translate-x-0.5 transition-transform"
@@ -412,7 +584,7 @@ function WalletPlaybook({ roles }: { roles: WalletRole[] }) {
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-[10px] leading-relaxed text-background/50">
+        <p className="tap-wallet-v2-basis mt-3 text-[10px] leading-relaxed text-background/50">
           Based on your current wallet, TAP's reward assumptions, and representative purchases.
           Confirm the exact merchant category at checkout.
         </p>
@@ -436,6 +608,12 @@ function UserCardRow({
   const label = userCard.nickname ?? (card ? `${card.issuer} ${card.name}` : "Unknown card");
   const subLabel = userCard.nickname && card ? `${card.issuer} ${card.name}` : null;
   const topRules = card?.earn_rules.slice(0, 3) ?? [];
+  const issuerMark = (card?.issuer ?? "?")
+    .split(/\s+/)
+    .map((word) => word[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -470,25 +648,25 @@ function UserCardRow({
         transform: exiting ? "scale(0.94) translateY(-4px)" : "none",
       }}
     >
-      <div className="rounded-2xl border border-border bg-white p-3 flex items-center gap-3">
+      <div className="tap-wallet-v2-card-row rounded-2xl border border-border bg-white p-3 flex items-center gap-3">
         <button
           type="button"
           onClick={onOpen}
           className="flex-1 min-w-0 flex items-center gap-3 text-left rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
           aria-label={`Open ${label} card guide`}
         >
-          <div className="w-[6.75rem] shrink-0">
-            <CardFace
-              issuer={card?.issuer ?? ""}
-              name={userCard.nickname ?? card?.name ?? "Unknown card"}
-              variant="proof"
-              className="w-full"
-            />
+          <div className="tap-wallet-v2-pass" aria-hidden>
+            <span>{issuerMark}</span>
+            <i />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[15px] font-semibold text-foreground truncate">{label}</p>
+            <p className="tap-wallet-v2-card-name text-[15px] font-semibold text-foreground">
+              {label}
+            </p>
             {subLabel ? (
-              <p className="text-[11px] text-muted-foreground truncate">{subLabel}</p>
+              <p className="tap-wallet-v2-card-issuer text-[11px] text-muted-foreground">
+                {subLabel}
+              </p>
             ) : null}
             {card && (topRules.length > 0 || card.is_custom || card.annual_fee > 0) ? (
               <div className="mt-1.5 flex flex-wrap gap-1">
@@ -500,7 +678,7 @@ function UserCardRow({
                 {topRules.slice(0, 2).map((rule, index) => (
                   <span
                     key={index}
-                    className="text-[9px] bg-accent text-accent-foreground rounded-md px-1.5 py-0.5"
+                    className="tap-wallet-v2-rule text-[9px] bg-accent text-accent-foreground rounded-md px-1.5 py-0.5"
                   >
                     {rule.multiplier >= 1
                       ? `${rule.multiplier}x`
@@ -510,7 +688,9 @@ function UserCardRow({
                 ))}
               </div>
             ) : null}
-            <p className="mt-1.5 text-[10px] text-primary font-medium">Open guide →</p>
+            <p className="tap-wallet-v2-open mt-1.5 text-[10px] text-primary font-medium">
+              Open guide →
+            </p>
           </div>
         </button>
         <button
@@ -653,7 +833,7 @@ function CatalogPicker({ data, onAdded }: { data: Data; onAdded: () => void }) {
   const ratesVerified = useMemo(() => {
     const dates = data.catalogList
       .filter((c) => !c.is_custom)
-      .map((c) => (c as unknown as { rates_as_of?: string }).rates_as_of)
+      .map((c) => c.rates_verified_on ?? c.rates_as_of)
       .filter((d): d is string => typeof d === "string" && d.length > 0)
       .sort();
     return dates.length ? dates[dates.length - 1] : null;
@@ -671,7 +851,7 @@ function CatalogPicker({ data, onAdded }: { data: Data; onAdded: () => void }) {
                 key={i}
                 className="text-[10px] bg-accent text-accent-foreground rounded-md px-1.5 py-0.5"
               >
-                {r.multiplier}x {r.category.replace(/_/g, " ")}
+                {catalogRateLabel(r.multiplier)} {r.category.replace(/_/g, " ")}
               </span>
             ))}
           </div>
@@ -738,7 +918,7 @@ function CatalogPicker({ data, onAdded }: { data: Data; onAdded: () => void }) {
     <div className="space-y-3 mt-2">
       <p className="text-[11px] text-muted-foreground leading-relaxed rounded-lg border border-border bg-surface px-3 py-2">
         {ratesVerified
-          ? `Rates verified ${ratesVerified}. Verify current terms with your issuer before relying on any recommendation.`
+          ? `Rates verified ${friendlyDate(ratesVerified)}. Verify current terms with your issuer before relying on any recommendation.`
           : "Verify current terms with your issuer before relying on any recommendation."}
       </p>
       <div className="relative">

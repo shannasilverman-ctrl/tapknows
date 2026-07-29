@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { X } from "lucide-react";
 
 type Props = {
   open: boolean;
   onClose: () => void;
   title?: string;
   children: React.ReactNode;
+  panelClassName?: string;
   /**
    * When true, all dismissal paths (scrim tap, Escape, drag-down) are
    * suppressed. Use while a primary action is in flight so the sheet can't
@@ -23,7 +25,14 @@ const DRAG_CLOSE_VELOCITY = 0.6; // px/ms
  * passes either the distance or the velocity threshold. Dragging up
  * rubber-bands. Respects prefers-reduced-motion via CSS.
  */
-export function Sheet({ open, onClose, title, children, busy = false }: Props) {
+export function Sheet({
+  open,
+  onClose,
+  title,
+  children,
+  busy = false,
+  panelClassName = "",
+}: Props) {
   const [mounted, setMounted] = useState(false);
   const [closing, setClosing] = useState(false);
   const [dragY, setDragY] = useState<number | null>(null);
@@ -160,7 +169,7 @@ export function Sheet({ open, onClose, title, children, busy = false }: Props) {
       <div className="cs-sheet-scrim" data-state={state} onClick={tryClose} aria-hidden />
       <div
         ref={panelRef}
-        className="cs-sheet-panel cs-app-body"
+        className={`cs-sheet-panel cs-app-body ${panelClassName}`.trim()}
         data-state={state}
         role="dialog"
         aria-modal="true"
@@ -179,11 +188,18 @@ export function Sheet({ open, onClose, title, children, busy = false }: Props) {
         >
           <span className="cs-sheet-grabber" aria-hidden />
         </div>
-        {title ? (
-          <div className="px-5 pt-1 pb-3">
-            <p className="cs-title-md text-foreground">{title}</p>
-          </div>
-        ) : null}
+        <div className="cs-sheet-heading px-5 pt-1 pb-3">
+          {title ? <p className="cs-title-md text-foreground">{title}</p> : <span />}
+          <button
+            type="button"
+            className="cs-sheet-close"
+            onClick={tryClose}
+            disabled={busy}
+            aria-label={title ? `Close ${title}` : "Close dialog"}
+          >
+            <X aria-hidden />
+          </button>
+        </div>
         <div className="px-5 pb-5">{children}</div>
       </div>
     </>,

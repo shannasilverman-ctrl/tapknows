@@ -49,7 +49,7 @@ function Landing() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [returning, setReturning] = useState(false);
-  const [activeScreen, setActiveScreen] = useState(0);
+  const [activeScreen, setActiveScreen] = useState(1);
   const [interactive, setInteractive] = useState(false);
   const swipeStartX = useRef<number | null>(null);
 
@@ -90,13 +90,11 @@ function Landing() {
 
       <section className="tap-showcase-hero">
         <div className="tap-showcase-copy">
-          <h1>
-            Know which card
-            <br /> to tap—before you pay.
-          </h1>
+          <p className="tap-showcase-eyebrow">Your wallet, already worked out</p>
+          <h1>Know which card to tap.</h1>
           <p className="tap-deck">
-            Tell TAP what you’re buying. It checks the cards you already carry and gives you one
-            clear answer—before checkout.
+            TAP checks your cards before checkout and gives you one clear answer—with the value and
+            reasoning attached.
           </p>
           <div className="tap-hero-actions">
             <Link to={startTo} className="tap-primary">
@@ -233,13 +231,13 @@ function Landing() {
                       <span className="tap-wallet-mouth" />
                     </div>
                     <div className="tap-choice-value">
-                      <h3>About $3.36 in reward value</h3>
-                      <p>Next best: about $0.84</p>
+                      <h3>336 points · est. $6.72 travel value</h3>
+                      <p>At TAP’s 2.0¢/point default</p>
                       <div>
-                        <span>Estimated difference:</span>
-                        <b>+$2.52</b>
+                        <span>Versus next best:</span>
+                        <b>+$5.00</b>
                       </div>
-                      <small>Amount won’t change this pick.</small>
+                      <small>For this $84 example, the assumptions shown keep this pick.</small>
                     </div>
                     <div className="tap-choice-actions">
                       <Link to="/demo">Used it</Link>
@@ -270,25 +268,26 @@ function Landing() {
                       <span className="tap-proof-mini-card tap-proof-mini-gold" />
                       <p>
                         <b>Amex Gold</b>
-                        <small>4× groceries</small>
+                        <small>336 points · 4×</small>
                       </p>
-                      <strong>~$3.36</strong>
+                      <strong>est. $6.72</strong>
                     </div>
                     <div className="tap-proof-choice">
                       <span className="tap-proof-mini-card tap-proof-mini-blue" />
                       <p>
                         <b>Sapphire</b>
-                        <small>1×</small>
+                        <small>84 points · 1×</small>
                       </p>
-                      <strong className="tap-proof-muted">~$0.84</strong>
+                      <strong className="tap-proof-muted">est. $1.72</strong>
                     </div>
                     <div className="tap-proof-gap">
                       <span>Estimated difference</span>
-                      <b>+$2.52</b>
+                      <b>+$5.00</b>
                     </div>
                     <div className="tap-proof-facts">
-                      <p>▣&nbsp;&nbsp; Terms checked Jul 18, 2026</p>
-                      <p>⚖&nbsp;&nbsp; Assumption: 1 point = 1¢</p>
+                      <p>▣&nbsp;&nbsp; Rates checked Jul 12, 2026</p>
+                      <p>⚖&nbsp;&nbsp; Amex: 2.0¢/pt · TAP default</p>
+                      <p>⚖&nbsp;&nbsp; Chase: 2.05¢/pt · TAP default</p>
                       <p>ⓘ&nbsp;&nbsp; Bonus cap status: not provided</p>
                       <Link to="/demo" className="tap-proof-demo-link">
                         Try this decision <ArrowRight size={13} />
@@ -388,7 +387,7 @@ function Landing() {
           <li className="tap-step-answer">
             <h3>Use the winner</h3>
             <p>One recommendation up front, with the runner-up and assumptions one tap away.</p>
-            <span>Amex Gold · about $3.36 back</span>
+            <span>Amex Gold · 336 points · est. $6.72 travel value</span>
           </li>
         </ol>
       </section>

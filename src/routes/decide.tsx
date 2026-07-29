@@ -81,6 +81,27 @@ function offersForMerchant(
   });
 }
 
+function rewardValueSummary(play: Play): string {
+  const leg = play.legs[0];
+  if (leg.rewardKind === "points") {
+    return `${leg.pointsEarned.toLocaleString()} points · estimated ${dollars(
+      play.totalValueCents,
+    )} travel value at ${(leg.cpp * 100).toFixed(2)}¢/pt`;
+  }
+  if (leg.rewardKind === "cashback") {
+    return `${dollars(play.totalValueCents)} cash back`;
+  }
+  return `Estimated ${dollars(play.totalValueCents)} total value`;
+}
+
+function capAmount(amount: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
 function DecidePage() {
   const { user, loading } = useAuth();
   const search = Route.useSearch();
@@ -512,22 +533,72 @@ function DecidePage() {
   const netCardValueCents = raisedPlay ? raisedPlay.totalValueCents - cardFeeCents : -cardFeeCents;
   const reasoningLine =
     raisedPlay?.legs[0]?.reasoning ?? "Best value for this charge in your wallet.";
+  const raisedEarnRule = useMemo(() => {
+    const leg = raisedPlay?.legs[0];
+    if (!leg) return null;
+    return resolveEarnRule(
+      {
+        id: leg.userCardId,
+        card_catalog_id: leg.card.id,
+        nickname: leg.nickname,
+        issuer: leg.card.issuer,
+        name: leg.card.name,
+        points_program_id: leg.card.points_program_id,
+        foreign_tx_fee_pct: leg.card.foreign_tx_fee_pct,
+        earn_rules: leg.card.earn_rules,
+      },
+      category,
+    );
+  }, [raisedPlay, category]);
+  const raisedCap = raisedEarnRule?.cap_period_spend ?? raisedEarnRule?.cap_annual_spend ?? null;
+  const raisedCapReached =
+    !!raisedPlay &&
+    !!raisedEarnRule &&
+    (capReachedByCard[raisedPlay.legs[0].userCardId] ?? []).includes(raisedEarnRule.category);
+  const capPeriod =
+    raisedEarnRule?.cap_period === "quarterly"
+      ? "quarter"
+      : raisedEarnRule?.cap_period === "monthly"
+        ? "month"
+        : "year";
+  const capStatus =
+    raisedPlay && raisedEarnRule && raisedCap
+      ? raisedCapReached
+        ? `You marked ${raisedPlay.legs[0].card.name}'s ${capAmount(
+            raisedCap,
+          )}/${capPeriod} ${raisedEarnRule.category.replace(/_/g, " ")} cap reached; TAP is using the post-cap rate.`
+        : `Assumes room remains in ${raisedPlay.legs[0].card.name}'s ${capAmount(
+            raisedCap,
+          )}/${capPeriod} ${raisedEarnRule.category.replace(/_/g, " ")} cap; TAP has no cap-spend data for this wallet.`
+      : "No category cap applies to the displayed earn rate; credits use tracked remaining amounts.";
+  const capBadge =
+    raisedCap && !raisedCapReached
+      ? "Cap status unknown"
+      : raisedCapReached
+        ? "Cap marked reached"
+        : null;
   const valuationAssumption = useMemo(() => {
     if (!raisedPlay) return "Uses TAP's default point values unless you set your own";
-    const pointPrograms = raisedPlay.programIdsUsed.filter((id) => id !== "cashback");
-    if (pointPrograms.length === 0) return "Cash back is shown at face value";
-    return pointPrograms
-      .map((id) => {
-        const program = programs[id];
-        const cpp = cppOverrides[id] ?? program?.default_cpp ?? 0.01;
-        const source = cppOverrides[id] != null ? "your value" : "TAP default";
-        return `${program?.name ?? id}: ${(cpp * 100).toFixed(2)}¢/pt · ${source}`;
-      })
-      .join("; ");
-  }, [raisedPlay, cppOverrides, programs]);
-  const capStatus =
-    "Bonus rates assume cap room remains unless you marked a cap reached; credits use tracked remaining amounts";
-
+    const comparedPlay = plays.find((play) => play.id !== raisedPlay.id);
+    const programIds = [
+      ...new Set(
+        [raisedPlay, comparedPlay]
+          .filter((play): play is Play => Boolean(play))
+          .flatMap((play) => play.programIdsUsed),
+      ),
+    ];
+    const pointPrograms = programIds.filter((id) => id !== "cashback");
+    const assumptions = pointPrograms.map((id) => {
+      const program = programs[id];
+      const cpp = cppOverrides[id] ?? program?.default_cpp ?? 0.01;
+      const source = cppOverrides[id] != null ? "your value" : "TAP default";
+      return `${program?.name ?? id}: ${(cpp * 100).toFixed(2)}¢/pt · ${source}`;
+    });
+    if (programIds.includes("cashback")) assumptions.push("Cash back: face value");
+    return assumptions.length > 0
+      ? assumptions.join("; ")
+      : "Uses TAP's default point values unless you set your own";
+  }, [raisedPlay, plays, cppOverrides, programs]);
   // Fire benefit_surfaced when the recommendation reason line references a credit.
   // Must live above the early returns so hook order is stable across loading -> ready.
   useEffect(() => {
@@ -614,21 +685,12 @@ function DecidePage() {
 
   const stackCards: StackCard[] = plays.map((p) => {
     const f = playFace(p);
-    const isRaised = p.id === raisedPlayId;
     const isTopWinner = p.id === plays[0]?.id;
     return {
       id: p.id,
       issuer: f.issuer,
       name: f.name,
       winner: isTopWinner,
-      trailing: isRaised ? (
-        <>
-          <p className="cs-emboss text-[9px] uppercase tracking-[0.2em] opacity-80">Value</p>
-          <p className="cs-money text-[18px] leading-none mt-1 whitespace-nowrap cs-emboss">
-            {dollars(p.totalValueCents)}
-          </p>
-        </>
-      ) : undefined,
     };
   });
 
@@ -729,6 +791,7 @@ function DecidePage() {
                     : "If you use this card"}
               </p>
               <p className="mt-1.5 text-[15px] leading-snug text-foreground">{reasoningLine}</p>
+              <p className="tap-decision-value-summary">{rewardValueSummary(raisedPlay)}</p>
               {!raisedIsWinner && plays[0] && (
                 <button
                   onClick={() => setRaisedPlayId(plays[0].id)}
@@ -828,6 +891,7 @@ function DecidePage() {
               category={category}
               valuationAssumption={valuationAssumption}
               capStatus={capStatus}
+              capBadge={capBadge}
               onEditAssumptions={() => navigate({ to: "/settings" })}
             />
           ) : null}

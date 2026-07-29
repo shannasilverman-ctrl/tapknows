@@ -35,44 +35,46 @@ export function PinnedCardDetail({
   useEffect(() => setDraftNickname(nickname ?? ""), [nickname]);
 
   return (
-    <div className="cs-app-body min-h-screen text-foreground">
-      {/* Pinned header + card */}
-      <div className="cs-pinned-card px-5">
-        <div className="flex items-center justify-between h-11">
-          <button
-            type="button"
-            onClick={onBack}
-            className="inline-flex items-center gap-1 text-[15px] text-primary hover:opacity-80 transition-opacity min-h-11 min-w-11 -ml-2 pl-2 pr-1"
-            aria-label="Back to wallet"
-          >
-            <ArrowLeft className="size-5" />
-            Wallet
-          </button>
-          <button
-            type="button"
-            onClick={() => setSettingsOpen(true)}
-            className="inline-flex items-center justify-center rounded-full bg-white border border-border h-11 w-11 hover:border-border-strong transition-colors"
-            aria-label="Card settings"
-          >
-            <MoreHorizontal className="size-5 text-foreground" />
-          </button>
-        </div>
+    <div className="cs-app-body tap-card-detail-v2 min-h-screen text-foreground">
+      <div className="tap-card-detail-v2-shell">
+        {/* Pinned header + card */}
+        <div className="cs-pinned-card tap-card-detail-v2-identity px-5">
+          <div className="flex items-center justify-between h-11">
+            <button
+              type="button"
+              onClick={onBack}
+              className="inline-flex items-center gap-1 text-[15px] text-primary hover:opacity-80 transition-opacity min-h-11 min-w-11 -ml-2 pl-2 pr-1"
+              aria-label="Back to wallet"
+            >
+              <ArrowLeft className="size-5" />
+              Wallet
+            </button>
+            <button
+              type="button"
+              onClick={() => setSettingsOpen(true)}
+              className="inline-flex items-center justify-center rounded-full bg-white border border-border h-11 w-11 hover:border-border-strong transition-colors"
+              aria-label="Card settings"
+            >
+              <MoreHorizontal className="size-5 text-foreground" />
+            </button>
+          </div>
 
-        <div className="mt-2 max-w-md mx-auto">
-          <div className="relative">
-            <div className="cs-result-in">
-              <CardFace
-                issuer={issuer}
-                name={nickname || name}
-                variant={winner ? "winner" : "default"}
-              />
+          <div className="mt-2 max-w-md mx-auto">
+            <div className="relative">
+              <div className="cs-result-in">
+                <CardFace
+                  issuer={issuer}
+                  name={nickname || name}
+                  variant={winner ? "winner" : "default"}
+                />
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Scrolling detail */}
-      <div className="px-5 pb-16 max-w-md mx-auto">{children}</div>
+        {/* Scrolling detail */}
+        <div className="tap-card-detail-v2-content px-5 pb-16">{children}</div>
+      </div>
 
       <Sheet open={settingsOpen} onClose={() => setSettingsOpen(false)} title="Card settings">
         <div className="space-y-4">

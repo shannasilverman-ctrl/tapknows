@@ -110,6 +110,8 @@ function OnboardingPage() {
   // Step 1 state
   const [selectedCatalogIds, setSelectedCatalogIds] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState("");
+  const [showAllQuick, setShowAllQuick] = useState(false);
+  const [moreWaysOpen, setMoreWaysOpen] = useState(false);
   const [authForPlaidOpen, setAuthForPlaidOpen] = useState(false);
   const [photoImportFile, setPhotoImportFile] = useState<File | null>(null);
   const [photoImportOpen, setPhotoImportOpen] = useState(false);
@@ -157,6 +159,17 @@ function OnboardingPage() {
       ];
     });
   }, [sampleResult, selectedCatalogIds]);
+  const previewStackCards = useMemo<StackCard[]>(
+    () =>
+      Array.from(selectedCatalogIds)
+        .slice(0, 4)
+        .flatMap((catalogId) => {
+          const card = CATALOG_BY_ID[catalogId];
+          if (!card) return [];
+          return [{ id: catalogId, issuer: card.issuer, name: card.name }];
+        }),
+    [selectedCatalogIds],
+  );
   const evaluationRaisedId =
     sampleStackCards.length > 0
       ? sampleStackCards[evaluationPhase % sampleStackCards.length]?.id
@@ -211,13 +224,13 @@ function OnboardingPage() {
 
   const results: CatalogCard[] = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return CARD_CATALOG.slice(0, 12);
+    if (!q) return [];
     return CARD_CATALOG.filter(
       (c) =>
         c.name.toLowerCase().includes(q) ||
         c.issuer.toLowerCase().includes(q) ||
         `${c.issuer} ${c.name}`.toLowerCase().includes(q),
-    ).slice(0, 20);
+    ).slice(0, 12);
   }, [query]);
 
   const toggleCard = async (c: CatalogCard) => {
@@ -349,83 +362,158 @@ function OnboardingPage() {
         </p>
       </div>
 
-      <main className="flex-1 px-5 pb-24 max-w-md w-full mx-auto pt-6">
+      <main className="tap-onboarding-main">
         {step === 1 && (
-          <div className="cs-fade-up">
-            <h1 className="font-display text-3xl sm:text-4xl tracking-tight text-foreground">
-              Build your wallet.
-            </h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Add the cards you carry. We never store card numbers — only which products you own.
-            </p>
+          <div
+            className="cs-fade-up tap-onboarding-step tap-onboarding-step-wallet"
+            data-has-cards={selectedCatalogIds.size > 0 ? "true" : "false"}
+          >
+            <div className="tap-onboarding-form">
+              <p className="tap-onboarding-eyebrow">First, the cards you already carry</p>
+              <h1 className="font-display text-3xl sm:text-4xl tracking-tight text-foreground">
+                {selectedCatalogIds.size > 0 ? "Add another card." : "Build your wallet."}
+              </h1>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Add product names only. TAP never needs or stores your full card numbers.
+              </p>
 
-            <div className="mt-5">
-              {/* Manual quick add is the default path: it is private, immediate,
+              <div className="mt-5">
+                {/* Manual quick add is the default path: it is private, immediate,
                   and sufficient for a useful first recommendation. */}
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                  Quick add a card
-                </p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {QUICK_ADD_CHIPS.map((chip) => {
-                    const cat = CATALOG_BY_ID[chip.id];
-                    if (!cat) return null;
-                    const on = selectedCatalogIds.has(chip.id);
-                    return (
-                      <button
-                        key={chip.id}
-                        type="button"
-                        onClick={() => toggleCard(cat)}
-                        disabled={!interactive}
-                        className="cs-quick-add-chip"
-                        data-selected={on ? "true" : "false"}
-                        aria-pressed={on}
-                      >
-                        {on && <Check className="size-3.5" strokeWidth={3} />}
-                        {chip.label}
-                      </button>
-                    );
-                  })}
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                    Popular cards
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {QUICK_ADD_CHIPS.slice(0, showAllQuick ? QUICK_ADD_CHIPS.length : 4).map(
+                      (chip) => {
+                        const cat = CATALOG_BY_ID[chip.id];
+                        if (!cat) return null;
+                        const on = selectedCatalogIds.has(chip.id);
+                        return (
+                          <button
+                            key={chip.id}
+                            type="button"
+                            onClick={() => toggleCard(cat)}
+                            disabled={!interactive}
+                            className="cs-quick-add-chip"
+                            data-selected={on ? "true" : "false"}
+                            aria-pressed={on}
+                          >
+                            {on && <Check className="size-3.5" strokeWidth={3} />}
+                            {chip.label}
+                          </button>
+                        );
+                      },
+                    )}
+                    <button
+                      type="button"
+                      className="tap-onboarding-more-cards"
+                      onClick={() => setShowAllQuick((value) => !value)}
+                      aria-expanded={showAllQuick}
+                    >
+                      {showAllQuick ? "Show fewer" : "See all"}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="tap-onboarding-search-label">
+                  <span>Or search all cards</span>
                 </div>
               </div>
 
-              {/* Plaid is real but optional; it follows the no-account manual
-                  path instead of competing with it as the primary action. */}
-              <div className="mt-4 rounded-2xl border border-border bg-secondary/30 p-3">
-                <p className="mb-2 text-center text-[11px] text-muted-foreground">
-                  Optional — sign in to sync eligible cards from your bank.
-                </p>
-                <PlaidLinkButton
-                  variant="secondary"
-                  label="Sync cards with Plaid"
-                  onNeedAuth={() => setAuthForPlaidOpen(true)}
-                  onComplete={() => {
-                    // Reload wallet after Plaid confirmation adds cards
-                    supabase
-                      .from("user_cards")
-                      .select("card_catalog_id")
-                      .then(({ data }) => {
-                        if (data)
-                          setSelectedCatalogIds(new Set(data.map((r) => r.card_catalog_id)));
-                      });
-                  }}
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <input
+                  ref={searchInputRef}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  disabled={!interactive}
+                  placeholder="Search Sapphire, Gold, Freedom…"
+                  className="w-full h-12 rounded-2xl border border-border bg-background pl-11 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
                 />
               </div>
 
-              {/* Photo quick load — optional, above full catalog search. */}
+              {query.trim() && (
+                <div className="tap-onboarding-results">
+                  <p className="mt-4 text-[10px] cs-microlabel text-muted-foreground">
+                    {results.length} matches
+                  </p>
+                  <div className="mt-2 space-y-2">
+                    {results.map((c) => {
+                      const on = selectedCatalogIds.has(c.id);
+                      return (
+                        <button
+                          key={c.id}
+                          onClick={() => toggleCard(c)}
+                          disabled={!interactive}
+                          className={`w-full flex items-center justify-between rounded-2xl border px-4 py-3 text-left transition-all ${
+                            on
+                              ? "border-foreground bg-secondary/60"
+                              : "border-border bg-background hover:border-border-strong"
+                          }`}
+                        >
+                          <div className="min-w-0">
+                            <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                              {c.issuer}
+                            </p>
+                            <p className="text-sm font-medium text-foreground truncate">{c.name}</p>
+                          </div>
+                          <span
+                            className={`inline-flex size-6 items-center justify-center rounded-full border transition-colors shrink-0 ${
+                              on
+                                ? "bg-foreground border-foreground text-background"
+                                : "border-border-strong text-transparent"
+                            }`}
+                          >
+                            <Check className="size-3.5" strokeWidth={3} />
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <button
                 type="button"
-                onClick={() => photoInputRef.current?.click()}
-                disabled={!interactive}
-                className="mt-3 w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl border border-border bg-white text-[14px] font-medium text-foreground hover:border-primary/40 transition-colors"
+                className="tap-onboarding-more-ways"
+                onClick={() => setMoreWaysOpen((value) => !value)}
+                aria-expanded={moreWaysOpen}
               >
-                <Camera className="size-4" strokeWidth={2} />
-                Add cards from a photo
+                <span>More ways to add cards</span>
+                <ChevronDown className={moreWaysOpen ? "rotate-180" : ""} size={16} />
               </button>
-              <p className="mt-2 text-center text-[12px] text-muted-foreground leading-snug">
-                Snap your cards or upload a screenshot of your wallet. Photos are read once and
-                never stored.
-              </p>
+
+              {moreWaysOpen && (
+                <div className="tap-onboarding-optional cs-fade-up">
+                  <button
+                    type="button"
+                    onClick={() => photoInputRef.current?.click()}
+                    disabled={!interactive}
+                    className="tap-onboarding-photo"
+                  >
+                    <Camera className="size-4" strokeWidth={2} />
+                    Add from a photo
+                  </button>
+                  <PlaidLinkButton
+                    variant="secondary"
+                    label="Sync cards with Plaid"
+                    onNeedAuth={() => setAuthForPlaidOpen(true)}
+                    onComplete={() => {
+                      supabase
+                        .from("user_cards")
+                        .select("card_catalog_id")
+                        .then(({ data }) => {
+                          if (data)
+                            setSelectedCatalogIds(new Set(data.map((r) => r.card_catalog_id)));
+                        });
+                    }}
+                  />
+                  <p>Optional methods. Photos are read once and never stored.</p>
+                </div>
+              )}
+
               <input
                 ref={photoInputRef}
                 type="file"
@@ -441,64 +529,44 @@ function OnboardingPage() {
                 }}
                 aria-label="Choose a photo or screenshot of your cards"
               />
+            </div>
 
-              <div className="my-4 flex items-center gap-3">
-                <div className="h-px flex-1 bg-border" />
-                <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                  Or search all cards
-                </span>
-                <div className="h-px flex-1 bg-border" />
+            <aside className="tap-onboarding-preview" aria-live="polite">
+              <p>Your decision wallet</p>
+              <h2>
+                {selectedCatalogIds.size > 0
+                  ? `${selectedCatalogIds.size} card${selectedCatalogIds.size === 1 ? "" : "s"} ready`
+                  : "Start with one card"}
+              </h2>
+              <span>
+                {selectedCatalogIds.size > 0
+                  ? "TAP is ready to compare these cards at checkout."
+                  : "Choose a card and watch your wallet take shape."}
+              </span>
+              <div className="tap-onboarding-preview-wallet">
+                {previewStackCards.length > 0 ? (
+                  <WalletStack
+                    cards={previewStackCards}
+                    pocket
+                    pocketLabel={`Your wallet · ${selectedCatalogIds.size} added`}
+                  />
+                ) : (
+                  <div className="tap-onboarding-empty-pass">
+                    <i />
+                    <i />
+                    <strong>Your first card appears here</strong>
+                  </div>
+                )}
               </div>
-            </div>
-
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <input
-                ref={searchInputRef}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                disabled={!interactive}
-                placeholder="Search cards — Sapphire, Gold, Freedom…"
-                className="w-full h-12 rounded-2xl border border-border bg-background pl-11 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
-              />
-            </div>
-
-            <p className="mt-4 text-[10px] cs-microlabel text-muted-foreground">
-              {selectedCatalogIds.size} added
-            </p>
-            <div className="mt-2 space-y-2">
-              {results.map((c) => {
-                const on = selectedCatalogIds.has(c.id);
-                return (
-                  <button
-                    key={c.id}
-                    onClick={() => toggleCard(c)}
-                    disabled={!interactive}
-                    className={`w-full flex items-center justify-between rounded-2xl border px-4 py-3 text-left transition-all ${
-                      on
-                        ? "border-foreground bg-secondary/60"
-                        : "border-border bg-background hover:border-border-strong"
-                    }`}
-                  >
-                    <div className="min-w-0">
-                      <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                        {c.issuer}
-                      </p>
-                      <p className="text-sm font-medium text-foreground truncate">{c.name}</p>
-                    </div>
-                    <span
-                      className={`inline-flex size-6 items-center justify-center rounded-full border transition-colors shrink-0 ${
-                        on
-                          ? "bg-foreground border-foreground text-background"
-                          : "border-border-strong text-transparent"
-                      }`}
-                    >
-                      <Check className="size-3.5" strokeWidth={3} />
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+              <div className="tap-onboarding-preview-trust">
+                <span>
+                  <Check size={14} /> Product names only
+                </span>
+                <span>
+                  <Check size={14} /> No bank connection required
+                </span>
+              </div>
+            </aside>
           </div>
         )}
 
@@ -700,7 +768,10 @@ function OnboardingPage() {
       </main>
 
       {/* Sticky footer with primary CTA */}
-      <footer className="sticky bottom-0 border-t border-border bg-background/95 backdrop-blur px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+      <footer
+        className="sticky bottom-0 border-t border-border bg-background/95 backdrop-blur px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
+        data-has-cards={selectedCatalogIds.size > 0 ? "true" : "false"}
+      >
         <div className="max-w-md mx-auto">
           {step === 1 && (
             <>

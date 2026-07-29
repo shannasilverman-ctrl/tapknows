@@ -5,8 +5,8 @@ import { test, expect } from "@playwright/test";
  *  Step 3: wallet cards drop in (4 card faces rendered).
  *  Step 4: alert pass with the "You're at Whole Foods." nudge.
  *  Step 5: raised winner ("Amex Gold") with its reasoning line.
- *  Step 6: receipt text ("This tap earned" / "$3.36") and the
- *          running balance ("Recovered this month") ticks UP.
+ *  Step 6: purchase-specific points, estimated value, and delta render
+ *          without fabricating a persisted or annualized balance.
  *
  * The viewer explicitly advances between steps, so the demo never moves
  * while someone is still reading.
@@ -14,7 +14,9 @@ import { test, expect } from "@playwright/test";
 test.describe("Demo six-step journey", () => {
   test.setTimeout(60_000);
 
-  test("walks every step and asserts wallet drop, winner, receipt, balance", async ({ page }) => {
+  test("walks every step and asserts wallet drop, winner, receipt, and value delta", async ({
+    page,
+  }) => {
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(String(e)));
 
@@ -58,7 +60,9 @@ test.describe("Demo six-step journey", () => {
     // ---------- Step 5 · Optimization (winner rises) ----------
     await expect(page.getByText(/Step 5 of 6/i)).toBeVisible({ timeout: 10_000 });
     await expect(
-      page.getByText(/Amex Gold earns 4× on U\.S\. supermarkets\. Beats your Freedom Flex here\./i),
+      page.getByText(
+        /Amex Gold earns 4× at U\.S\. supermarkets\. That is 336 Membership Rewards points/i,
+      ),
     ).toBeVisible({ timeout: 4_000 });
     // Winner-tinted card face is present.
     await expect(page.locator(".cs-face--winner").first()).toBeVisible();
@@ -86,28 +90,18 @@ test.describe("Demo six-step journey", () => {
     // ---------- Step 6 · Paid (receipt + balance ticks up) ----------
     await expect(page.getByText(/Step 6 of 6/i)).toBeVisible({ timeout: 10_000 });
 
-    // Receipt copy.
+    // Purchase-specific result copy.
     await expect(page.getByText(/Receipt · Whole Foods/i)).toBeVisible();
-    await expect(page.getByText(/This tap earned/i)).toBeVisible();
-    await expect(page.getByText(/\$3\.36/).first()).toBeVisible();
-    await expect(page.getByText(/Default card would earn/i)).toBeVisible();
+    await expect(page.getByText(/Amex Gold earns/i)).toBeVisible();
+    await expect(page.getByText(/336 points/i).first()).toBeVisible();
+    await expect(page.getByText(/\$6\.72/).first()).toBeVisible();
+    await expect(page.getByText(/\+\$5\.00/).first()).toBeVisible();
+    await expect(page.getByText(/illustration, not a posted reward balance/i)).toBeVisible();
+    await expect(page.getByText(/Recovered this month/i)).toHaveCount(0);
+    await expect(page.getByText(/At this pace/i)).toHaveCount(0);
+    await expect(page.getByText(/Your balance ticks up/i)).toHaveCount(0);
 
-    // Running balance sits directly after the "Recovered this month" label.
-    // Starts at $12.84 (month baseline) and ticks up by the +$2.52 delta
-    // (TAP $3.36 earn − default $0.84) to $15.36 after ~350ms.
-    const balanceValue = page
-      .getByText(/Recovered this month/i)
-      .locator("xpath=following-sibling::*[1]");
-    await expect(balanceValue).toHaveText(/\$15\.36/, { timeout: 3_000 });
-    const finalCents = Math.round(
-      parseFloat(((await balanceValue.textContent()) ?? "").replace(/[^0-9.]/g, "")) * 100,
-    );
-    expect(finalCents).toBe(1536);
-    expect(finalCents).toBeGreaterThan(1284); // strictly ticked up from baseline
-
-    // Annualized counter and terminal CTA render.
-    await expect(page.getByText(/At this pace, that's/i)).toBeVisible();
-    await expect(page.getByText(/a year/i)).toBeVisible();
+    // Terminal CTA renders.
     await expect(page.getByRole("link", { name: /Set up my wallet/i })).toBeVisible();
 
     // No client-side runtime errors along the way.

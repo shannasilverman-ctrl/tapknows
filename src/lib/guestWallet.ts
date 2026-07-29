@@ -57,29 +57,58 @@ const emptyPrefs: GuestPrefs = {
   utilization_behavior: "warn",
 };
 
-const empty: GuestWallet = {
-  cards: [],
-  offers: [],
-  overrides: [],
-  accounts: [],
-  prefs: emptyPrefs,
-};
+function emptyWallet(): GuestWallet {
+  return {
+    cards: [],
+    offers: [],
+    overrides: [],
+    accounts: [],
+    prefs: { ...emptyPrefs },
+  };
+}
 
 export function getGuestWallet(): GuestWallet {
-  if (typeof window === "undefined") return empty;
+  if (typeof window === "undefined") return emptyWallet();
   try {
     const raw = window.localStorage.getItem(KEY);
-    if (!raw) return empty;
+    if (!raw) return emptyWallet();
     const parsed = JSON.parse(raw) as Partial<GuestWallet>;
+    const cardByCatalog = new Map<string, GuestCard>();
+    const canonicalIdById = new Map<string, string>();
+    for (const card of parsed.cards ?? []) {
+      const existing = cardByCatalog.get(card.card_catalog_id);
+      if (existing) {
+        canonicalIdById.set(card.id, existing.id);
+        continue;
+      }
+      const clean = { ...card };
+      cardByCatalog.set(clean.card_catalog_id, clean);
+      canonicalIdById.set(clean.id, clean.id);
+    }
+    const cards = Array.from(cardByCatalog.values());
+    const canonicalCardIds = new Set(cards.map((card) => card.id));
+    const canonicalCardId = (id: string) => canonicalIdById.get(id) ?? id;
+
+    const offers = (parsed.offers ?? [])
+      .map((offer) => ({ ...offer, user_card_id: canonicalCardId(offer.user_card_id) }))
+      .filter((offer) => canonicalCardIds.has(offer.user_card_id));
+
+    const accountByCard = new Map<string, GuestAccount>();
+    for (const account of parsed.accounts ?? []) {
+      const userCardId = canonicalCardId(account.user_card_id);
+      if (!canonicalCardIds.has(userCardId)) continue;
+      accountByCard.set(userCardId, { ...account, user_card_id: userCardId });
+    }
+
     return {
-      cards: parsed.cards ?? [],
-      offers: parsed.offers ?? [],
-      overrides: parsed.overrides ?? [],
-      accounts: parsed.accounts ?? [],
+      cards,
+      offers,
+      overrides: (parsed.overrides ?? []).map((override) => ({ ...override })),
+      accounts: Array.from(accountByCard.values()),
       prefs: { ...emptyPrefs, ...(parsed.prefs ?? {}) },
     };
   } catch {
-    return empty;
+    return emptyWallet();
   }
 }
 
@@ -98,6 +127,8 @@ function newId(): string {
 
 export function addGuestCard(card_catalog_id: string, nickname?: string | null): GuestCard {
   const w = getGuestWallet();
+  const existing = w.cards.find((card) => card.card_catalog_id === card_catalog_id);
+  if (existing) return existing;
   const c: GuestCard = { id: newId(), card_catalog_id, nickname: nickname ?? null };
   w.cards.push(c);
   save(w);

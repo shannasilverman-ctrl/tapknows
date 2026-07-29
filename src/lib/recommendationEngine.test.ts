@@ -74,6 +74,66 @@ describe("recommendationEngine — canonical hotel split scenario", () => {
 });
 
 describe("recommendationEngine — other cases", () => {
+  it("describes points as points with estimated value, never as cash back", () => {
+    const out = recommend({
+      amountCents: 40_000,
+      category: "dining",
+      wallet: [
+        {
+          id: "gold",
+          card_catalog_id: "gold",
+          issuer: "American Express",
+          name: "Gold",
+          points_program_id: "mr",
+          foreign_tx_fee_pct: 0,
+          earn_rules: [
+            { category: "dining", multiplier: 4 },
+            { category: "everything_else", multiplier: 1 },
+          ],
+        },
+      ],
+      offers: [],
+      valuations: { mr: 2 },
+    });
+
+    expect(out.winner?.headline).toContain("1,600 points");
+    expect(out.winner?.headline).toContain("estimated $32 value at 2.00¢/pt");
+    expect(out.winner?.headline).not.toContain("back");
+    expect(out.winner?.legs[0]).toMatchObject({
+      rewardKind: "points",
+      pointsEarned: 1600,
+      cppCents: 2,
+      programId: "mr",
+    });
+  });
+
+  it("reserves cash-back wording for true cashback earn rules", () => {
+    const out = recommend({
+      amountCents: 10_000,
+      category: "everything_else",
+      wallet: [
+        {
+          id: "cash",
+          card_catalog_id: "cash",
+          issuer: "Bank",
+          name: "Cash Card",
+          points_program_id: "cashback",
+          foreign_tx_fee_pct: 0,
+          earn_rules: [{ category: "everything_else", multiplier: 0.02 }],
+        },
+      ],
+      offers: [],
+      valuations: { cashback: 1 },
+    });
+
+    expect(out.winner?.headline).toContain("$2 cash back");
+    expect(out.winner?.headline).not.toContain("points");
+    expect(out.winner?.legs[0]).toMatchObject({
+      rewardKind: "cashback",
+      pointsEarned: 0,
+    });
+  });
+
   it("returns empty-wallet guidance when wallet is empty", () => {
     const out = recommend({
       amountCents: 5000,

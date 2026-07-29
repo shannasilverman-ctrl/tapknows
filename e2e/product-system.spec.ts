@@ -171,6 +171,29 @@ test.describe("TAP product system", () => {
     await expect(page.getByRole("heading", { name: "Know what every card is for." })).toBeVisible();
   });
 
+  test("keeps catalog rate semantics and verification dates honest", async ({ page }) => {
+    await page.goto("/cards");
+    await page.getByRole("button", { name: "Add a card" }).click();
+
+    await expect(page.getByText(/Rates verified Jul 12, 2026/)).toBeVisible();
+    await page.getByRole("button", { name: "Amazon Prime Visa No annual fee" }).click();
+
+    await expect(page.getByText("5% amazon", { exact: true })).toBeVisible();
+    await expect(page.getByText("2% gas", { exact: true })).toBeVisible();
+    await expect(page.getByText("1% everything else", { exact: true })).toBeVisible();
+    await expect(page.getByText(/0\\.0[125]x/)).toHaveCount(0);
+  });
+
+  test("labels issuer credit balances as assumed rather than known", async ({ page }) => {
+    await page.goto("/cards?card=guest_amex");
+
+    await expect(page.getByText("Credits to check", { exact: true })).toBeVisible();
+    await expect(page.getByText(/TAP cannot see your issuer credit usage/)).toBeVisible();
+    await expect(page.getByText(/Up to \$10\.00 assumed remaining/).first()).toBeVisible();
+    await expect(page.getByText(/\$10\.00 left/)).toHaveCount(0);
+    await expect(page.getByText(/choose “Mark used” to update the estimate/)).toBeVisible();
+  });
+
   test("turns the wallet into a searchable, printable card cheat sheet", async ({ page }) => {
     const browserProblems: string[] = [];
     page.on("pageerror", (error) => browserProblems.push(String(error)));
@@ -218,6 +241,31 @@ test.describe("TAP product system", () => {
     await expect(page.getByText(/200.00¢ per point/)).toHaveCount(0);
   });
 
+  test("shows the complete recommendation math before asking for trust", async ({ page }) => {
+    await page.goto("/decide?merchant=whole_foods&category=groceries&amount=84");
+
+    await page
+      .getByRole("button", {
+        name: "Why Gold? vs Sapphire Preferred: est. $1.72 · +$5.00 Cap status unknown",
+      })
+      .click();
+
+    const proof = page.getByRole("region", { name: "Recommendation proof" });
+    await expect(proof).toBeVisible();
+    await expect(proof.getByText("On a $84.00 purchase", { exact: true })).toBeVisible();
+    await expect(proof.getByRole("heading", { name: "Gold", exact: true })).toBeVisible();
+    await expect(proof.getByRole("heading", { name: "Sapphire Preferred" })).toBeVisible();
+    await expect(proof.getByText("$6.72", { exact: true })).toBeVisible();
+    await expect(proof.getByText("$1.72", { exact: true })).toBeVisible();
+    await expect(proof.getByText("Estimated difference", { exact: true })).toBeVisible();
+    await expect(proof.getByText("= $5.00", { exact: true })).toBeVisible();
+    await expect(proof.getByText("336 pts × 2.00¢ = est. $6.72", { exact: true })).toBeVisible();
+    await expect(proof.getByText("84 pts × 2.05¢ = est. $1.72", { exact: true })).toBeVisible();
+    await expect(proof.getByText(/Amex Membership Rewards: 2.00¢\/pt/)).toBeVisible();
+    await expect(proof.getByText(/Chase Ultimate Rewards: 2.05¢\/pt/)).toBeVisible();
+    await expect(proof.getByText(/interest can cost more than the rewards/i)).toBeVisible();
+  });
+
   test("expands online shopping into merchant choices without losing search", async ({ page }) => {
     await page.goto("/home");
     const search = page.getByRole("textbox");
@@ -248,16 +296,16 @@ test.describe("TAP product system", () => {
     });
 
     await expect(walkthrough).toBeVisible();
-    await expect(page.getByText("Choose the place", { exact: true })).toBeVisible();
+    await expect(page.getByText("See your best card", { exact: true })).toBeVisible();
     await expect(page.locator(".tap-device-stage")).toHaveCSS("overflow-x", "hidden");
     await expect(page.getByRole("link", { name: "Try this decision" })).toHaveCount(1);
     await expect(page.getByRole("button", { name: "Edit assumptions" })).toHaveCount(0);
+    await expect(page.getByText(/Amex: 2\.0¢\/pt · TAP default/)).toHaveCount(1);
+    await expect(page.getByText(/Chase: 2\.05¢\/pt · TAP default/)).toHaveCount(1);
+    await expect(page.getByText(/Amount won’t change this pick/i)).toHaveCount(0);
 
     const nextScreen = page.getByRole("button", { name: "Next product screen" });
     await expect(nextScreen).toBeEnabled();
-    await page.waitForTimeout(500);
-    await nextScreen.click();
-    await expect(page.getByText("See your best card", { exact: true })).toBeVisible();
     await expect(page.locator(".tap-card-line")).toHaveCount(0);
     const recommendationSpacing = await page.locator(".tap-device-winner").evaluate((winner) => {
       const walletBottom = winner
@@ -268,9 +316,16 @@ test.describe("TAP product system", () => {
     });
     expect(recommendationSpacing).toBeGreaterThanOrEqual(8);
 
-    await page.getByRole("button", { name: "Why this card?" }).click();
+    await nextScreen.click();
     await expect(page.getByText("Check the math", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Next product screen" })).toBeDisabled();
+
+    const previousScreen = page.getByRole("button", { name: "Previous product screen" });
+    await previousScreen.click();
+    await expect(page.getByText("See your best card", { exact: true })).toBeVisible();
+    await previousScreen.click();
+    await expect(page.getByText("Choose the place", { exact: true })).toBeVisible();
+    await expect(previousScreen).toBeDisabled();
 
     const walletFaces = page.locator(".tap-wallet-board .tap-mini-card .cs-face");
     await expect(walletFaces).toHaveCount(3);
@@ -340,6 +395,9 @@ test.describe("TAP product system", () => {
     const quickAdd = page.getByRole("button", { name: "Amex Gold", exact: true });
     const optionalSync = page.getByRole("button", { name: "Sync cards with Plaid" });
     await expect(quickAdd).toBeVisible();
+    await expect(page.locator(".cs-quick-add-chip")).toHaveCount(4);
+    await expect(optionalSync).toHaveCount(0);
+    await page.getByRole("button", { name: "More ways to add cards" }).click();
     await expect(optionalSync).toBeVisible();
     const quickAddBox = await quickAdd.boundingBox();
     const optionalSyncBox = await optionalSync.boundingBox();
