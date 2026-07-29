@@ -710,7 +710,7 @@
     inset 0 0 12px #ff641f;
 }
 .tap-choice-value {
-  margin: -5px 7px 0;
+  margin: 10px 7px 0;
 }
 .tap-choice-value h3 {
   font: 750 21px/1.2 var(--font-display);

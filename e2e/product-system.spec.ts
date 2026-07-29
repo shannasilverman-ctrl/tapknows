@@ -259,6 +259,14 @@ test.describe("TAP product system", () => {
     await nextScreen.click();
     await expect(page.getByText("See your best card", { exact: true })).toBeVisible();
     await expect(page.locator(".tap-card-line")).toHaveCount(0);
+    const recommendationSpacing = await page.locator(".tap-device-winner").evaluate((winner) => {
+      const walletBottom = winner
+        .querySelector(".tap-wallet-mouth")!
+        .getBoundingClientRect().bottom;
+      const valueTop = winner.querySelector(".tap-choice-value")!.getBoundingClientRect().top;
+      return valueTop - walletBottom;
+    });
+    expect(recommendationSpacing).toBeGreaterThanOrEqual(8);
 
     await page.getByRole("button", { name: "Why this card?" }).click();
     await expect(page.getByText("Check the math", { exact: true })).toBeVisible();
