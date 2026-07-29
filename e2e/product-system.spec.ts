@@ -258,6 +258,7 @@ test.describe("TAP product system", () => {
     await page.waitForTimeout(500);
     await nextScreen.click();
     await expect(page.getByText("See your best card", { exact: true })).toBeVisible();
+    await expect(page.locator(".tap-card-line")).toHaveCount(0);
 
     await page.getByRole("button", { name: "Why this card?" }).click();
     await expect(page.getByText("Check the math", { exact: true })).toBeVisible();

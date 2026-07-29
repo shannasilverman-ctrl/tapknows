@@ -681,13 +681,6 @@
   top: 1px;
   background: var(--tap-card-sheen), var(--tap-gold);
 }
-.tap-card-line {
-  position: absolute;
-  inset: 28px 35px;
-  border: 1px solid rgba(255, 255, 255, 0.42);
-  border-radius: 50%;
-  transform: rotate(-28deg);
-}
 .tap-choice-wallet .tap-wallet-mouth {
   height: 122px;
 }

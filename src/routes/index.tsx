@@ -224,9 +224,7 @@ function Landing() {
                     <div className="tap-choice-wallet">
                       <span className="tap-choice-card tap-choice-card-back" />
                       <span className="tap-choice-card tap-choice-card-middle" />
-                      <span className="tap-choice-card tap-choice-card-gold">
-                        <i className="tap-card-line" />
-                      </span>
+                      <span className="tap-choice-card tap-choice-card-gold" />
                       <div className="tap-signal-rings">
                         <i />
                         <i />
